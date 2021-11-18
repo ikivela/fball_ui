@@ -12,7 +12,8 @@
             ></b-form-input>
           </b-input-group>
           <b-span style="margin-left: 1em">
-            Nibacos otteluita: {{ this.games.length }}</b-span
+            Nibacos otteluita: {{ this.games.length }} Päivitetty:
+            {{ FormattedDate }}</b-span
           >
         </b-nav-form>
       </b-navbar>
@@ -40,6 +41,7 @@ export default {
   data() {
     return {
       show: true,
+      updated: "",
       items: [],
       games: [],
       filter: null,
@@ -60,7 +62,13 @@ export default {
   created() {
     document.title = "Nibacos ottelut";
   },
-  computed: {},
+  computed: {
+    FormattedDate() {
+      if (this.updated && this.updated.length > 0)
+        return DateTime.fromISO(this.updated).toFormat("HH:mm dd.LL.yyyy");
+      else return "";
+    },
+  },
   async mounted() {
     /*let search = window.location.search.substring(1);
     if (search.length > 0) {
@@ -70,20 +78,13 @@ export default {
     }
     */
     let _games = await this.getGames();
-    this.games = _games.sort((a, b) => {
+    this.updated = _games.updated;
+    this.games = _games.games.sort((a, b) => {
       let a_date = DateTime.fromISO(a.GameDate + "T" + a.GameTime).toMillis();
       let b_date = DateTime.fromISO(b.GameDate + "T" + b.GameTime).toMillis();
 
       return a_date > b_date ? 1 : -1;
     });
-    this.games.forEach((game) =>
-      console.log(
-        game.GameDate,
-        game.GameTime,
-        game.HomeTeamName,
-        game.AwayTeamName
-      )
-    );
   },
   methods: {
     async getGames() {
