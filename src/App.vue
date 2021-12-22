@@ -139,23 +139,29 @@ export default {
   },
 
   async mounted() {
+    console.log("backend: %s", process.env.BACKEND_URL);
     this.currentSeason = DateTime.now().toFormat("yyyy");
     this.seasons = await this.getSeasons();
     await this.updateData();
   },
   computed: {
     showPastValues: {
-      set: function () {
-        this.show = !this.show;
-        return this.show;
+      set: function (value) {
+        this.show = value == "true" ? true : false;
       },
       get: function () {
         return this.show;
       },
     },
     games() {
-      console.log("games() ", this.showPastValues);
+      console.log(
+        `showPastValue type:${typeof this.showPastValues} value: ${
+          this.showPastValues
+        }`
+      );
+
       if (this.showPastValues) {
+        console.log("all games");
         return this.allGames;
       } else {
         console.log(
@@ -172,10 +178,11 @@ export default {
   },
   methods: {
     async updateData() {
-      //console.log("today", today);
+      console.log("selected season [%s]", this.selectedSeason);
       this.allGames = await this.getGames(
         this.selectedSeason == null ? "" : this.selectedSeason
       );
+      this.showPastValues = "true";
       console.log(this.allGames.length);
       this.allGames = this.allGames.sort((a, b) => {
         let a_date = DateTime.fromISO(a.GameDate + "T" + a.GameTime).toMillis();
