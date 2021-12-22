@@ -191,180 +191,25 @@ export default {
         return a_date > b_date ? 1 : -1;
       });
     },
-    async getGameStats(_id, _season, _game) {
-      this.gameStats = null;
+    getGameStats(_id, _season, _game) {
+      this.gameStats = "";
 
-      /*console.log(_id);
+      this.showGameStat = true;
       var season =
         this.selectedSeason == null
           ? DateTime.now().toFormat("yyyy")
           : this.selectedSeason;
-      let res = await axios.get(`${this.baseurl}/game/${season}/${_id}`);
-      this.gameStats = res.data;
-      if (res.data.length > 0) this.showGameStat = true;*/
-      this.currentGame = _game;
-      this.showGameStat = true;
-      this.gameStats = [
-        {
-          event: "penalty",
-          time: "04.29",
-          penalty_time: "2 min",
-          team: "Nibacos ",
-          player: "Potinoja Jenna",
-          reason: "MAILAAN LYÖMINEN TAI POTKAISEMINEN",
-        },
-        {
-          event: "goal",
-          time: "05.14",
-          result: "1-0",
-          yv_av: "YV",
-          team: "SC Kokkola",
-          scorer: "Leskinen Iida",
-          assist: "Sikala Mira",
-        },
-        {
-          event: "goal",
-          time: "08.09",
-          result: "1-1",
-          yv_av: "",
-          team: "Nibacos ",
-          scorer: "Kurikkala Veera",
-          assist: "",
-        },
-        {
-          event: "goal",
-          time: "10.41",
-          result: "1-2",
-          yv_av: "",
-          team: "Nibacos ",
-          scorer: "Kurikkala Veera",
-          assist: "",
-        },
-        {
-          event: "penalty",
-          time: "11.59",
-          penalty_time: "2 min",
-          team: "Nibacos ",
-          player: "Potinoja Jenna",
-          reason: "ESTÄMINEN",
-        },
-        {
-          event: "goal",
-          time: "15.48",
-          result: "1-3",
-          yv_av: "SR",
-          team: "Nibacos ",
-          scorer: "Tuikka Miisa",
-          assist: "Kurikkala Veera",
-        },
-        {
-          event: "goal",
-          time: "18.33",
-          result: "1-4",
-          yv_av: "",
-          team: "Nibacos ",
-          scorer: "Vähärautio Emma",
-          assist: "Palojärvi Milja",
-        },
-        {
-          event: "goal",
-          time: "19.18",
-          result: "1-5",
-          yv_av: "",
-          team: "Nibacos ",
-          scorer: "Riippa Iitu",
-          assist: "Paloaho Marlena",
-        },
-        {
-          event: "goal",
-          time: "26.11",
-          result: "1-6",
-          yv_av: "",
-          team: "Nibacos ",
-          scorer: "Vähärautio Emma",
-          assist: "Riippa Iitu",
-        },
-        {
-          event: "penalty",
-          time: "28.16",
-          penalty_time: "2 min",
-          team: "SC Kokkola",
-          player: "Sikala Mira",
-          reason: "TYÖNTÄMINEN",
-        },
-        {
-          event: "goal",
-          time: "28.51",
-          result: "1-7",
-          yv_av: "YV",
-          team: "Nibacos ",
-          scorer: "Vähärautio Emma",
-          assist: "Kurikkala Veera",
-        },
-        {
-          event: "goal",
-          time: "35.36",
-          result: "1-8",
-          yv_av: "",
-          team: "Nibacos ",
-          scorer: "Känsäkangas Milla",
-          assist: "Paloaho Marlena",
-        },
-        {
-          event: "goal",
-          time: "36.17",
-          result: "2-8",
-          yv_av: "",
-          team: "SC Kokkola",
-          scorer: "Ylitolva Lotta",
-          assist: "Sikala Mira",
-        },
-        {
-          event: "goal",
-          time: "37.35",
-          result: "3-8",
-          yv_av: "",
-          team: "SC Kokkola",
-          scorer: "Sikala Mira",
-          assist: "Ylitolva Lotta",
-        },
-        {
-          event: "goal",
-          time: "37.51",
-          result: "3-9",
-          yv_av: "",
-          team: "Nibacos ",
-          scorer: "Kurikkala Veera",
-          assist: "",
-        },
-        {
-          event: "goal",
-          time: "38.16",
-          result: "4-9",
-          yv_av: "",
-          team: "SC Kokkola",
-          scorer: "Sikala Mira",
-          assist: "Ylitolva Lotta",
-        },
-        {
-          event: "goal",
-          time: "39.26",
-          result: "4-9",
-          yv_av: "RL0",
-          team: "Nibacos ",
-          scorer: "Lahti Alexandra",
-          assist: "",
-        },
-        {
-          event: "goal",
-          time: "41.05",
-          result: "4-9",
-          yv_av: "RL0",
-          team: "Nibacos ",
-          scorer: "Riippa Iitu",
-          assist: "",
-        },
-      ];
+      axios
+        .get(`${this.baseurl}/game/${season}/${_id}`)
+        .then((res) => {
+          this.gameStats = res.data;
+          this.currentGame = _game;
+        })
+        .catch((err) => {
+          this.showGameStat = false;
+          console.error(err);
+        });
+
       return _id;
     },
     async getSeasons() {

@@ -1,13 +1,22 @@
-const bootstrapSassAbstractsImports = require('vue-cli-plugin-bootstrap-vue/sassAbstractsImports.js')
+const bootstrapSassAbstractsImports = require("vue-cli-plugin-bootstrap-vue/sassAbstractsImports.js");
 module.exports = {
-	css: {
-		loaderOptions: {
-			sass: {
-				additionalData: bootstrapSassAbstractsImports.join('\n')
-			},
-			scss: {
-				additionalData: [...bootstrapSassAbstractsImports, ''].join(';\n')
-			}
-		}
-	}
-}
+  css: {
+    loaderOptions: {
+      sass: {
+        additionalData: bootstrapSassAbstractsImports.join("\n"),
+      },
+      scss: {
+        additionalData: [...bootstrapSassAbstractsImports, ""].join(";\n"),
+      },
+    },
+  },
+  publicPath: process.env.NODE_ENV === "production" ? "/nbcs/" : "/",
+  chainWebpack: (config) => {
+    config.plugin("html").tap((args) => {
+      args[0].title = process.env.SITE_TITLE
+        ? process.env.SITE_TITLE
+        : "fball_ui";
+      return args;
+    });
+  },
+};
