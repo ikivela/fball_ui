@@ -34,9 +34,9 @@
             v-on:change="updateData()"
           ></b-form-select>
 
-          <b-span style="margin-left: 1em">
-            Otteluita: {{ this.games.length }}
-          </b-span>
+          <b-badge style="margin-left: 1em">
+            Ottelut: {{ this.games.length }}
+          </b-badge>
         </b-nav-form>
       </b-navbar>
 
@@ -66,13 +66,12 @@
         >
       </b-table>
       <b-modal ok-only v-model="showGameStat">
+        <b-spinner v-if="this.loading" label="">Ladataan...</b-spinner>
+
         <div class="d-block text-center">
-          <b-spinner v-if="gameStats.length == 0" label=""
-            >Loading...</b-spinner
-          >
           <b>{{ this.currentGame }}</b>
         </div>
-        <ul>
+        <ul v-if="gameStats.length > 0">
           <li v-for="stat in gameStats" v-bind:key="stat.time">
             {{ stat.time }}
             {{ stat.event == "goal" ? stat.result : stat.penalty_time }}
@@ -115,6 +114,7 @@ export default {
       seasons: [],
       showGameStat: false,
       gameStats: "",
+      loading: false,
       allGames: [],
       selectedSeason: null,
       currentGame: "",
@@ -195,6 +195,8 @@ export default {
       this.gameStats = "";
 
       this.showGameStat = true;
+      this.loading = true;
+
       var season =
         this.selectedSeason == null
           ? DateTime.now().toFormat("yyyy")
@@ -203,6 +205,7 @@ export default {
         .get(`${this.baseurl}/game/${season}/${_id}`)
         .then((res) => {
           this.gameStats = res.data;
+          this.loading = false;
           this.currentGame = _game;
         })
         .catch((err) => {
@@ -216,7 +219,7 @@ export default {
       let res = await axios.get(`${this.baseurl}/seasons`);
       let seasons = res.data.data;
       seasons = seasons.map((x) => {
-        return { value: x, text: x };
+        return { value: x, text: `${x - 1}-${x}` };
       });
       seasons.unshift({ value: null, text: "Valitse kausi" });
       console.log(seasons);
