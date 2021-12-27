@@ -142,13 +142,6 @@ export default {
     console.log("backend: %s", process.env.VUE_APP_BACKEND_URL);
     // If season is 2021-2022, the currentSeason has to be 2022
     // Season is changed to new season after 1st of August
-    if (DateTime.now().toObject().month < 8) {
-      this.currentSeason = DateTime.now().toFormat("yyyy");
-      console.log("not yet august, current season:", this.currentSeason);
-    } else {
-      this.currentSeason = DateTime.now().plus(1, "year").toFormat("yyyy");
-      console.log("else current season", this.currentSeason);
-    }
     this.seasons = await this.getSeasons();
     await this.updateData();
   },
@@ -205,8 +198,9 @@ export default {
       this.currentGame = _game;
 
       console.log("get gamestats", _season, this.currentGame);
+      var url = `${this.baseurl}/gamestats/?season=${_season}&gameid=${_id}`;
       axios
-        .get(`${this.baseurl}/game/${_season - 1}/${_id}`)
+        .get(url)
         .then((res) => {
           this.gameStats = res.data;
           this.loading = false;
@@ -221,7 +215,17 @@ export default {
     async getSeasons() {
       let res = await axios.get(`${this.baseurl}/seasons`);
       let seasons = res.data.data;
+      console.log(seasons);
+      let currentSeason =
+        DateTime.now().toObject().month > 9
+          ? DateTime.now().toFormat("yyyy")
+          : DateTime.now().minus(1, "year").toFormat("yyyy");
       seasons = seasons.map((x) => {
+        if (x == "current")
+          return {
+            value: x,
+            text: `${currentSeason}-${parseInt(currentSeason) + 1}`,
+          };
         return { value: x, text: `${x - 1}-${x}` };
       });
       //seasons.unshift({ value: null, text: "Valitse kausi" });
@@ -231,7 +235,7 @@ export default {
     },
     async getGames(year) {
       console.log(year);
-      let response = await axios.get(`${this.baseurl}/games/${year}`);
+      let response = await axios.get(`${this.baseurl}/games/?year=${year}`);
       return response.data;
     },
     onFiltered(filteredItems) {
