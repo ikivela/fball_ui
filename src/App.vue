@@ -105,8 +105,8 @@ export default {
   components: {},
   data() {
     return {
-      baseurl: process.env.BACKEND_URL
-        ? process.env.BACKEND_URL
+      baseurl: process.env.VUE_APP_BACKEND_URL
+        ? process.env.VUE_APP_BACKEND_URL
         : "http://localhost:3000",
       show: true,
       updated: "",
@@ -139,7 +139,7 @@ export default {
   },
 
   async mounted() {
-    console.log("backend: %s", process.env.BACKEND_URL);
+    console.log("backend: %s", process.env.VUE_APP_BACKEND_URL);
     this.currentSeason = DateTime.now().toFormat("yyyy");
     this.seasons = await this.getSeasons();
     await this.updateData();
