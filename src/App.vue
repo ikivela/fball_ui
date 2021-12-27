@@ -57,7 +57,7 @@
             @click="
               getGameStats(
                 data.item.UniqueID,
-                currentSeason,
+                selectedSeason,
                 data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
               )
             "
@@ -140,7 +140,15 @@ export default {
 
   async mounted() {
     console.log("backend: %s", process.env.VUE_APP_BACKEND_URL);
-    this.currentSeason = DateTime.now().toFormat("yyyy");
+    // If season is 2021-2022, the currentSeason has to be 2022
+    // Season is changed to new season after 1st of August
+    if (DateTime.now().toObject().month < 8) {
+      this.currentSeason = DateTime.now().toFormat("yyyy");
+      console.log("not yet august, current season:", this.currentSeason);
+    } else {
+      this.currentSeason = DateTime.now().plus(1, "year").toFormat("yyyy");
+      console.log("else current season", this.currentSeason);
+    }
     this.seasons = await this.getSeasons();
     await this.updateData();
   },
@@ -179,9 +187,7 @@ export default {
   methods: {
     async updateData() {
       console.log("selected season [%s]", this.selectedSeason);
-      this.allGames = await this.getGames(
-        this.selectedSeason == null ? "" : this.selectedSeason
-      );
+      this.allGames = await this.getGames(this.selectedSeason);
       this.showPastValues = "true";
       console.log(this.allGames.length);
       this.allGames = this.allGames.sort((a, b) => {
@@ -196,17 +202,14 @@ export default {
 
       this.showGameStat = true;
       this.loading = true;
+      this.currentGame = _game;
 
-      var season =
-        this.selectedSeason == null
-          ? DateTime.now().toFormat("yyyy")
-          : this.selectedSeason;
+      console.log("get gamestats", _season, this.currentGame);
       axios
-        .get(`${this.baseurl}/game/${season}/${_id}`)
+        .get(`${this.baseurl}/game/${_season - 1}/${_id}`)
         .then((res) => {
           this.gameStats = res.data;
           this.loading = false;
-          this.currentGame = _game;
         })
         .catch((err) => {
           this.showGameStat = false;
@@ -221,8 +224,9 @@ export default {
       seasons = seasons.map((x) => {
         return { value: x, text: `${x - 1}-${x}` };
       });
-      seasons.unshift({ value: null, text: "Valitse kausi" });
-      console.log(seasons);
+      //seasons.unshift({ value: null, text: "Valitse kausi" });
+      this.selectedSeason = seasons[0].value;
+
       return seasons;
     },
     async getGames(year) {
