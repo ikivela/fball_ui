@@ -1,5 +1,16 @@
 # fball_ui
 
+This repository contains frontend code for [fball_backend](https://github.com/ikivela/fball_ui/)
+
+## Configuration
+
+Create `.env` and modify following variables
+```
+VUE_APP_SITE_TITLE=Demo site
+VUE_APP_BACKEND_URL=http://yoursite.com
+```
+In `vue.config.js`, line 13, set `publicPath`. Root path '/' is used in development mode
+
 ## Project setup
 ```
 yarn install
