@@ -12,16 +12,16 @@
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
-          <b-nav-item
+          <!-- <b-nav-item
             @click="(showGamesPage = true), (showStatsPage = false)"
             href="#"
             >Ottelut</b-nav-item
-          >
-          <b-nav-item
+          >-->
+          <!--<b-nav-item
             @click="(showGamesPage = false), (showStatsPage = true), setStats()"
             href="#"
             >Tilastot
-          </b-nav-item>
+          </b-nav-item>-->
         </b-navbar-nav>
         <b-nav-form>
           <b-form-input
@@ -33,46 +33,57 @@
             class="mr-sm-2"
             placeholder="Etsi"
           ></b-form-input>
+
+          <b-input-group prepend="">
+            <b-form-checkbox
+              id="showPast"
+              v-model="showPastValues"
+              value="true"
+              unchecked-value="false"
+            >
+              Näytä menneet
+            </b-form-checkbox>
+
+            <b-form-select
+              style="margin-left: 1em"
+              v-model="selectedSeason"
+              :options="this.seasons"
+              v-on:change="getSelectedSeason()"
+            ></b-form-select>
+
+            <b-badge style="margin-left: 1em; margin-right: 1em">
+              Otteluita: {{ this.games.length }}
+            </b-badge>
+            <b-form-select
+              v-model="selectedClass"
+              v-on:change="getSelectedClass"
+              :options="classes"
+            ></b-form-select>
+          </b-input-group>
         </b-nav-form>
       </b-collapse>
     </b-navbar>
 
-    <b-container fluid v-if="showGamesPage" id="games">
-      <b-nav-form>
-        <b-input-group prepend="">
-          <b-form-checkbox
-            id="showPast"
-            v-model="showPastValues"
-            value="true"
-            unchecked-value="false"
-          >
-            Näytä menneet
-          </b-form-checkbox>
-        </b-input-group>
-        <b-form-select
-          style="margin-left: 1em"
-          v-model="selectedSeason"
-          :options="this.seasons"
-          v-on:change="updateData()"
-        ></b-form-select>
-
-        <b-badge style="margin-left: 1em">
-          Ottelut: {{ this.games.length }}
-        </b-badge>
-        <b-form-select
-          v-model="selectedClass"
-          v-on:change="getSelectedClass"
-          :options="classes"
-        ></b-form-select>
-      </b-nav-form>
+    <b-container fluid id="games">
       <b-table
-        responsive="lg"
+        small
+        stacked="sm"
         :items="games"
         :fields="fields"
         @filtered="onFiltered"
         :filter="filter"
         :filter-included-fields="filterOn"
       >
+        <template #cell(GameDate)="data">
+          {{ `${data.item.GameDate} ${data.item.GameTime}` }}
+        </template>
+
+        <!--<template #cell(show_details)="row">
+          <b-button size="sm" @click="row.toggleDetails" class="mr-2">
+            {{ row.detailsShowing ? "Hide" : "Show" }} Details
+          </b-button>
+        </template>-->
+
         <template #cell(Result)="data">
           <a
             class="resultStyle"
@@ -89,14 +100,19 @@
       </b-table>
     </b-container>
 
-    <b-container v-if="showStatsPage" id="stats">
+    <!--<b-container v-if="showStatsPage" id="stats">
+      <b-badge>{{ `Kausi ${this.selectedSeason}` }}</b-badge>
       <b-form-select
         v-model="selectedClass"
         v-on:change="getSelectedClass"
         :options="classes"
       ></b-form-select>
-      <b-table small :items="this.statsData[0].stats"> </b-table>
-    </b-container>
+      <b-table
+        small
+        :items="this.statsData.length > 0 ? this.statsData[0].stats : []"
+      >
+      </b-table>
+    </b-container>-->
     <b-modal ok-only v-model="showGameStat">
       <b-spinner v-if="this.loading" label="">Ladataan...</b-spinner>
 
@@ -162,7 +178,6 @@ export default {
       totalRows: 1,
       fields: [
         "GameDate",
-        "GameTime",
         "HomeTeamName",
         "AwayTeamName",
         "RinkName",
@@ -183,7 +198,7 @@ export default {
     this.seasons = await this.getSeasons();
     this.seasonStats = await this.getStats();
     //console.log(this.seasonStats);
-    await this.updateData();
+    await this.getSelectedSeason();
   },
   computed: {
     showPastValues: {
@@ -235,12 +250,16 @@ export default {
       console.log("get class", _class);
       _class = _class !== "Näytä kaikki" ? _class : "";
       this.filter = _class;
-      if (this.showStats) this.setStats(_class);
+      if (this.showStats) {
+        console.log("setStats", _class);
+        this.setStats(_class ? _class : "");
+      }
     },
-    async updateData() {
+    async getSelectedSeason() {
       console.log("selected season [%s]", this.selectedSeason);
       this.allGames = await this.getGames(this.selectedSeason);
       this.showPastValues = "true";
+      this.filter = "";
       console.log("allGames.length:", this.allGames.length);
       this.allGames = this.allGames.sort((a, b) => {
         let a_date = DateTime.fromISO(a.GameDate + "T" + a.GameTime).toMillis();
@@ -272,10 +291,12 @@ export default {
       return _id;
     },
     setStats(_class, toggle) {
+      console.log("setStat class: %s season: %s", _class, this.selectedSeason);
       this.showStats = toggle ? toggle : true;
-      _class = _class ? _class : this.classes[1];
-      this.selectedClass = _class;
-      console.log("setStat %s %s", _class, this.selectedSeason);
+      _class = _class != "Näytä kaikki" && _class !== undefined ? _class : "";
+      console.log("class %s", _class);
+      this.selectedClass = _class != "" ? _class : this.classes[1];
+
       this.statsData = this.seasonStats.filter(
         (x) => x.season == this.selectedSeason && x.class == _class
       );
@@ -289,7 +310,7 @@ export default {
       let seasons = res.data.data;
       console.log(seasons);
       let currentSeason =
-        DateTime.now().toObject().month > 9
+        DateTime.now().toObject().month > 7
           ? DateTime.now().toFormat("yyyy")
           : DateTime.now().minus(1, "year").toFormat("yyyy");
       seasons = seasons.map((x) => {
@@ -300,6 +321,8 @@ export default {
           };
         return { value: x, text: `${x - 1}-${x}` };
       });
+
+      console.log("mod seasons", seasons);
       //seasons.unshift({ value: null, text: "Valitse kausi" });
       this.selectedSeason = seasons[0].value;
 
