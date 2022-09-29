@@ -11,18 +11,18 @@
       </b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav>
-          <!-- <b-nav-item
+        <!--<b-navbar-nav>
+          <b-nav-item
             @click="(showGamesPage = true), (showStatsPage = false)"
             href="#"
             >Ottelut</b-nav-item
           >-->
-          <!--<b-nav-item
+        <!--<b-nav-item
             @click="(showGamesPage = false), (showStatsPage = true), setStats()"
             href="#"
             >Tilastot
-          </b-nav-item>-->
-        </b-navbar-nav>
+          </b-nav-item>
+        </b-navbar-nav>-->
         <b-nav-form>
           <b-form-input
             id="filter-input"
@@ -43,22 +43,38 @@
             >
               Näytä menneet
             </b-form-checkbox>
-
-            <b-form-select
-              style="margin-left: 1em"
+            <multiselect
               v-model="selectedSeason"
+              label="text"
+              placeholder="Valitse kausi"
               :options="this.seasons"
-              v-on:change="getSelectedSeason()"
-            ></b-form-select>
-
+              @select="getSelectedSeason"
+            >
+              <template slot="singleLabel" slot-scope="{ option }">{{
+                option.text
+              }}</template>
+            </multiselect>
             <b-badge style="margin-left: 1em; margin-right: 1em">
               Otteluita: {{ this.games.length }}
             </b-badge>
-            <b-form-select
+            <multiselect
               v-model="selectedClass"
-              v-on:change="getSelectedClass"
               :options="classes"
-            ></b-form-select>
+              :multiple="true"
+              :close-on-select="false"
+              :clear-on-select="false"
+              :preserve-search="true"
+              placeholder="Pick some"
+              :preselect-first="true"
+            >
+              <template slot="selection" slot-scope="{ values, search, isOpen }"
+                ><span
+                  class="multiselect__single"
+                  v-if="values.length &amp;&amp; !isOpen"
+                  >{{ values.length }} options selected</span
+                ></template
+              >
+            </multiselect>
           </b-input-group>
         </b-nav-form>
       </b-collapse>
@@ -119,6 +135,8 @@
       <div class="d-block text-center">
         <b>{{ this.currentGame }}</b>
       </div>
+      <div v-if="gameStats.length == 0 && !this.loading">Ei tilastoja</div>
+
       <ul v-if="gameStats.length > 0">
         <li v-for="stat in gameStats" v-bind:key="stat.time">
           {{ stat.time }}
@@ -146,10 +164,11 @@
 <script>
 import axios from "axios";
 import { DateTime } from "luxon";
+import Multiselect from "vue-multiselect";
 
 export default {
   name: "App",
-  components: {},
+  components: { Multiselect },
   data() {
     return {
       baseurl: process.env.VUE_APP_BACKEND_URL
@@ -255,9 +274,10 @@ export default {
         this.setStats(_class ? _class : "");
       }
     },
-    async getSelectedSeason() {
-      console.log("selected season [%s]", this.selectedSeason);
-      this.allGames = await this.getGames(this.selectedSeason);
+    async getSelectedSeason(_season) {
+      this.selectedSeason = _season ? _season : this.seasons[0];
+      console.log("selected season", this.selectedSeason.value);
+      this.allGames = await this.getGames(this.selectedSeason.value);
       this.showPastValues = "true";
       this.filter = "";
       console.log("allGames.length:", this.allGames.length);
@@ -265,7 +285,7 @@ export default {
         let a_date = DateTime.fromISO(a.GameDate + "T" + a.GameTime).toMillis();
         let b_date = DateTime.fromISO(b.GameDate + "T" + b.GameTime).toMillis();
 
-        return a_date > b_date ? 1 : -1;
+        return a_date > b_date ? -1 : 1;
       });
     },
     getGameStats(_id, _season, _game) {
@@ -275,8 +295,8 @@ export default {
       this.loading = true;
       this.currentGame = _game;
 
-      console.log("get gamestats", _season, this.currentGame);
-      var url = `${this.baseurl}/gamestats/?season=${_season}&gameid=${_id}`;
+      console.log("get gamestats", _season.value, this.currentGame);
+      var url = `${this.baseurl}/gamestats/?season=${_season.value}&gameid=${_id}`;
       axios
         .get(url)
         .then((res) => {
@@ -308,24 +328,16 @@ export default {
     async getSeasons() {
       let res = await axios.get(`${this.baseurl}/seasons`);
       let seasons = res.data.data;
-      console.log(seasons);
-      let currentSeason =
-        DateTime.now().toObject().month > 7
-          ? DateTime.now().toFormat("yyyy")
-          : DateTime.now().minus(1, "year").toFormat("yyyy");
+      seasons = seasons.sort((a, b) => (a > b ? -1 : 1));
       seasons = seasons.map((x) => {
-        if (x == "current")
-          return {
-            value: x,
-            text: `${currentSeason}-${parseInt(currentSeason) + 1}`,
-          };
-        return { value: x, text: `${x - 1}-${x}` };
+        return {
+          text: `${x - 1}-${x}`,
+          value: x,
+        };
       });
 
-      console.log("mod seasons", seasons);
-      //seasons.unshift({ value: null, text: "Valitse kausi" });
-      this.selectedSeason = seasons[0].value;
-
+      this.selectedSeason = seasons[0];
+      console.log(seasons, this.selectedSeason);
       return seasons;
     },
     async getGames(year) {
@@ -350,3 +362,5 @@ a.resultStyle:hover {
   text-decoration: underline;
 }
 </style>
+
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
