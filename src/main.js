@@ -6,6 +6,10 @@ import App from "./App.vue";
 
 Vue.config.productionTip = false;
 
+import VueLuxon from "vue-luxon";
+Vue.use(VueLuxon);
+
+
 new Vue({
   render: (h) => h(App),
 }).$mount("#app");

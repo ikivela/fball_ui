@@ -9,6 +9,7 @@
         />
         Nibacos
       </b-navbar-brand>
+
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
         <!--<b-navbar-nav>
@@ -20,7 +21,7 @@
         <!--<b-nav-item
             @click="(showGamesPage = false), (showStatsPage = true), setStats()"
             href="#"
-            >Tilastot
+            Tilastot
           </b-nav-item>
         </b-navbar-nav>-->
         <b-nav-form>
@@ -64,14 +65,15 @@
               :close-on-select="false"
               :clear-on-select="false"
               :preserve-search="true"
-              placeholder="Pick some"
-              :preselect-first="true"
+              placeholder="Suodata sarja"
+              :preselect-first="false"
+              @close="setFilter"
             >
-              <template slot="selection" slot-scope="{ values, search, isOpen }"
+              <template slot="selection" slot-scope="{ values, isOpen }"
                 ><span
                   class="multiselect__single"
                   v-if="values.length &amp;&amp; !isOpen"
-                  >{{ values.length }} options selected</span
+                  >{{ values.length }} sarjaa valittu</span
                 ></template
               >
             </multiselect>
@@ -80,18 +82,25 @@
       </b-collapse>
     </b-navbar>
 
-    <b-container fluid id="games">
+    <b-container id="games">
+      <p>Valittu kausi: {{ this.selectedSeason.text }}</p>
       <b-table
         small
         stacked="sm"
         :items="games"
         :fields="fields"
         @filtered="onFiltered"
+        :filter-function="filterTable"
         :filter="filter"
         :filter-included-fields="filterOn"
       >
-        <template #cell(GameDate)="data">
-          {{ `${data.item.GameDate} ${data.item.GameTime}` }}
+        <template #cell(Date)="data">
+          {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
+        </template>
+        <template #cell(Game)="data">
+          {{
+            `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
+          }}
         </template>
 
         <!--<template #cell(show_details)="row">
@@ -99,7 +108,16 @@
             {{ row.detailsShowing ? "Hide" : "Show" }} Details
           </b-button>
         </template>-->
-
+        <!-- <template slot="row-details" slot-scope="data">
+          <b-button @click="data.toggleDetails">
+            {{ data.detailsShowing ? "Hide" : "Show" }} Details }}
+          </b-button>
+          <div>
+            Details for row go here. data.item contains the row's (item) record
+            data
+            {{ data.item }}
+          </div>
+        </template> -->
         <template #cell(Result)="data">
           <a
             class="resultStyle"
@@ -191,18 +209,18 @@ export default {
       selectedClass: "",
       showStats: false,
       currentGame: "",
+      sortBy: "",
+      sortDesc: "",
       items: [],
       filter: null,
       filterOn: [],
       totalRows: 1,
       fields: [
-        "GameDate",
-        "HomeTeamName",
-        "AwayTeamName",
-        "RinkName",
-        "Result",
-        "group",
-        "class",
+        { key: "Date", sortable: false },
+        { key: "Game", sortable: false },
+        { key: "Result", sortable: false },
+        { key: "group", sortable: false },
+        { key: "class", sortable: false },
       ],
     };
   },
@@ -238,7 +256,7 @@ export default {
           return _self.indexOf(_value) === _index;
         })
         .sort();
-      classes.unshift("Näytä kaikki");
+      //classes.unshift("Näytä kaikki");
       return classes;
     },
     games() {
@@ -265,6 +283,21 @@ export default {
     },
   },
   methods: {
+    parseDate(_str) {
+      // console.log(_str);
+      return DateTime.fromISO(_str).toFormat("dd.MM.");
+    },
+
+    filterTable(_row, _filter) {
+      let filters = _filter.split(",");
+      let rowstr = JSON.stringify(_row);
+      //  console.log(rowstr, filters);
+      if (!Array.isArray(filters)) return rowstr.includes(filters[0]);
+      else return filters.some((f) => rowstr.includes(f));
+    },
+    setFilter(_value) {
+      this.filter = _value.join(",");
+    },
     getSelectedClass(_class) {
       console.log("get class", _class);
       _class = _class !== "Näytä kaikki" ? _class : "";
@@ -285,7 +318,7 @@ export default {
         let a_date = DateTime.fromISO(a.GameDate + "T" + a.GameTime).toMillis();
         let b_date = DateTime.fromISO(b.GameDate + "T" + b.GameTime).toMillis();
 
-        return a_date > b_date ? -1 : 1;
+        return a_date > b_date ? 1 : -1;
       });
     },
     getGameStats(_id, _season, _game) {
@@ -347,6 +380,7 @@ export default {
     },
     onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
+      console.log("filtered length", filteredItems.length);
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
     },
