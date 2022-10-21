@@ -7,7 +7,7 @@
           src="https://static.jopox.fi/nibacos/imagebank/40875_huge.png"
           alt="logo"
         />
-        Nibacos
+        Nibacos-ottelut
       </b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -216,11 +216,12 @@ export default {
       filterOn: [],
       totalRows: 1,
       fields: [
-        { key: "Date", sortable: false },
-        { key: "Game", sortable: false },
-        { key: "Result", sortable: false },
-        { key: "group", sortable: false },
-        { key: "class", sortable: false },
+        { key: "Date", label: "Aika", sortable: false },
+        { key: "Game", label: "Ottelu", sortable: false },
+        { key: "Result", label: "Tulos", sortable: false },
+        { key: "group", label: "Lohko", sortable: false },
+        { key: "class", label: "Sarja", sortable: false },
+        { key: "RinkName", label: "Halli", sortable: false },
       ],
     };
   },
@@ -285,7 +286,7 @@ export default {
   methods: {
     parseDate(_str) {
       // console.log(_str);
-      return DateTime.fromISO(_str).toFormat("dd.MM.");
+      return DateTime.fromISO(_str).toFormat("dd.MM. HH:mm");
     },
 
     filterTable(_row, _filter) {
