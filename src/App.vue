@@ -119,18 +119,25 @@
           </div>
         </template> -->
         <template #cell(Result)="data">
-          <a
-            class="resultStyle"
-            @click="
-              getGameStats(
-                data.item.UniqueID,
-                selectedSeason,
-                data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
-              )
-            "
-            >{{ data.value }}</a
-          ></template
-        >
+          <div v-if="data.item.GameDate < today">
+            <a
+              class="resultStyle"
+              @click="
+                getGameStats(
+                  data.item.UniqueID,
+                  selectedSeason,
+                  data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
+                )
+              "
+              >{{ data.value }}</a
+            >
+          </div>
+          <div v-else>
+            <a class="resultStyle" @click="getResultLink(data)"
+              ><b-icon-link></b-icon-link
+            ></a>
+          </div>
+        </template>
       </b-table>
     </b-container>
 
@@ -183,16 +190,20 @@
 import axios from "axios";
 import { DateTime } from "luxon";
 import Multiselect from "vue-multiselect";
+import { BIconLink } from "bootstrap-vue";
 
 export default {
   name: "App",
-  components: { Multiselect },
+  components: { Multiselect, BIconLink },
   data() {
     return {
+      currentUrl: "",
+      result_url:
+        "http://tilastopalvelu.fi/fb/index.php?option=com_content&view=article&id=4&gameid=",
       baseurl: process.env.VUE_APP_BACKEND_URL
         ? process.env.VUE_APP_BACKEND_URL
         : "http://localhost:3000",
-      show: true,
+      show: false,
       updated: "",
       options: [],
       seasons: [],
@@ -226,28 +237,34 @@ export default {
     };
   },
   created() {
+    this.currentUrl = window.location.href;
     document.title = "Nibacos ottelut";
+    console.log("currentUrl:", this.currentUrl);
   },
 
   async mounted() {
     console.log("backend: %s", process.env.VUE_APP_BACKEND_URL);
     // If season is 2021-2022, the currentSeason has to be 2022
     // Season is changed to new season after 1st of August
+
     this.seasons = await this.getSeasons();
     this.seasonStats = await this.getStats();
+
     //console.log(this.seasonStats);
     await this.getSelectedSeason();
   },
   computed: {
     showPastValues: {
       set: function (value) {
-        this.show = value == "true" ? true : false;
+        this.show = value;
       },
       get: function () {
         return this.show;
       },
     },
-
+    today() {
+      return DateTime.now().toISODate();
+    },
     classes() {
       let classes = this.allGames
         .map((x) => {
@@ -267,7 +284,7 @@ export default {
         }`
       );
 
-      if (this.showPastValues) {
+      if (this.showPastValues == "true") {
         console.log("all games");
         return this.allGames;
       } else {
@@ -302,19 +319,24 @@ export default {
     getSelectedClass(_class) {
       console.log("get class", _class);
       _class = _class !== "Näytä kaikki" ? _class : "";
-      this.filter = _class;
-      if (this.showStats) {
-        console.log("setStats", _class);
-        this.setStats(_class ? _class : "");
-      }
+      console.log("setStats", _class);
+      this.setStats(_class ? _class : "");
     },
     async getSelectedSeason(_season) {
       this.selectedSeason = _season ? _season : this.seasons[0];
-      console.log("selected season", this.selectedSeason.value);
+      //console.log("selected season", this.selectedSeason.value);
       this.allGames = await this.getGames(this.selectedSeason.value);
-      this.showPastValues = "true";
+      this.showPastValues =
+        this.selectedSeason == this.seasons[0] ? "false" : "true";
       this.filter = "";
-      console.log("allGames.length:", this.allGames.length);
+      console.log(
+        "allGames.length:",
+        this.allGames.length,
+        "season",
+        this.selectedSeason,
+        "past",
+        this.showPastValues
+      );
       this.allGames = this.allGames.sort((a, b) => {
         let a_date = DateTime.fromISO(a.GameDate + "T" + a.GameTime).toMillis();
         let b_date = DateTime.fromISO(b.GameDate + "T" + b.GameTime).toMillis();
@@ -369,7 +391,6 @@ export default {
           value: x,
         };
       });
-
       this.selectedSeason = seasons[0];
       console.log(seasons, this.selectedSeason);
       return seasons;
@@ -385,12 +406,21 @@ export default {
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
     },
+    getResultLink(data) {
+      console.log(data.item.UniqueID);
+      if (data.item.GameDate <= DateTime.now().toISODate())
+        return `<a href="#" onclick="this.getGameStats(data.item.UniqueID,
+                selectedSeason, data.item.HomeTeamName + ' - ' + data.item.AwayTeamName);return false;
+            ">${data.item.Result}</a>`;
+      else window.location.href = this.result_url + data.item.UniqueID;
+    },
   },
 };
 </script>
 
 <style lang="scss">
 @import "~@/assets/scss/vendors/bootstrap-vue/index";
+
 a.resultStyle:hover {
   color: green;
   background-color: yellow;
