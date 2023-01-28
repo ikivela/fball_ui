@@ -133,8 +133,8 @@
             >
           </div>
           <div v-else>
-            <a class="resultStyle" @click="getResultLink(data)"
-              ><b-icon-link></b-icon-link
+            <a :href="`${result_url}${data.item.UniqueID}`" class="resultStyle"
+              ><b-icon-arrow-up-right-square></b-icon-arrow-up-right-square
             ></a>
           </div>
         </template>
@@ -190,11 +190,11 @@
 import axios from "axios";
 import { DateTime } from "luxon";
 import Multiselect from "vue-multiselect";
-import { BIconLink } from "bootstrap-vue";
+import { BIconArrowUpRightSquare } from "bootstrap-vue";
 
 export default {
   name: "App",
-  components: { Multiselect, BIconLink },
+  components: { Multiselect, BIconArrowUpRightSquare },
   data() {
     return {
       currentUrl: "",
@@ -405,14 +405,6 @@ export default {
       console.log("filtered length", filteredItems.length);
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
-    },
-    getResultLink(data) {
-      console.log(data.item.UniqueID);
-      if (data.item.GameDate <= DateTime.now().toISODate())
-        return `<a href="#" onclick="this.getGameStats(data.item.UniqueID,
-                selectedSeason, data.item.HomeTeamName + ' - ' + data.item.AwayTeamName);return false;
-            ">${data.item.Result}</a>`;
-      else window.location.href = this.result_url + data.item.UniqueID;
     },
   },
 };
