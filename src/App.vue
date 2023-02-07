@@ -86,7 +86,8 @@
       <p>Valittu kausi: {{ this.selectedSeason.text }}</p>
       <b-table
         small
-        stacked="sm"
+        hover
+        stacked="xs"
         :items="games"
         :fields="fields"
         @filtered="onFiltered"
@@ -94,43 +95,66 @@
         :filter="filter"
         :filter-included-fields="filterOn"
       >
+        <template v-for="field in fields" :slot="`head-${field.key}`">
+          {{ field.label }}
+        </template>
         <template #cell(Date)="data">
-          {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
+          <div v-if="!isSmallScreen">
+            {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
+          </div>
+          <div v-else>
+            {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
+            <br />
+            <span style="font-size: 0.8em"
+              ><a :href="`http://maps.google.com/?q=${data.item.RinkName}`">{{
+                data.item.RinkName
+              }}</a></span
+            >
+          </div>
         </template>
         <template #cell(Game)="data">
-          {{
-            `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
-          }}
-        </template>
-
-        <!--<template #cell(show_details)="row">
-          <b-button size="sm" @click="row.toggleDetails" class="mr-2">
-            {{ row.detailsShowing ? "Hide" : "Show" }} Details
-          </b-button>
-        </template>-->
-        <!-- <template slot="row-details" slot-scope="data">
-          <b-button @click="data.toggleDetails">
-            {{ data.detailsShowing ? "Hide" : "Show" }} Details }}
-          </b-button>
-          <div>
-            Details for row go here. data.item contains the row's (item) record
-            data
-            {{ data.item }}
+          <div v-if="!isSmallScreen">
+            {{
+              `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
+            }}
           </div>
-        </template> -->
+          <div v-else>
+            {{ data.item.HomeTeamName }} <br />
+            {{ data.item.AwayTeamName }}
+          </div>
+        </template>
+        <template v-if="!isSmallScreen" #cell(RinkName)="data">
+          <a :href="`http://maps.google.com/?q=${data.item.RinkName}`">{{
+            data.item.RinkName
+          }}</a>
+        </template>
+        <template v-if="!isSmallScreen" #cell(group)="data">
+          <a :href="`${standings_url}${data.item.groupID}`">{{
+            data.item.group
+          }}</a>
+        </template>
+        <template v-if="isSmallScreen" #cell(class)="data">
+          {{ data.item.class }} <br />
+          <a :href="`${standings_url}${data.item.groupID}`"
+            ><span style="font-size: 0.8em">{{ data.item.group }}</span></a
+          >
+        </template>
         <template #cell(Result)="data">
           <div v-if="data.item.GameDate < today">
-            <a
-              class="resultStyle"
-              @click="
-                getGameStats(
-                  data.item.UniqueID,
-                  selectedSeason,
-                  data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
-                )
-              "
-              >{{ data.value }}</a
-            >
+            <div v-if="data.value != '-'">
+              <a
+                class="resultStyle"
+                @click="
+                  getGameStats(
+                    data.item.UniqueID,
+                    selectedSeason,
+                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
+                  )
+                "
+                >{{ data.value }}</a
+              >
+            </div>
+            <div v-else></div>
           </div>
           <div v-else>
             <a :href="`${result_url}${data.item.UniqueID}`" class="resultStyle"
@@ -198,6 +222,8 @@ export default {
   data() {
     return {
       currentUrl: "",
+      standings_url:
+        "http://tilastopalvelu.fi/fb/index.php?option=com_content&view=article&id=11&stgid=",
       result_url:
         "http://tilastopalvelu.fi/fb/index.php?option=com_content&view=article&id=4&gameid=",
       baseurl: process.env.VUE_APP_BACKEND_URL
@@ -226,7 +252,9 @@ export default {
       filter: null,
       filterOn: [],
       totalRows: 1,
-      fields: [
+      isSmallScreen: false,
+      scFields: ["Date", "Game", "class", "Result"],
+      tablecolumns: [
         { key: "Date", label: "Aika", sortable: false },
         { key: "Game", label: "Ottelu", sortable: false },
         { key: "Result", label: "Tulos", sortable: false },
@@ -243,7 +271,10 @@ export default {
   },
 
   async mounted() {
-    console.log("backend: %s", process.env.VUE_APP_BACKEND_URL);
+    // detect screenwidth, set false if lower than 600px
+    this.screenWidth = window.matchMedia("(max-width: 600px)").matches;
+    window.addEventListener("resize", this.updateScreenWidth);
+
     // If season is 2021-2022, the currentSeason has to be 2022
     // Season is changed to new season after 1st of August
 
@@ -277,6 +308,12 @@ export default {
       //classes.unshift("Näytä kaikki");
       return classes;
     },
+    fields() {
+      //console.log("isSmallScreen", this.isSmallScreen);
+      if (this.isSmallScreen) {
+        return this.tablecolumns.filter((x) => this.scFields.includes(x.key));
+      } else return this.tablecolumns;
+    },
     games() {
       console.log(
         `showPastValue type:${typeof this.showPastValues} value: ${
@@ -301,11 +338,19 @@ export default {
     },
   },
   methods: {
+    formatScore(data) {
+      console.log("SCORE", data);
+      let values = data.split("-");
+      return `${values[0]}<br />${values[1]}`;
+    },
     parseDate(_str) {
       // console.log(_str);
       return DateTime.fromISO(_str).toFormat("dd.MM. HH:mm");
     },
 
+    updateScreenWidth() {
+      this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
+    },
     filterTable(_row, _filter) {
       let filters = _filter.split(",");
       let rowstr = JSON.stringify(_row);
