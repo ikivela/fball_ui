@@ -52,11 +52,28 @@
               @select="getSelectedSeason"
             >
               <template slot="singleLabel" slot-scope="{ option }">{{
-                option.text
+                options != null ? option.text : ""
               }}</template>
             </multiselect>
             <b-badge style="margin-left: 1em; margin-right: 1em">
-              Otteluita: {{ this.games.length }}
+              Otteluita:
+              {{
+                this.currentGames.length > 0
+                  ? this.currentGames.length
+                  : this.games.length
+              }}
+              {{
+                `Voitot: ${this.currentStats.wins}, Häviöt: ${
+                  this.currentStats.losses
+                }, Tehdyt maalit: ${this.currentStats.totalGoals}, 
+                Päästetyt maalit: ${this.currentStats.totalGoalsAgainst},
+                  Tehdyt maalit/peli ka.: ${this.currentStats.averageGoalsPerGame.toFixed(
+                    1
+                  )}, 
+                  Päästetyt maalit/peli ka.: ${this.currentStats.averageGoalsAgainstPerGame.toFixed(
+                    1
+                  )}`
+              }}
             </b-badge>
             <multiselect
               v-model="selectedClass"
@@ -83,11 +100,13 @@
     </b-navbar>
 
     <b-container id="games">
-      <p>Valittu kausi: {{ this.selectedSeason.text }}</p>
+      <p>
+        Valittu kausi:
+        {{ this.selectedSeason !== null ? this.selectedSeason.text : "" }}
+      </p>
       <b-table
         small
         hover
-        stacked="xs"
         :items="games"
         :fields="fields"
         @filtered="onFiltered"
@@ -129,13 +148,11 @@
           }}</a>
         </template>
         <template v-if="!isSmallScreen" #cell(group)="data">
-          <a :href="`${standings_url}${data.item.groupID}`">{{
-            data.item.group
-          }}</a>
+          <a :href="standings_link(data.item.groupID)">{{ data.item.group }}</a>
         </template>
         <template v-if="isSmallScreen" #cell(class)="data">
           {{ data.item.class }} <br />
-          <a :href="`${standings_url}${data.item.groupID}`"
+          <a :href="standings_link(data.item.groupID)"
             ><span style="font-size: 0.8em">{{ data.item.group }}</span></a
           >
         </template>
@@ -222,6 +239,9 @@ export default {
   data() {
     return {
       currentUrl: "",
+      currentTeam: "Nibacos",
+      standings_url2:
+        "http://tilastopalvelu.fi/fb/index.php/component/content/index.php?option=com_content&view=article&id=14&stgid=",
       standings_url:
         "http://tilastopalvelu.fi/fb/index.php?option=com_content&view=article&id=11&stgid=",
       result_url:
@@ -246,6 +266,7 @@ export default {
       selectedClass: "",
       showStats: false,
       currentGame: "",
+      currentGames: [],
       sortBy: "",
       sortDesc: "",
       items: [],
@@ -285,6 +306,65 @@ export default {
     await this.getSelectedSeason();
   },
   computed: {
+    currentStats() {
+      let team_name = this.currentTeam;
+      let wins = 0;
+      let losses = 0;
+      let totalGoals = 0;
+      let totalGoalsAgainst = 0;
+      let goalDifference = 0;
+      let games = this.currentGames.length > 0 ? this.currentGames : this.games;
+
+      for (let i = 0; i < games.length; i++) {
+        const game = games[i];
+
+        if (
+          game.HomeTeamName.includes(team_name) ||
+          game.AwayTeamName.includes(team_name)
+        ) {
+          const isHomeTeam = game.HomeTeamName.includes(team_name);
+          let teamScore = isHomeTeam
+            ? game.Result.split("-")[0]
+            : game.Result.split("-")[1];
+          let opponentScore = isHomeTeam
+            ? game.Result.split("-")[1]
+            : game.Result.split("-")[0];
+
+          if (teamScore != "" && opponentScore != "") {
+            if (teamScore > opponentScore) {
+              wins++;
+            } else if (teamScore < opponentScore) {
+              losses++;
+            }
+            teamScore = teamScore.split(" ")[0];
+            opponentScore = opponentScore.split(" ")[0];
+            //console.log(game.HomeTeamName, game.AwayTeamName, teamScore, opponentScore);
+            totalGoals += teamScore != "" ? parseInt(teamScore) : 0;
+            totalGoalsAgainst +=
+              opponentScore != "" ? parseInt(opponentScore) : 0;
+            //console.log("Total goals", totalGoals);
+            //console.log("Total goals against", totalGoalsAgainst);
+          }
+        }
+      }
+
+      goalDifference = totalGoals - totalGoalsAgainst;
+      goalDifference =
+        goalDifference > 0 ? `+${goalDifference}` : `-${goalDifference}`;
+      let totalGames = wins + losses;
+      let averageGoalsPerGame = totalGoals / totalGames;
+      let averageGoalsAgainstPerGame = totalGoalsAgainst / totalGames;
+      console.log(wins, losses);
+      return {
+        wins: wins,
+        losses: losses,
+        totalGoals: totalGoals,
+        totalGoalsAgainst: totalGoalsAgainst,
+        averageGoalsPerGame: averageGoalsPerGame,
+        averageGoalsAgainstPerGame: averageGoalsAgainstPerGame,
+        goalDifference: goalDifference,
+      };
+    },
     showPastValues: {
       set: function (value) {
         this.show = value;
@@ -320,6 +400,14 @@ export default {
           this.showPastValues
         }`
       );
+      if (
+        this.allGames.filter(
+          (x) =>
+            x.GameDate >=
+            DateTime.now().minus({ days: 3 }).toFormat("yyyy-MM-dd")
+        ).length == 0
+      )
+        return this.allGames;
 
       if (this.showPastValues == "true") {
         console.log("all games");
@@ -350,6 +438,12 @@ export default {
 
     updateScreenWidth() {
       this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
+    },
+    standings_link(_id) {
+      if (this.selectedSeason.value == DateTime.now().year)
+        return this.standings_url + _id;
+      else
+        return this.standings_url2 + _id + "&ssn=" + this.selectedSeason.value;
     },
     filterTable(_row, _filter) {
       let filters = _filter.split(",");
@@ -448,6 +542,7 @@ export default {
     onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
       console.log("filtered length", filteredItems.length);
+      this.currentGames = filteredItems;
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
     },
