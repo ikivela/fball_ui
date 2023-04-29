@@ -1,200 +1,40 @@
 <template>
   <div id="app">
-    <b-navbar sticky toggleable="lg" type="light" variant="light">
-      <b-navbar-brand
-        ><img
-          height="36"
-          src="https://static.jopox.fi/nibacos/imagebank/40875_huge.png"
-          alt="logo"
-        />
-        Nibacos-ottelut
-      </b-navbar-brand>
-
-      <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-      <b-collapse id="nav-collapse" is-nav>
-        <!--<b-navbar-nav>
+    <b-container>
+      <b-navbar type="light" variant="faded">
+        <b-navbar-brand
+          ><img
+            height="36"
+            src="https://static.jopox.fi/nibacos/imagebank/40875_huge.png"
+            alt="logo"
+          />
+          Nibacos-ottelut
+        </b-navbar-brand>
+        <b-navbar-nav>
           <b-nav-item
-            @click="(showGamesPage = true), (showStatsPage = false)"
-            href="#"
-            >Ottelut</b-nav-item
-          >-->
-        <!--<b-nav-item
-            @click="(showGamesPage = false), (showStatsPage = true), setStats()"
-            href="#"
-            Tilastot
-          </b-nav-item>
-        </b-navbar-nav>-->
-        <b-nav-form>
-          <b-form-input
-            id="filter-input"
-            v-model="filter"
-            type="search"
-            filter-debounce="1000"
-            size="sm"
-            class="mr-sm-2"
-            placeholder="Etsi"
-          ></b-form-input>
-
-          <b-input-group prepend="">
-            <b-form-checkbox
-              id="showPast"
-              v-model="showPastValues"
-              value="true"
-              unchecked-value="false"
-            >
-              Näytä menneet
-            </b-form-checkbox>
-            <multiselect
-              v-model="selectedSeason"
-              label="text"
-              placeholder="Valitse kausi"
-              :options="this.seasons"
-              @select="getSelectedSeason"
-            >
-              <template slot="singleLabel" slot-scope="{ option }">{{
-                option.text
-              }}</template>
-            </multiselect>
-            <b-badge style="margin-left: 1em; margin-right: 1em">
-              Otteluita: {{ this.games.length }}
-            </b-badge>
-            <multiselect
-              v-model="selectedClass"
-              :options="classes"
-              :multiple="true"
-              :close-on-select="false"
-              :clear-on-select="false"
-              :preserve-search="true"
-              placeholder="Suodata sarja"
-              :preselect-first="false"
-              @close="setFilter"
-            >
-              <template slot="selection" slot-scope="{ values, isOpen }"
-                ><span
-                  class="multiselect__single"
-                  v-if="values.length &amp;&amp; !isOpen"
-                  >{{ values.length }} sarjaa valittu</span
-                ></template
-              >
-            </multiselect>
-          </b-input-group>
-        </b-nav-form>
-      </b-collapse>
-    </b-navbar>
-
-    <b-container id="games">
-      <p>Valittu kausi: {{ this.selectedSeason.text }}</p>
-      <b-table
-        small
-        stacked="sm"
-        :items="games"
-        :fields="fields"
-        @filtered="onFiltered"
-        :filter-function="filterTable"
-        :filter="filter"
-        :filter-included-fields="filterOn"
-      >
-        <template #cell(Date)="data">
-          {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
-        </template>
-        <template #cell(Game)="data">
-          {{
-            `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
-          }}
-        </template>
-
-        <!--<template #cell(show_details)="row">
-          <b-button size="sm" @click="row.toggleDetails" class="mr-2">
-            {{ row.detailsShowing ? "Hide" : "Show" }} Details
-          </b-button>
-        </template>-->
-        <!-- <template slot="row-details" slot-scope="data">
-          <b-button @click="data.toggleDetails">
-            {{ data.detailsShowing ? "Hide" : "Show" }} Details }}
-          </b-button>
-          <div>
-            Details for row go here. data.item contains the row's (item) record
-            data
-            {{ data.item }}
-          </div>
-        </template> -->
-        <template #cell(Result)="data">
-          <div v-if="data.item.GameDate < today">
-            <a
-              class="resultStyle"
-              @click="
-                getGameStats(
-                  data.item.UniqueID,
-                  selectedSeason,
-                  data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
-                )
-              "
-              >{{ data.value }}</a
-            >
-          </div>
-          <div v-else>
-            <a class="resultStyle" @click="getResultLink(data)"
-              ><b-icon-link></b-icon-link
-            ></a>
-          </div>
-        </template>
-      </b-table>
+            ><router-link to="/">Ajankohtaiset</router-link></b-nav-item
+          >
+          <b-nav-item
+            ><router-link to="/ottelut">Ottelut</router-link></b-nav-item
+          >
+          <b-nav-item
+            ><router-link to="/tilastot">Tilastot</router-link></b-nav-item
+          >
+        </b-navbar-nav>
+      </b-navbar>
     </b-container>
-
-    <!--<b-container v-if="showStatsPage" id="stats">
-      <b-badge>{{ `Kausi ${this.selectedSeason}` }}</b-badge>
-      <b-form-select
-        v-model="selectedClass"
-        v-on:change="getSelectedClass"
-        :options="classes"
-      ></b-form-select>
-      <b-table
-        small
-        :items="this.statsData.length > 0 ? this.statsData[0].stats : []"
-      >
-      </b-table>
-    </b-container>-->
-    <b-modal ok-only v-model="showGameStat">
-      <b-spinner v-if="this.loading" label="">Ladataan...</b-spinner>
-
-      <div class="d-block text-center">
-        <b>{{ this.currentGame }}</b>
-      </div>
-      <div v-if="gameStats.length == 0 && !this.loading">Ei tilastoja</div>
-
-      <ul v-if="gameStats.length > 0">
-        <li v-for="stat in gameStats" v-bind:key="stat.time">
-          {{ stat.time }}
-          {{ stat.event == "goal" ? stat.result : stat.penalty_time }}
-          {{ stat.team }}
-          {{
-            stat.yv_av
-              ? stat.yv_av == "RL0"
-                ? "Rangaistusl. (epäonnistunut)"
-                : stat.yv_av
-              : ""
-          }}
-          {{
-            stat.event == "goal"
-              ? stat.scorer + (stat.assist ? " (" + stat.assist + ")" : "")
-              : ""
-          }}
-          {{ stat.event == "penalty" ? stat.player + " " + stat.reason : "" }}
-        </li>
-      </ul>
-    </b-modal>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import { DateTime } from "luxon";
-import Multiselect from "vue-multiselect";
-import { BIconLink } from "bootstrap-vue";
+//import Multiselect from "vue-multiselect";
+//import { BIconLink } from "bootstrap-vue";
 
 export default {
   name: "App",
-  components: { Multiselect, BIconLink },
   data() {
     return {
       currentUrl: "",
@@ -419,13 +259,24 @@ export default {
 </script>
 
 <style lang="scss">
-@import "~@/assets/scss/vendors/bootstrap-vue/index";
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
 
-a.resultStyle:hover {
-  color: green;
-  background-color: yellow;
-  text-decoration: underline;
+nav {
+  padding: 30px;
+
+  a {
+    font-weight: bold;
+    color: #2c3e50;
+
+    &.router-link-exact-active {
+      color: #42b983;
+    }
+  }
 }
 </style>
-
-<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
