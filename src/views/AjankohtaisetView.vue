@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div v-if="games_table.length > 0">
+
     <p>Seuraavat ottelut</p>
 
     <b-table
@@ -38,6 +39,7 @@
       </template>
     </b-table>
   </div>
+  <div v-else>Odotellaan seuraavaa kautta :-). Tutki sillä välin ottelutuloksia ja tilastoja...</div>
 </template>
 
 <script>

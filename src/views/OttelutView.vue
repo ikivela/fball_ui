@@ -9,53 +9,21 @@
             filter-debounce="1000"
             size="sm"
             class="mr-sm-2"
-            placeholder="Etsi"
+            placeholder="Suodata"
           ></b-form-input>
           <b-row>
               <b-button style="margin: 0.1em" pill variant="outline-primary" v-bind:key="season.text" @click="getSelectedSeason(season)" v-for="season in seasons">{{ season.text }}</b-button>
-            </b-row>
-
-          <b-input-group prepend="">
-            <!--- <multiselect
-              v-model="selectedSeason"
-              label="text"
-              placeholder="Valitse kausi"
-              :options="this.seasons"
-              @select="getSelectedSeason"
-            >
-              <template slot="singleLabel" slot-scope="{ option }">{{
-                options != null ? option.text : ""
-              }}</template>
-            </multiselect> -->
-            <b-row>
-              <b-button style="margin: 0.1em" pill variant="primary" v-bind:key="value" v-for="value in classes">{{ value }}</b-button>
-            </b-row>
-            <multiselect
-              v-model="selectedClass"
-              :options="classes"
-              :multiple="true"
-              :close-on-select="false"
-              :clear-on-select="false"
-              :preserve-search="true"
-              placeholder="Suodata sarja"
-              :preselect-first="false"
-              @close="setFilter"
-            >
-              <template slot="selection" slot-scope="{ values, isOpen }"
-                ><span
-                  class="multiselect__single"
-                  v-if="values.length &amp;&amp; !isOpen"
-                  >{{ values.length }} sarjaa valittu</span
-                ></template
-              >
-            </multiselect>
-          </b-input-group>
+          </b-row>
+          <b-row>
+            <b-button style="margin: 0.1em" pill variant="primary" @click="setFilter(value)" v-bind:key="value" v-for="value in classes">{{ value }}</b-button>
+          </b-row>
         </b-nav-form>
     </b-container>
     <b-container id="games">
       <p>
         Valittu kausi:
         {{ this.selectedSeason !== null ? this.selectedSeason.text : "" }}
+        {{ this.currentClass }}
       </p>
       <b-badge style="margin-left: 1em; margin-right: 1em">
               Otteluita:
@@ -191,16 +159,16 @@
 <script>
 import axios from "axios";
 import { DateTime } from "luxon";
-import Multiselect from "vue-multiselect";
 import { BIconArrowUpRightSquare } from "bootstrap-vue";
 
 export default {
   name: "OttelutView",
-  components: { Multiselect, BIconArrowUpRightSquare },
+  components: { BIconArrowUpRightSquare },
   data() {
     return {
       currentUrl: "",
       currentTeam: "Nibacos",
+      currentClass: "",
       standings_url2:
         "http://tilastopalvelu.fi/fb/index.php/component/content/index.php?option=com_content&view=article&id=14&stgid=",
       standings_url:
@@ -420,6 +388,10 @@ export default {
       else return filters.some((f) => rowstr.includes(f));
     },
     setFilter(_value) {
+      console.log("set filter value", _value);
+      this.currentClass = _value;
+      if ( !Array.isArray(_value))
+        _value = [_value];
       this.filter = _value.join(",");
     },
     getSelectedClass(_class) {
