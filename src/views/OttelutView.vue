@@ -1,44 +1,174 @@
 <template>
-  <div id="app">
+  <div id="ottelut">
     <b-container>
-      <b-navbar type="light" variant="faded">
-        <b-navbar-brand
-          ><img
-            height="36"
-            src="https://static.jopox.fi/nibacos/imagebank/40875_huge.png"
-            alt="logo"
-          />
-          Nibacos-ottelut
-        </b-navbar-brand>
-        <b-navbar-nav>
-          <b-nav-item
-            ><router-link to="/">Ajankohtaiset</router-link></b-nav-item
-          >
-          <b-nav-item
-            ><router-link to="/ottelut">Ottelut</router-link></b-nav-item
-          >
-          <b-nav-item
-            ><router-link to="/tilastot">Tilastot</router-link></b-nav-item
-          >
-        </b-navbar-nav>
-      </b-navbar>
+        <b-nav-form>
+          <b-form-input
+            id="filter-input"
+            v-model="filter"
+            type="search"
+            filter-debounce="1000"
+            size="sm"
+            class="mr-sm-2"
+            placeholder="Suodata"
+          ></b-form-input>
+          <b-row>
+              <b-button style="margin: 0.1em" pill variant="outline-primary" v-bind:key="season.text" @click="getSelectedSeason(season)" v-for="season in seasons">{{ season.text }}</b-button>
+          </b-row>
+          <b-row>
+            <b-button style="margin: 0.1em" pill variant="primary" @click="setFilter(value)" v-bind:key="value" v-for="value in classes">{{ value }}</b-button>
+          </b-row>
+        </b-nav-form>
     </b-container>
-    <router-view></router-view>
+    <b-container id="games">
+      <p>
+        Valittu kausi:
+        {{ this.selectedSeason !== null ? this.selectedSeason.text : "" }}
+        {{ this.currentClass }}
+      </p>
+      <b-badge style="margin-left: 1em; margin-right: 1em">
+              Otteluita:
+              {{
+                this.currentGames.length > 0
+                  ? this.currentGames.length
+                  : this.games.length
+              }}
+              {{
+                `Voitot: ${this.currentStats.wins}, Häviöt: ${
+                  this.currentStats.losses
+                }, Tehdyt maalit: ${this.currentStats.totalGoals}, 
+                Päästetyt maalit: ${this.currentStats.totalGoalsAgainst},
+                  Tehdyt maalit/peli ka.: ${this.currentStats.averageGoalsPerGame.toFixed(
+                    1
+                  )}, 
+                  Päästetyt maalit/peli ka.: ${this.currentStats.averageGoalsAgainstPerGame.toFixed(
+                    1
+                  )}`
+              }}
+            </b-badge>
+
+      <b-table
+        small
+        hover
+        :items="games"
+        :fields="fields"
+        @filtered="onFiltered"
+        :filter-function="filterTable"
+        :filter="filter"
+        :filter-included-fields="filterOn"
+      >
+        <template v-for="field in fields" :slot="`head-${field.key}`">
+          {{ field.label }}
+        </template>
+        <template #cell(Date)="data">
+          <div v-if="!isSmallScreen">
+            {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
+          </div>
+          <div v-else>
+            {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
+            <br />
+            <span style="font-size: 0.8em"
+              ><a :href="`http://maps.google.com/?q=${data.item.RinkName}`">{{
+                data.item.RinkName
+              }}</a></span
+            >
+          </div>
+        </template>
+        <template #cell(Game)="data">
+          <div v-if="!isSmallScreen">
+            {{
+              `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
+            }}
+          </div>
+          <div v-else>
+            {{ data.item.HomeTeamName }} <br />
+            {{ data.item.AwayTeamName }}
+          </div>
+        </template>
+        <template v-if="!isSmallScreen" #cell(RinkName)="data">
+          <a :href="`http://maps.google.com/?q=${data.item.RinkName}`">{{
+            data.item.RinkName
+          }}</a>
+        </template>
+        <template v-if="!isSmallScreen" #cell(group)="data">
+          <a :href="standings_link(data.item.groupID)">{{ data.item.group }}</a>
+        </template>
+        <template v-if="isSmallScreen" #cell(class)="data">
+          {{ data.item.class }} <br />
+          <a :href="standings_link(data.item.groupID)"
+            ><span style="font-size: 0.8em">{{ data.item.group }}</span></a
+          >
+        </template>
+        <template #cell(Result)="data">
+          <div v-if="data.item.GameDate < today">
+            <div v-if="data.value != '-'">
+              <a
+                class="resultStyle"
+                @click="
+                  getGameStats(
+                    data.item.UniqueID,
+                    selectedSeason,
+                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
+                  )
+                "
+                >{{ data.value }}</a
+              >
+            </div>
+            <div v-else></div>
+          </div>
+          <div v-else>
+            <a :href="`${result_url}${data.item.UniqueID}`" class="resultStyle"
+              ><b-icon-arrow-up-right-square></b-icon-arrow-up-right-square
+            ></a>
+          </div>
+        </template>
+      </b-table>
+    </b-container>
+
+    <b-modal ok-only v-model="showGameStat">
+      <b-spinner v-if="this.loading" label="">Ladataan...</b-spinner>
+
+      <div class="d-block text-center">
+        <b>{{ this.currentGame }}</b>
+      </div>
+      <div v-if="gameStats.length == 0 && !this.loading">Ei tilastoja</div>
+
+      <ul v-if="gameStats.length > 0">
+        <li v-for="stat in gameStats" v-bind:key="stat.time">
+          {{ stat.time }}
+          {{ stat.event == "goal" ? stat.result : stat.penalty_time }}
+          {{ stat.team }}
+          {{
+            stat.yv_av
+              ? stat.yv_av == "RL0"
+                ? "Rangaistusl. (epäonnistunut)"
+                : stat.yv_av
+              : ""
+          }}
+          {{
+            stat.event == "goal"
+              ? stat.scorer + (stat.assist ? " (" + stat.assist + ")" : "")
+              : ""
+          }}
+          {{ stat.event == "penalty" ? stat.player + " " + stat.reason : "" }}
+        </li>
+      </ul>
+    </b-modal>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import { DateTime } from "luxon";
-//import Multiselect from "vue-multiselect";
-//import { BIconLink } from "bootstrap-vue";
+import { BIconArrowUpRightSquare } from "bootstrap-vue";
 
 export default {
-  name: "App",
+  name: "OttelutView",
+  components: { BIconArrowUpRightSquare },
   data() {
     return {
       currentUrl: "",
       currentTeam: "Nibacos",
+      currentClass: "",
       standings_url2:
         "http://tilastopalvelu.fi/fb/index.php/component/content/index.php?option=com_content&view=article&id=14&stgid=",
       standings_url:
@@ -82,7 +212,7 @@ export default {
         { key: "class", label: "Sarja", sortable: false },
         { key: "RinkName", label: "Halli", sortable: false },
       ],
-    };
+    }
   },
   created() {
     this.currentUrl = window.location.href;
@@ -130,13 +260,18 @@ export default {
             : game.Result.split("-")[0];
 
           if (teamScore != "" && opponentScore != "") {
+            teamScore = teamScore.split(" ")[0];
+            teamScore = parseInt(teamScore);
+            opponentScore = opponentScore.split(" ")[0];
+            opponentScore = parseInt(opponentScore);
+            
             if (teamScore > opponentScore) {
               wins++;
             } else if (teamScore < opponentScore) {
               losses++;
             }
-            teamScore = teamScore.split(" ")[0];
-            opponentScore = opponentScore.split(" ")[0];
+            //console.log(game.HomeTeamName, game.AwayTeamName, game.Result, wins, losses);
+            
             //console.log(game.HomeTeamName, game.AwayTeamName, teamScore, opponentScore);
             totalGoals += teamScore != "" ? parseInt(teamScore) : 0;
             totalGoalsAgainst +=
@@ -145,6 +280,7 @@ export default {
             //console.log("Total goals against", totalGoalsAgainst);
           }
         }
+        
       }
 
       goalDifference = totalGoals - totalGoalsAgainst;
@@ -153,7 +289,7 @@ export default {
       let totalGames = wins + losses;
       let averageGoalsPerGame = totalGoals / totalGames;
       let averageGoalsAgainstPerGame = totalGoalsAgainst / totalGames;
-      console.log(wins, losses);
+      
       return {
         wins: wins,
         losses: losses,
@@ -252,6 +388,10 @@ export default {
       else return filters.some((f) => rowstr.includes(f));
     },
     setFilter(_value) {
+      console.log("set filter value", _value);
+      this.currentClass = _value;
+      if ( !Array.isArray(_value))
+        _value = [_value];
       this.filter = _value.join(",");
     },
     getSelectedClass(_class) {
@@ -350,24 +490,13 @@ export default {
 </script>
 
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+@import "~@/assets/scss/vendors/bootstrap-vue/index";
 
-nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+a.resultStyle:hover {
+  color: green;
+  background-color: yellow;
+  text-decoration: underline;
 }
 </style>
+
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
