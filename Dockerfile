@@ -1,4 +1,4 @@
-FROM node:16.4.2-alpine AS builder
+FROM node:18.14.0-alpine AS builder
 
 ARG TAG
 ENV CONT_IMG_VER ${TAG:-latest}
@@ -22,4 +22,3 @@ COPY --from=builder /app/dist/ /usr/share/nginx/html/
 #COPY --from=builder /app/dist/fonts /usr/share/nginx/html/fonts
 COPY nginx-default.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80

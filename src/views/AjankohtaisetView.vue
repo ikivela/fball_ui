@@ -39,7 +39,7 @@
       </template>
     </b-table>
   </div>
-  <div v-else>Odotellaan seuraavaa kautta :-). Tutki sillä välin ottelutuloksia ja tilastoja...</div>
+  <div v-else>Ei Nibacos-otteluita seuraavan kahden viikon sisällä.</div>
 </template>
 
 <script>
@@ -221,5 +221,3 @@ a.resultStyle:hover {
   text-decoration: underline;
 }
 </style>
-
-<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
