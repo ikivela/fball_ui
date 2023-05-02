@@ -1,23 +1,39 @@
 <template>
   <div id="ottelut">
     <b-container>
-        <b-nav-form>
-          <b-form-input
-            id="filter-input"
-            v-model="filter"
-            type="search"
-            filter-debounce="1000"
-            size="sm"
-            class="mr-sm-2"
-            placeholder="Suodata"
-          ></b-form-input>
-          <b-row>
-              <b-button style="margin: 0.1em" pill variant="outline-primary" v-bind:key="season.text" @click="getSelectedSeason(season)" v-for="season in seasons">{{ season.text }}</b-button>
-          </b-row>
-          <b-row>
-            <b-button style="margin: 0.1em" pill variant="primary" @click="setFilter(value)" v-bind:key="value" v-for="value in classes">{{ value }}</b-button>
-          </b-row>
-        </b-nav-form>
+      <b-nav-form>
+        <b-form-input
+          id="filter-input"
+          v-model="filter"
+          type="search"
+          filter-debounce="1000"
+          size="sm"
+          class="mr-sm-2"
+          placeholder="Suodata"
+        ></b-form-input>
+        <b-row>
+          <b-button
+            style="margin: 0.1em"
+            pill
+            variant="outline-primary"
+            v-bind:key="season.text"
+            @click="getSelectedSeason(season)"
+            v-for="season in seasons"
+            >{{ season.text }}</b-button
+          >
+        </b-row>
+        <b-row>
+          <b-button
+            style="margin: 0.1em"
+            pill
+            variant="primary"
+            @click="setFilter(value)"
+            v-bind:key="value"
+            v-for="value in classes"
+            >{{ value }}</b-button
+          >
+        </b-row>
+      </b-nav-form>
     </b-container>
     <b-container id="games">
       <p>
@@ -26,16 +42,18 @@
         {{ this.currentClass }}
       </p>
       <b-badge style="margin-left: 1em; margin-right: 1em">
-              Otteluita:
-              {{
-                this.currentGames.length > 0
-                  ? this.currentGames.length
-                  : this.games.length
-              }}
-              {{
-                `Voitot: ${this.currentStats.wins}, Häviöt: ${
-                  this.currentStats.losses
-                }, Tehdyt maalit: ${this.currentStats.totalGoals}, 
+        Otteluita:
+        {{
+          this.currentGames.length > 0
+            ? this.currentGames.length
+            : this.games.length
+        }}
+        {{
+          `Voitot: ${this.currentStats.wins}, Häviöt: ${
+            this.currentStats.losses
+          }, Tasapelit: ${this.currentStats.ties} Tehdyt maalit: ${
+            this.currentStats.totalGoals
+          }, 
                 Päästetyt maalit: ${this.currentStats.totalGoalsAgainst},
                   Tehdyt maalit/peli ka.: ${this.currentStats.averageGoalsPerGame.toFixed(
                     1
@@ -43,8 +61,8 @@
                   Päästetyt maalit/peli ka.: ${this.currentStats.averageGoalsAgainstPerGame.toFixed(
                     1
                   )}`
-              }}
-            </b-badge>
+        }}
+      </b-badge>
 
       <b-table
         small
@@ -212,7 +230,7 @@ export default {
         { key: "class", label: "Sarja", sortable: false },
         { key: "RinkName", label: "Halli", sortable: false },
       ],
-    }
+    };
   },
   created() {
     this.currentUrl = window.location.href;
@@ -239,6 +257,7 @@ export default {
       let team_name = this.currentTeam;
       let wins = 0;
       let losses = 0;
+      let ties = 0;
       let totalGoals = 0;
       let totalGoalsAgainst = 0;
       let goalDifference = 0;
@@ -264,14 +283,16 @@ export default {
             teamScore = parseInt(teamScore);
             opponentScore = opponentScore.split(" ")[0];
             opponentScore = parseInt(opponentScore);
-            
+
             if (teamScore > opponentScore) {
               wins++;
             } else if (teamScore < opponentScore) {
               losses++;
+            } else if (teamScore === opponentScore) {
+              ties++;
             }
             //console.log(game.HomeTeamName, game.AwayTeamName, game.Result, wins, losses);
-            
+
             //console.log(game.HomeTeamName, game.AwayTeamName, teamScore, opponentScore);
             totalGoals += teamScore != "" ? parseInt(teamScore) : 0;
             totalGoalsAgainst +=
@@ -280,7 +301,6 @@ export default {
             //console.log("Total goals against", totalGoalsAgainst);
           }
         }
-        
       }
 
       goalDifference = totalGoals - totalGoalsAgainst;
@@ -289,10 +309,11 @@ export default {
       let totalGames = wins + losses;
       let averageGoalsPerGame = totalGoals / totalGames;
       let averageGoalsAgainstPerGame = totalGoalsAgainst / totalGames;
-      
+
       return {
         wins: wins,
         losses: losses,
+        ties: ties,
         totalGoals: totalGoals,
         totalGoalsAgainst: totalGoalsAgainst,
         averageGoalsPerGame: averageGoalsPerGame,
@@ -390,8 +411,7 @@ export default {
     setFilter(_value) {
       console.log("set filter value", _value);
       this.currentClass = _value;
-      if ( !Array.isArray(_value))
-        _value = [_value];
+      if (!Array.isArray(_value)) _value = [_value];
       this.filter = _value.join(",");
     },
     getSelectedClass(_class) {
