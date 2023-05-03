@@ -1,6 +1,5 @@
 <template>
   <div v-if="games_table.length > 0">
-
     <p>Seuraavat ottelut</p>
 
     <b-table
@@ -39,7 +38,7 @@
       </template>
     </b-table>
   </div>
-  <div v-else>Ei Nibacos-otteluita seuraavan kahden viikon sisällä.</div>
+  <div v-else>Tervetuloa Nibacos-ottelut sivulle 💙</div>
 </template>
 
 <script>
@@ -58,7 +57,7 @@ export default {
       baseurl: process.env.VUE_APP_BACKEND_URL
         ? process.env.VUE_APP_BACKEND_URL
         : "http://localhost:3000",
-      games_table: [],
+
       show: false,
       pageReady: false,
       updated: "",
@@ -87,13 +86,13 @@ export default {
   async created() {
     this.currentUrl = window.location.href;
     document.title = "Nibacos ottelut";
-
     console.log("created() currentUrl:", this.currentUrl);
 
-    await this.fetchSeasons();
+    if (this.seasons) await this.fetchSeasons();
     // Get only the current season
-    console.log(this.seasons);
-    await this.fetchGames(this.seasons[0].value);
+
+    if (this.games[this.seasons[0].value])
+      await this.fetchGames(this.seasons[0].value);
     this.selectedSeason = this.seasons[0];
   },
 
@@ -116,14 +115,19 @@ export default {
       return DateTime.now().toISODate();
     },
 
-    /*games_table() {
-      return this.games[this.selectedSeason.value].filter(
-        (x) =>
-          x.GameDate >=
-            DateTime.now().minus({ days: 3 }).toFormat("yyyy-MM-dd") &&
-          x.GameDate <= DateTime.now().plus({ days: 14 }).toFormat("yyyy-MM-dd")
-      );
-    },*/
+    games_table() {
+      if (this.selectedSeason && this.games[this.selectedSeason.value]) {
+        return this.games[this.selectedSeason.value].filter(
+          (x) =>
+            x.GameDate >=
+              DateTime.now().minus({ days: 3 }).toFormat("yyyy-MM-dd") &&
+            x.GameDate <=
+              DateTime.now().plus({ days: 14 }).toFormat("yyyy-MM-dd")
+        );
+      } else {
+        return [];
+      }
+    },
   },
   watch: {
     selectedSeason: function () {
@@ -140,7 +144,7 @@ export default {
               DateTime.now().plus({ days: 14 }).toFormat("yyyy-MM-dd")
         );
       } else {
-        console.log(this.selectedSeason, this.games);
+        console.log(this.selectedSeason, this.games.length);
       }
     },
   },
@@ -155,11 +159,6 @@ export default {
       return DateTime.fromISO(_str).toFormat("dd.MM. HH:mm");
     },
 
-    async getSelectedSeason(_season) {
-      this.selectedSeason = _season ? _season : this.seasons[0];
-      //console.log("selected season", this.selectedSeason.value);
-      await this.fetchGames(this.selectedSeason.value);
-    },
     getGameStats(_id, _season, _game) {
       this.gameStats = "";
       this.showGameStat = true;

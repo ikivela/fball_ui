@@ -3,17 +3,16 @@
     <b-container>
       <b-navbar type="light" variant="faded">
         <b-navbar-brand
-          ><img
-            height="36"
-            src="https://static.jopox.fi/nibacos/imagebank/40875_huge.png"
-            alt="logo"
-          />
+          ><router-link to="/"
+            ><img
+              height="36"
+              src="https://static.jopox.fi/nibacos/imagebank/40875_huge.png"
+              alt="logo"
+            />
+          </router-link>
           Nibacos-ottelut
         </b-navbar-brand>
         <b-navbar-nav>
-          <b-nav-item
-            ><router-link to="/">Ajankohtaiset</router-link></b-nav-item
-          >
           <b-nav-item
             ><router-link to="/ottelut">Ottelut</router-link></b-nav-item
           >
@@ -28,61 +27,15 @@
 </template>
 
 <script>
-import axios from "axios";
 import { DateTime } from "luxon";
+import { mapActions, mapState } from "vuex";
 //import Multiselect from "vue-multiselect";
 //import { BIconLink } from "bootstrap-vue";
 
 export default {
   name: "App",
   data() {
-    return {
-      currentUrl: "",
-      currentTeam: "Nibacos",
-      standings_url2:
-        "http://tilastopalvelu.fi/fb/index.php/component/content/index.php?option=com_content&view=article&id=14&stgid=",
-      standings_url:
-        "http://tilastopalvelu.fi/fb/index.php?option=com_content&view=article&id=11&stgid=",
-      result_url:
-        "http://tilastopalvelu.fi/fb/index.php?option=com_content&view=article&id=4&gameid=",
-      baseurl: process.env.VUE_APP_BACKEND_URL
-        ? process.env.VUE_APP_BACKEND_URL
-        : "http://localhost:3000",
-      show: false,
-      updated: "",
-      options: [],
-      seasons: [],
-      showGamesPage: false,
-      showStatsPage: false,
-      showGameStats: false,
-      showGameStat: false,
-      gameStats: "",
-      seasonStats: "",
-      loading: false,
-      allGames: [],
-      statsData: "",
-      selectedSeason: null,
-      selectedClass: "",
-      showStats: false,
-      currentGame: "",
-      currentGames: [],
-      sortBy: "",
-      sortDesc: "",
-      items: [],
-      filter: null,
-      filterOn: [],
-      totalRows: 1,
-      isSmallScreen: false,
-      scFields: ["Date", "Game", "class", "Result"],
-      tablecolumns: [
-        { key: "Date", label: "Aika", sortable: false },
-        { key: "Game", label: "Ottelu", sortable: false },
-        { key: "Result", label: "Tulos", sortable: false },
-        { key: "group", label: "Lohko", sortable: false },
-        { key: "class", label: "Sarja", sortable: false },
-        { key: "RinkName", label: "Halli", sortable: false },
-      ],
-    };
+    return {};
   },
   created() {
     this.currentUrl = window.location.href;
@@ -98,13 +51,26 @@ export default {
     // If season is 2021-2022, the currentSeason has to be 2022
     // Season is changed to new season after 1st of August
 
-    this.seasons = await this.getSeasons();
-    this.seasonStats = await this.getStats();
+    if (this.seasons && this.seasons.length === 0) await this.fetchSeasons();
+    if (this.seasonStats && this.seasonStats.length === 0)
+      await this.fetchStats();
 
     //console.log(this.seasonStats);
-    await this.getSelectedSeason();
+    console.log(
+      "seasons: %s, stats: %s, games: %s",
+      this.seasons.length,
+      this.seasonStats.length,
+      this.allGames.length
+    );
+    if (this.allGames[this.seasons[0].value])
+      await this.fetchGames(this.seasons[0].value);
   },
   computed: {
+    ...mapState({
+      allGames: (state) => state.games,
+      seasons: (state) => state.seasons,
+      seasonStats: (state) => state.stats,
+    }),
     currentStats() {
       let team_name = this.currentTeam;
       let wins = 0;
@@ -225,126 +191,11 @@ export default {
     },
   },
   methods: {
-    formatScore(data) {
-      console.log("SCORE", data);
-      let values = data.split("-");
-      return `${values[0]}<br />${values[1]}`;
-    },
-    parseDate(_str) {
-      // console.log(_str);
-      return DateTime.fromISO(_str).toFormat("dd.MM. HH:mm");
-    },
-
-    updateScreenWidth() {
-      this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
-    },
-    standings_link(_id) {
-      if (this.selectedSeason.value == DateTime.now().year)
-        return this.standings_url + _id;
-      else
-        return this.standings_url2 + _id + "&ssn=" + this.selectedSeason.value;
-    },
-    filterTable(_row, _filter) {
-      let filters = _filter.split(",");
-      let rowstr = JSON.stringify(_row);
-      //  console.log(rowstr, filters);
-      if (!Array.isArray(filters)) return rowstr.includes(filters[0]);
-      else return filters.some((f) => rowstr.includes(f));
-    },
-    setFilter(_value) {
-      this.filter = _value.join(",");
-    },
-    getSelectedClass(_class) {
-      console.log("get class", _class);
-      _class = _class !== "Näytä kaikki" ? _class : "";
-      console.log("setStats", _class);
-      this.setStats(_class ? _class : "");
-    },
-    async getSelectedSeason(_season) {
-      this.selectedSeason = _season ? _season : this.seasons[0];
-      //console.log("selected season", this.selectedSeason.value);
-      this.allGames = await this.getGames(this.selectedSeason.value);
-      this.showPastValues =
-        this.selectedSeason == this.seasons[0] ? "false" : "true";
-      this.filter = "";
-      console.log(
-        "allGames.length:",
-        this.allGames.length,
-        "season",
-        this.selectedSeason,
-        "past",
-        this.showPastValues
-      );
-      this.allGames = this.allGames.sort((a, b) => {
-        let a_date = DateTime.fromISO(a.GameDate + "T" + a.GameTime).toMillis();
-        let b_date = DateTime.fromISO(b.GameDate + "T" + b.GameTime).toMillis();
-
-        return a_date > b_date ? 1 : -1;
-      });
-    },
-    getGameStats(_id, _season, _game) {
-      this.gameStats = "";
-
-      this.showGameStat = true;
-      this.loading = true;
-      this.currentGame = _game;
-
-      console.log("get gamestats", _season.value, this.currentGame);
-      var url = `${this.baseurl}/gamestats/?season=${_season.value}&gameid=${_id}`;
-      axios
-        .get(url)
-        .then((res) => {
-          this.gameStats = res.data;
-          this.loading = false;
-        })
-        .catch((err) => {
-          this.showGameStat = false;
-          console.error(err);
-        });
-
-      return _id;
-    },
-    setStats(_class, toggle) {
-      console.log("setStat class: %s season: %s", _class, this.selectedSeason);
-      this.showStats = toggle ? toggle : true;
-      _class = _class != "Näytä kaikki" && _class !== undefined ? _class : "";
-      console.log("class %s", _class);
-      this.selectedClass = _class != "" ? _class : this.classes[1];
-
-      this.statsData = this.seasonStats.filter(
-        (x) => x.season == this.selectedSeason && x.class == _class
-      );
-    },
-    async getStats() {
-      let res = await axios.get(`${this.baseurl}/seasonstats`);
-      return res.data;
-    },
-    async getSeasons() {
-      let res = await axios.get(`${this.baseurl}/seasons`);
-      let seasons = res.data.data;
-      seasons = seasons.sort((a, b) => (a > b ? -1 : 1));
-      seasons = seasons.map((x) => {
-        return {
-          text: `${x - 1}-${x}`,
-          value: x,
-        };
-      });
-      this.selectedSeason = seasons[0];
-      console.log(seasons, this.selectedSeason);
-      return seasons;
-    },
-    async getGames(year) {
-      console.log(year);
-      let response = await axios.get(`${this.baseurl}/games/?year=${year}`);
-      return response.data;
-    },
-    onFiltered(filteredItems) {
-      // Trigger pagination to update the number of buttons/pages due to filtering
-      console.log("filtered length", filteredItems.length);
-      this.currentGames = filteredItems;
-      this.totalRows = filteredItems.length;
-      this.currentPage = 1;
-    },
+    ...mapActions({
+      fetchGames: "fetchGames",
+      fetchSeasons: "fetchSeasons",
+      fetchStats: "fetchStats",
+    }),
   },
 };
 </script>

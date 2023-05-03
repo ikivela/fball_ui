@@ -55,14 +55,14 @@ export default new Vuex.Store({
           value: x,
         };
       });
-      console.log(seasons.length, seasons[0].value);
+
       commit('SET_seasons', seasons);
-
     },
-
-    setStats({ commit }, _data) {
-      commit('SET_stats', _data);
+    async fetchStats({ commit }) {
+      let res = await axios.get(`${process.env.VUE_APP_BACKEND_URL}/seasonstats`);
+      commit('SET_stats', res.data);
     }
+
   },
   modules: {
 

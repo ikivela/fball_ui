@@ -92,15 +92,17 @@
           </div>
         </template>
         <template #cell(Game)="data">
-          <div v-if="!isSmallScreen">
-            {{
-              `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
-            }}
-          </div>
-          <div v-else>
-            {{ data.item.HomeTeamName }} <br />
-            {{ data.item.AwayTeamName }}
-          </div>
+          <a class="resultStyle" @click="getRoster(data, selectedSeason)">
+            <div v-if="!isSmallScreen">
+              {{
+                `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
+              }}
+            </div>
+            <div v-else>
+              {{ data.item.HomeTeamName }} <br />
+              {{ data.item.AwayTeamName }}
+            </div>
+          </a>
         </template>
         <template v-if="!isSmallScreen" #cell(RinkName)="data">
           <a :href="`http://maps.google.com/?q=${data.item.RinkName}`">{{
@@ -144,7 +146,6 @@
 
     <b-modal ok-only v-model="showGameStat">
       <b-spinner v-if="this.loading" label="">Ladataan...</b-spinner>
-
       <div class="d-block text-center">
         <b>{{ this.currentGame }}</b>
       </div>
@@ -171,6 +172,28 @@
         </li>
       </ul>
     </b-modal>
+
+    <b-modal
+      ok-only
+      v-model="showRoster"
+      v-if="currentRoster && currentRoster.length > 0"
+    >
+      <b-spinner v-if="this.loading" label="">Ladataan...</b-spinner>
+
+      <div v-if="Array.isArray(currentRoster)" class="d-block text-center">
+        <b>{{
+          `${this.currentRoster[0].GameDate}, ${this.currentRoster[0].StatName}`
+        }}</b>
+      </div>
+      <div v-else>Kokoonpanoa ei löytynyt</div>
+      <b-table
+        v-if="Array.isArray(currentRoster) && currentRoster.length > 0"
+        small
+        hover
+        :fields="rosterFields"
+        :items="currentRoster"
+      ></b-table>
+    </b-modal>
   </div>
 </template>
 
@@ -178,6 +201,7 @@
 import axios from "axios";
 import { DateTime } from "luxon";
 import { BIconArrowUpRightSquare } from "bootstrap-vue";
+import { mapActions, mapState } from "vuex";
 
 export default {
   name: "OttelutView",
@@ -186,6 +210,8 @@ export default {
     return {
       currentUrl: "",
       currentTeam: "Nibacos",
+
+      currentRoster: "",
       currentClass: "",
       standings_url2:
         "http://tilastopalvelu.fi/fb/index.php/component/content/index.php?option=com_content&view=article&id=14&stgid=",
@@ -199,13 +225,14 @@ export default {
       show: false,
       updated: "",
       options: [],
-      seasons: [],
+
       showGamesPage: false,
       showStatsPage: false,
       showGameStats: false,
       showGameStat: false,
+      showRoster: false,
       gameStats: "",
-      seasonStats: "",
+
       loading: false,
       allGames: [],
       statsData: "",
@@ -222,6 +249,12 @@ export default {
       totalRows: 1,
       isSmallScreen: false,
       scFields: ["Date", "Game", "class", "Result"],
+      rosterFields: [
+        { key: "PlayerJerseyNr", label: "Nro" },
+        { key: "PlayerFirstName", label: "Etunimi" },
+        { key: "PlayerLastName", label: "Sukunimi" },
+        { key: "RoleAbbrv", label: "Pelipaikka" },
+      ],
       tablecolumns: [
         { key: "Date", label: "Aika", sortable: false },
         { key: "Game", label: "Ottelu", sortable: false },
@@ -246,13 +279,19 @@ export default {
     // If season is 2021-2022, the currentSeason has to be 2022
     // Season is changed to new season after 1st of August
 
-    this.seasons = await this.getSeasons();
-    this.seasonStats = await this.getStats();
+    if (this.seasons.length == 0) await this.getSeasons();
+    if (this.seasonStats.length == 0) await this.getStats();
 
     //console.log(this.seasonStats);
     await this.getSelectedSeason();
   },
   computed: {
+    ...mapState({
+      games: (state) => state.games,
+      seasons: (state) => state.seasons,
+      seasonStats: (state) => state.stats,
+    }),
+
     currentStats() {
       let team_name = this.currentTeam;
       let wins = 0;
@@ -382,6 +421,11 @@ export default {
     },
   },
   methods: {
+    ...mapActions({
+      fetchGames: "fetchGames",
+      fetchSeasons: "fetchSeasons",
+      setStats: "setStats",
+    }),
     formatScore(data) {
       console.log("SCORE", data);
       let values = data.split("-");
@@ -442,6 +486,24 @@ export default {
         return a_date > b_date ? 1 : -1;
       });
     },
+    getRoster(_game, _season) {
+      console.log("get roster ", _season.value, _game.item.UniqueID);
+      var url = `${this.baseurl}/roster/?season=${_season.value}&gameid=${_game.item.UniqueID}`;
+      this.loading = true;
+      this.showRoster = true;
+      axios
+        .get(url)
+        .then((res) => {
+          this.currentRoster = res.data;
+          this.loading = false;
+        })
+        .catch((err) => {
+          this.showRoster = true;
+          this.loading = false;
+          this.currentRoster = err.message;
+          console.error(err);
+        });
+    },
     getGameStats(_id, _season, _game) {
       this.gameStats = "";
 
@@ -479,6 +541,7 @@ export default {
       let res = await axios.get(`${this.baseurl}/seasonstats`);
       return res.data;
     },
+
     async getSeasons() {
       let res = await axios.get(`${this.baseurl}/seasons`);
       let seasons = res.data.data;
