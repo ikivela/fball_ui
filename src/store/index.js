@@ -11,12 +11,14 @@ export default new Vuex.Store({
   state: {
     seasons: [],
     stats: {},
-    games: {}
+    games: {},
+    players: {}
   },
   getters: {
     getStats: (state) => state.stats,
     getSeasons: (state) => state.seasons,
-    getGames: (state, _season) => state.games[_season]
+    getGames: (state, _season) => state.games[_season],
+    getPlayers: (state) => state.players
   },
   mutations: {
     SET_seasons(state, _seasons) {
@@ -27,6 +29,18 @@ export default new Vuex.Store({
     SET_stats(state, _stats) {
       console.log("store: set stats");
       state.stats = _stats;
+    },
+    SET_players(state, _players) {
+      console.log("store players", Object.entries(_players).length);
+      /*for (const player of _players) {
+        const totalGames = Object.values(player.PlayerHistory).reduce(
+          (acc, yearGames) => acc + yearGames.length,
+          0
+        );
+
+        player.totalGames = totalGames;
+      }*/
+      state.players = _players;
     },
     SET_games(state, _gamesdata) {
       console.log("store: set games", _gamesdata);
@@ -61,6 +75,10 @@ export default new Vuex.Store({
     async fetchStats({ commit }) {
       let res = await axios.get(`${process.env.VUE_APP_BACKEND_URL}/seasonstats`);
       commit('SET_stats', res.data);
+    },
+    async fetchPlayers({ commit }) {
+      let res = await axios.get(`${process.env.VUE_APP_BACKEND_URL}/players`);
+      commit('SET_players', res.data);
     }
 
   },

@@ -70,6 +70,7 @@ export default {
       allGames: (state) => state.games,
       seasons: (state) => state.seasons,
       seasonStats: (state) => state.stats,
+      players: (state) => state.players,
     }),
     currentStats() {
       let team_name = this.currentTeam;

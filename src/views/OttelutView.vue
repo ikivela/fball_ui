@@ -35,12 +35,13 @@
         </b-row>
       </b-nav-form>
     </b-container>
+
     <b-container id="games">
-      <p>
+      <b-badge>
         Valittu kausi:
         {{ this.selectedSeason !== null ? this.selectedSeason.text : "" }}
         {{ this.currentClass }}
-      </p>
+      </b-badge>
       <b-badge style="margin-left: 1em; margin-right: 1em">
         Otteluita:
         {{
@@ -110,11 +111,13 @@
           }}</a>
         </template>
         <template v-if="!isSmallScreen" #cell(group)="data">
-          <a :href="standings_link(data.item.groupID)">{{ data.item.group }}</a>
+          <a :href="standings_link(data.item.groupID, data.item.class)">{{
+            data.item.group
+          }}</a>
         </template>
         <template v-if="isSmallScreen" #cell(class)="data">
           {{ data.item.class }} <br />
-          <a :href="standings_link(data.item.groupID)"
+          <a :href="standings_link(data.item.groupID, data.item.class)"
             ><span style="font-size: 0.8em">{{ data.item.group }}</span></a
           >
         </template>
@@ -215,10 +218,8 @@ export default {
       currentClass: "",
       standings_url2:
         "http://tilastopalvelu.fi/fb/index.php/component/content/index.php?option=com_content&view=article&id=14&stgid=",
-      standings_url:
-        "http://tilastopalvelu.fi/fb/index.php?option=com_content&view=article&id=11&stgid=",
-      result_url:
-        "http://tilastopalvelu.fi/fb/index.php?option=com_content&view=article&id=4&gameid=",
+      standings_url: "https://tulospalvelu.salibandy.fi/category/",
+      result_url: "https://tulospalvelu.salibandy.fi/match/",
       baseurl: process.env.VUE_APP_BACKEND_URL
         ? process.env.VUE_APP_BACKEND_URL
         : "http://localhost:3000",
@@ -244,7 +245,7 @@ export default {
       sortBy: "",
       sortDesc: "",
       items: [],
-      filter: null,
+      filter: "",
       filterOn: [],
       totalRows: 1,
       isSmallScreen: false,
@@ -390,7 +391,8 @@ export default {
       } else return this.tablecolumns;
     },
     games() {
-      console.log(
+      return this.allGames;
+      /*console.log(
         `showPastValue type:${typeof this.showPastValues} value: ${
           this.showPastValues
         }`
@@ -417,7 +419,7 @@ export default {
             x.GameDate >=
             DateTime.now().minus({ days: 3 }).toFormat("yyyy-MM-dd")
         );
-      }
+      }*/
     },
   },
   methods: {
@@ -439,11 +441,15 @@ export default {
     updateScreenWidth() {
       this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
     },
-    standings_link(_id) {
-      if (this.selectedSeason.value == DateTime.now().year)
-        return this.standings_url + _id;
-      else
+    standings_link(_id, _class) {
+      console.log("class", _class);
+      if (this.seasons[0].value == this.selectedSeason.value) {
+        if (_class.includes("PM"))
+          return this.standings_url + _id + "!sb2023pm/tables";
+        else return this.standings_url + _id + "!sb2023/tables";
+      } else {
         return this.standings_url2 + _id + "&ssn=" + this.selectedSeason.value;
+      }
     },
     filterTable(_row, _filter) {
       let filters = _filter.split(",");
@@ -559,7 +565,34 @@ export default {
     async getGames(year) {
       console.log(year);
       let response = await axios.get(`${this.baseurl}/games/?year=${year}`);
-      return response.data;
+      if (year > 2023) {
+        /*
+                { key: "Date", label: "Aika", sortable: false },
+        { key: "Game", label: "Ottelu", sortable: false },
+        { key: "Result", label: "Tulos", sortable: false },
+        { key: "group", label: "Lohko", sortable: false },
+        { key: "class", label: "Sarja", sortable: false },
+        { key: "RinkName", label: "Halli", sortable: false },*/
+
+        response.data = response.data.matches.map((match) => {
+          return {
+            GameDate: match.date,
+            GameTime: match.time,
+            UniqueID: match.match_id,
+            HomeTeamName: match.club_A_abbrevation,
+            AwayTeamName: match.club_B_abbrevation,
+            Result: `${match.fs_A}-${match.fs_B}`,
+            Game: `${match.club_A_abbrevation}-${match.club_B_abbrevation}`,
+            group: match.group_name,
+            groupID: match.category_abbrevation,
+            class: match.category_name,
+            RinkName: match.venue_location_name,
+          };
+        });
+        return response.data;
+      } else {
+        return response.data;
+      }
     },
     onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
