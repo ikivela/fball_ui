@@ -93,17 +93,24 @@
           </div>
         </template>
         <template #cell(Game)="data">
-          <a class="resultStyle" @click="getRoster(data, selectedSeason)">
-            <div v-if="!isSmallScreen">
-              {{
-                `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
-              }}
-            </div>
-            <div v-else>
-              {{ data.item.HomeTeamName }} <br />
-              {{ data.item.AwayTeamName }}
-            </div>
-          </a>
+          <div v-if="selectedSeason.value == seasons[0].value">
+            <a :href="`${result_url}${data.item.UniqueID}`">{{
+              `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
+            }}</a>
+          </div>
+          <div v-else>
+            <a class="resultStyle" @click="getRoster(data, selectedSeason)">
+              <div v-if="!isSmallScreen">
+                {{
+                  `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
+                }}
+              </div>
+              <div v-else>
+                {{ data.item.HomeTeamName }} <br />
+                {{ data.item.AwayTeamName }}
+              </div>
+            </a>
+          </div>
         </template>
         <template v-if="!isSmallScreen" #cell(RinkName)="data">
           <a :href="`http://maps.google.com/?q=${data.item.RinkName}`">{{
@@ -280,8 +287,8 @@ export default {
     // If season is 2021-2022, the currentSeason has to be 2022
     // Season is changed to new season after 1st of August
 
-    if (this.seasons.length == 0) await this.getSeasons();
-    if (this.seasonStats.length == 0) await this.getStats();
+    if (this.seasons.length == 0) await this.fetchSeasons();
+    if (this.seasonStats.length == 0) await this.fetchStats();
 
     //console.log(this.seasonStats);
     await this.getSelectedSeason();
@@ -442,7 +449,7 @@ export default {
       this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
     },
     standings_link(_id, _class) {
-      console.log("class", _class);
+      //console.log("class", _class);
       if (this.seasons[0].value == this.selectedSeason.value) {
         if (_class.includes("PM"))
           return this.standings_url + _id + "!sb2023pm/tables";
@@ -450,6 +457,9 @@ export default {
       } else {
         return this.standings_url2 + _id + "&ssn=" + this.selectedSeason.value;
       }
+    },
+    roster_link(_id) {
+      return this.result_url_url + _id + "/lineups";
     },
     filterTable(_row, _filter) {
       let filters = _filter.split(",");
@@ -548,7 +558,7 @@ export default {
       return res.data;
     },
 
-    async getSeasons() {
+    /*async getSeasons() {
       let res = await axios.get(`${this.baseurl}/seasons`);
       let seasons = res.data.data;
       seasons = seasons.sort((a, b) => (a > b ? -1 : 1));
@@ -558,10 +568,11 @@ export default {
           value: x,
         };
       });
+      this.seasons = seasons;
       this.selectedSeason = seasons[0];
       console.log(seasons, this.selectedSeason);
       return seasons;
-    },
+    },*/
     async getGames(year) {
       console.log(year);
       let response = await axios.get(`${this.baseurl}/games/?year=${year}`);
