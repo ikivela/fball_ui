@@ -2,29 +2,30 @@
   <div id="ottelut">
     <b-container>
       <b-nav-form>
-        <b-form-input
-          id="filter-input"
-          v-model="filter"
-          type="search"
-          filter-debounce="1000"
-          size="sm"
-          class="mr-sm-2"
-          placeholder="Suodata"
-        ></b-form-input>
-        <b-button
-          variant="outline-primary"
-          :pressed.sync="kaudet"
-          v-b-toggle.kaudet
-          class="m-1"
-          >Kaudet</b-button
-        >
-        <b-button
-          variant="outline-primary"
-          :pressed.sync="sarjat"
-          v-b-toggle.sarjat
-          class="m-1"
-          >Sarjat</b-button
-        >
+        <b-input-group prepend="Haku" class="mt-3">
+          <b-form-input
+            id="filter-input"
+            v-model="filter"
+            filter-debounce="1000"
+            placeholder="Suodata"
+          ></b-form-input>
+
+          <b-input-group-append>
+            <b-button
+              variant="outline-primary"
+              :pressed.sync="kaudet"
+              v-b-toggle.kaudet
+              >Kaudet</b-button
+            >
+            <b-button
+              variant="outline-primary"
+              :pressed.sync="sarjat"
+              v-b-toggle.sarjat
+              >Sarjat</b-button
+            >
+          </b-input-group-append>
+        </b-input-group>
+
         <b-collapse id="kaudet">
           <b-button-toolbar>
             <b-button-group>
