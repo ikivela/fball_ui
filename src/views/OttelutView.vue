@@ -11,28 +11,49 @@
           class="mr-sm-2"
           placeholder="Suodata"
         ></b-form-input>
-        <b-row>
-          <b-button
-            style="margin: 0.1em"
-            pill
-            variant="outline-primary"
-            v-bind:key="season.text"
-            @click="getSelectedSeason(season)"
-            v-for="season in seasons"
-            >{{ season.text }}</b-button
-          >
-        </b-row>
-        <b-row>
-          <b-button
-            style="margin: 0.1em"
-            pill
-            variant="primary"
-            @click="setFilter(value)"
-            v-bind:key="value"
-            v-for="value in classes"
-            >{{ value }}</b-button
-          >
-        </b-row>
+        <b-button
+          variant="outline-primary"
+          :pressed.sync="kaudet"
+          v-b-toggle.kaudet
+          class="m-1"
+          >Kaudet</b-button
+        >
+        <b-button
+          variant="outline-primary"
+          :pressed.sync="sarjat"
+          v-b-toggle.sarjat
+          class="m-1"
+          >Sarjat</b-button
+        >
+        <b-collapse id="kaudet">
+          <b-button-toolbar>
+            <b-button-group>
+              <b-button
+                style="font-size: 0.8em; margin: 0.1em"
+                variant="outline-primary"
+                v-bind:key="season.text"
+                @click="getSelectedSeason(season)"
+                v-for="season in seasons"
+                >{{ season.text }}</b-button
+              >
+            </b-button-group>
+          </b-button-toolbar>
+        </b-collapse>
+
+        <b-collapse id="sarjat">
+          <b-button-toolbar>
+            <b-button-group>
+              <b-button
+                style="font-size: 0.8em; margin: 0.1em"
+                variant="primary"
+                @click="setFilter(value)"
+                v-bind:key="value"
+                v-for="value in classes"
+                >{{ value }}</b-button
+              >
+            </b-button-group>
+          </b-button-toolbar>
+        </b-collapse>
       </b-nav-form>
     </b-container>
 
@@ -84,12 +105,9 @@
           </div>
           <div v-else>
             {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
-            <br />
-            <span style="font-size: 0.8em"
-              ><a :href="`http://maps.google.com/?q=${data.item.RinkName}`">{{
-                data.item.RinkName
-              }}</a></span
-            >
+            <a :href="`http://maps.google.com/?q=${data.item.RinkName}`">
+              <b-icon-map></b-icon-map>
+            </a>
           </div>
         </template>
         <template #cell(Game)="data">
@@ -122,11 +140,8 @@
             data.item.group
           }}</a>
         </template>
-        <template v-if="isSmallScreen" #cell(class)="data">
-          {{ data.item.class }} <br />
-          <a :href="standings_link(data.item.groupID, data.item.class)"
-            ><span style="font-size: 0.8em">{{ data.item.group }}</span></a
-          >
+        <template #cell(class)="data">
+          {{ shorten_classname(data.item.class) }}
         </template>
         <template #cell(Result)="data">
           <div v-if="data.item.GameDate < today">
@@ -210,17 +225,18 @@
 <script>
 import axios from "axios";
 import { DateTime } from "luxon";
-import { BIconArrowUpRightSquare } from "bootstrap-vue";
+import { BIconArrowUpRightSquare, BIconMap } from "bootstrap-vue";
 import { mapActions, mapState } from "vuex";
 
 export default {
   name: "OttelutView",
-  components: { BIconArrowUpRightSquare },
+  components: { BIconArrowUpRightSquare, BIconMap },
   data() {
     return {
       currentUrl: "",
       currentTeam: "Nibacos",
-
+      kaudet: true,
+      sarjat: true,
       currentRoster: "",
       currentClass: "",
       standings_url2:
@@ -379,6 +395,7 @@ export default {
     today() {
       return DateTime.now().toISODate();
     },
+
     classes() {
       let classes = this.allGames
         .map((x) => {
@@ -440,9 +457,12 @@ export default {
       let values = data.split("-");
       return `${values[0]}<br />${values[1]}`;
     },
-    parseDate(_str) {
+    parseDate(_str, cr) {
       // console.log(_str);
-      return DateTime.fromISO(_str).toFormat("dd.MM. HH:mm");
+      let date = DateTime.fromISO(_str).toFormat("dd.MM.");
+      let time = DateTime.fromISO(_str).toFormat("HH:mm");
+      if (cr) return `${date}<br />${time}`;
+      else return DateTime.fromISO(_str).toFormat("dd.MM. HH:mm");
     },
 
     updateScreenWidth() {
@@ -457,6 +477,15 @@ export default {
       } else {
         return this.standings_url2 + _id + "&ssn=" + this.selectedSeason.value;
       }
+    },
+    shorten_classname(_classname) {
+      _classname = _classname.replace("SM-SARJA", "SM");
+      _classname = _classname.replace("VALTAKUNNALLINEN", "VK");
+      _classname = _classname.replace("DIVISIOONA", "DIV");
+      _classname = _classname.replace("SÄBÄKIPINÄ", "");
+
+      //console.log("cl", _classname);
+      return _classname;
     },
     roster_link(_id) {
       return this.result_url_url + _id + "/lineups";
@@ -590,14 +619,14 @@ export default {
             GameDate: match.date,
             GameTime: match.time,
             UniqueID: match.match_id,
-            HomeTeamName: match.club_A_abbrevation,
-            AwayTeamName: match.club_B_abbrevation,
+            HomeTeamName: match.team_A_description_en,
+            AwayTeamName: match.team_B_description_en,
             Result: `${match.fs_A}-${match.fs_B}`,
-            Game: `${match.club_A_abbrevation}-${match.club_B_abbrevation}`,
+            Game: `${match.team_A_description_en}-${match.team_B_description_en}`,
             group: match.group_name,
             groupID: match.category_abbrevation,
             class: match.category_name,
-            RinkName: match.venue_location_name,
+            RinkName: match.venue_name,
           };
         });
         return response.data;
