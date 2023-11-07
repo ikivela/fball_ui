@@ -615,7 +615,7 @@ export default {
         { key: "class", label: "Sarja", sortable: false },
         { key: "RinkName", label: "Halli", sortable: false },*/
 
-        response.data = response.data.matches.map((match) => {
+        /*response.data = response.data.matches.map((match) => {
           return {
             GameDate: match.date,
             GameTime: match.time,
@@ -629,7 +629,7 @@ export default {
             class: match.category_name,
             RinkName: match.venue_name,
           };
-        });
+        });*/
         return response.data;
       } else {
         return response.data;
