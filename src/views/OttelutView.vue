@@ -562,7 +562,7 @@ export default {
       axios
         .get(url)
         .then((res) => {
-          this.gameStats = res.data;
+          this.gameStats = this.parseGameStat(_season.value, res.data);
           this.loading = false;
         })
         .catch((err) => {
@@ -571,6 +571,33 @@ export default {
         });
 
       return _id;
+    },
+    parseGameStat(season, data) {
+      if ( season > 2023 && data.match ) {
+        let events = [];
+        //console.log("parseGameStat", data);
+        let clubs = {};
+        clubs[data.match.team_A_id] = data.match.team_A_name;
+        clubs[data.match.team_B_id] = data.match.team_B_name;
+
+        for(let goal of data.match.goals) {
+          let event = { event: "goal", time: goal.time, result: goal.score_A+"-"+goal.score_B,yv_av: goal.description, team: clubs[goal.team_id], scorer: goal.player_name, assist: "" };
+          let assist = data.match.events.filter( x => x.code == "syotto" && x.time == goal.time);
+            
+          if (assist.length > 0) {
+            if (Array.isArray(assist))
+              assist = assist[assist.length-1];
+            event.assist = assist.player_name;
+          }
+          events.push(event);
+          //console.log(goal.time, 
+        }
+
+      console.log(events);
+      return events;
+      } else {
+        return data;
+      }
     },
     setStats(_class, toggle) {
       console.log("setStat class: %s season: %s", _class, this.selectedSeason);
