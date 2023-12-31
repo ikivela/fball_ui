@@ -1,9 +1,19 @@
 <template>
   <!-- <div v-else>Tervetuloa Nibacos-ottelut sivulle 💙</div>-->
   <div>
-  <p>Seuraavat ottelut</p>
-    <b-container v-if="this.selectedSeason && this.seasons.length > 0 ">
-      <b-table small hover id="games" stacked="sm" :items="games_table" :fields="fields">
+    <p>Seuraavat ottelut</p>
+    <b-container v-if="this.selectedSeason && this.seasons.length > 0">
+      <b-table
+        small
+        :fields="fields"
+        hover
+        id="1"
+        stacked="sm"
+        :filter="filter"
+        :items="games_table"
+        :filter-included-fields="filterOn"
+        
+      >
         <template v-for="field in fields" :slot="`head-${field.key}`">
           {{ field.label }}
         </template>
@@ -54,44 +64,47 @@
         <template #cell(Result)="data">
           <div v-if="data.item.GameDate < today">
             <div v-if="data.value != '-'">
-              <a class="resultStyle" @click="
-                getGameStats(
-                  data.item.UniqueID,
-                  selectedSeason,
-                  data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
-                )
-              ">{{ data.value }}</a>
+              <a
+                class="resultStyle"
+                @click="
+                  getGameStats(
+                    data.item.UniqueID,
+                    selectedSeason,
+                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName,
+                  )
+                "
+                >{{ data.value }}</a
+              >
             </div>
             <div v-else></div>
           </div>
           <div v-else>
-            <a :href="`${result_url}${data.item.UniqueID}`"
-              class="resultStyle"><b-icon-arrow-up-right-square></b-icon-arrow-up-right-square></a>
+            <a :href="`${result_url}${data.item.UniqueID}`" class="resultStyle"
+              ><b-icon-arrow-up-right-square></b-icon-arrow-up-right-square
+            ></a>
           </div>
         </template>
       </b-table>
     </b-container>
   </div>
-
 </template>
 
 <script>
 import axios from "axios";
 import { DateTime } from "luxon";
-import { BIconArrowUpRightSquare } from "bootstrap-vue";
+import { BIconArrowUpRightSquare, BIconMap } from "bootstrap-vue";
 import { mapActions, mapState } from "vuex";
 
 export default {
-  components: { BIconArrowUpRightSquare },
+  components: { BIconArrowUpRightSquare, BIconMap },
   data() {
     return {
       currentUrl: "",
-      result_url:
-        "",
-      baseurl: process.env.VUE_APP_BACKEND_URL
-        ? process.env.VUE_APP_BACKEND_URL
-        : "http://localhost:3000",
-
+      result_url: "https://tulospalvelu.salibandy.fi/match/",
+      standings_url2:
+        "http://tilastopalvelu.fi/fb/index.php/component/content/index.php?option=com_content&view=article&id=14&stgid=",
+      standings_url: "https://tulospalvelu.salibandy.fi/category/",
+      baseurl: process.env.VUE_APP_BACKEND_URL || "http://localhost:3000",
       show: false,
       pageReady: false,
       isSmallScreen: false,
@@ -107,9 +120,19 @@ export default {
       currentGame: "",
       sortBy: "",
       sortDesc: "",
+      scFields: ["Date", "Game", "class", "Result"],
+      filter: "",
+      filterOn: [],
+
       items: [],
       totalRows: 1,
-      fields: [
+      rosterFields: [
+        { key: "PlayerJerseyNr", label: "Nro" },
+        { key: "PlayerFirstName", label: "Etunimi" },
+        { key: "PlayerLastName", label: "Sukunimi" },
+        { key: "RoleAbbrv", label: "Pelipaikka" },
+      ],
+      tablecolumns: [
         { key: "Date", label: "Aika", sortable: false },
         { key: "Game", label: "Ottelu", sortable: false },
         { key: "Result", label: "Tulos", sortable: false },
@@ -127,24 +150,26 @@ export default {
 
   async mounted() {
     this.pageReady = true;
+    
+    this.screenWidth = window.matchMedia("(max-width: 600px)").matches;
+    window.addEventListener("resize", this.updateScreenWidth);
+
     console.log("ajankohtaiset games length", this.games.length);
     console.log("ajankohtaiset season length:", this.seasons.length);
     if (this.seasons.length == 0) await this.fetchSeasons(); //this.seasons[0];
-    if (!this.games[ this.seasons[0].value]) {
+    if (!this.games[this.seasons[0].value]) {
       await this.fetchGames(this.seasons[0].value);
     }
     this.selectedSeason = this.seasons[0];
     console.log("ajankohtaiset mounted() seasons:", this.seasons);
     this.games_table = this.games[this.seasons[0].value];
     this.games_table = this.games_table.filter(
-            (x) =>
-              x.GameDate >=
-                DateTime.now().minus({ days: 3 }).toFormat("yyyy-MM-dd") &&
-              x.GameDate <=
-                DateTime.now().plus({ days: 14 }).toFormat("yyyy-MM-dd")
-          );
+      (x) =>
+        x.GameDate >=
+          DateTime.now().minus({ days: 3 }).toFormat("yyyy-MM-dd") &&
+        x.GameDate <= DateTime.now().plus({ days: 14 }).toFormat("yyyy-MM-dd"),
+    );
     console.log("ajankohtaiset mounted() games_table:", this.games_table);
-
   },
   computed: {
     ...mapState({
@@ -156,7 +181,12 @@ export default {
     today() {
       return DateTime.now().toISODate();
     },
-
+    fields() {
+      //console.log("isSmallScreen", this.isSmallScreen);
+      if (this.isSmallScreen) {
+        return this.tablecolumns.filter((x) => this.scFields.includes(x.key));
+      } else return this.tablecolumns;
+    },
     /*games_table: {
       get: () => {
         console.log("games table", this.selectedSeason, this.games.length);
@@ -188,7 +218,6 @@ export default {
       // console.log(_str);
       return DateTime.fromISO(_str).toFormat("dd.MM. HH:mm");
     },
-
     getGameStats(_id, _season, _game) {
       this.gameStats = "";
       this.showGameStat = true;
@@ -215,12 +244,12 @@ export default {
       let res = await axios.get(`${this.baseurl}/seasonstats`);
       this.setStats(res.data);
     },
-    onFiltered(filteredItems) {
+    /*onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
       console.log("filtered length", filteredItems.length);
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
-    },
+    },*/
     standings_link(_id, _class) {
       //console.log("class", _class);
       if (this.seasons[0].value == this.selectedSeason.value) {
@@ -230,6 +259,9 @@ export default {
       } else {
         return this.standings_url2 + _id + "&ssn=" + this.selectedSeason.value;
       }
+    },
+    updateScreenWidth() {
+      this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
     },
     shorten_classname(_classname) {
       _classname = _classname.replace("SM-SARJA", "SM");
@@ -243,7 +275,7 @@ export default {
     getResultLink(data) {
       const gameDate = DateTime.fromFormat(
         data.item.GameDate,
-        "dd.MM. HH:mm"
+        "dd.MM. HH:mm",
       ).toISODate();
       if (gameDate <= DateTime.now().toISODate()) {
         console.log(data.item.GameDate, DateTime.now().toISODate());

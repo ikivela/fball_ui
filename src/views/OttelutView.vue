@@ -79,10 +79,10 @@
           }, 
                 Päästetyt maalit: ${this.currentStats.totalGoalsAgainst},
                   Tehdyt maalit/peli ka.: ${this.currentStats.averageGoalsPerGame.toFixed(
-                    1
+                    1,
                   )}, 
                   Päästetyt maalit/peli ka.: ${this.currentStats.averageGoalsAgainstPerGame.toFixed(
-                    1
+                    1,
                   )}`
         }}
       </b-badge>
@@ -153,7 +153,7 @@
                   getGameStats(
                     data.item.UniqueID,
                     selectedSeason,
-                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
+                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName,
                   )
                 "
                 >{{ data.value }}</a
@@ -523,7 +523,7 @@ export default {
         "season",
         this.selectedSeason,
         "past",
-        this.showPastValues
+        this.showPastValues,
       );
       this.allGames = this.allGames.sort((a, b) => {
         let a_date = DateTime.fromISO(a.GameDate + "T" + a.GameTime).toMillis();
@@ -573,28 +573,37 @@ export default {
       return _id;
     },
     parseGameStat(season, data) {
-      if ( season > 2023 && data.match ) {
+      if (season > 2023 && data.match) {
         let events = [];
         //console.log("parseGameStat", data);
         let clubs = {};
         clubs[data.match.team_A_id] = data.match.team_A_name;
         clubs[data.match.team_B_id] = data.match.team_B_name;
 
-        for(let goal of data.match.goals) {
-          let event = { event: "goal", time: goal.time, result: goal.score_A+"-"+goal.score_B,yv_av: goal.description, team: clubs[goal.team_id], scorer: goal.player_name, assist: "" };
-          let assist = data.match.events.filter( x => x.code == "syotto" && x.time == goal.time);
-            
+        for (let goal of data.match.goals) {
+          let event = {
+            event: "goal",
+            time: goal.time,
+            result: goal.score_A + "-" + goal.score_B,
+            yv_av: goal.description,
+            team: clubs[goal.team_id],
+            scorer: goal.player_name,
+            assist: "",
+          };
+          let assist = data.match.events.filter(
+            (x) => x.code == "syotto" && x.time == goal.time,
+          );
+
           if (assist.length > 0) {
-            if (Array.isArray(assist))
-              assist = assist[assist.length-1];
+            if (Array.isArray(assist)) assist = assist[assist.length - 1];
             event.assist = assist.player_name;
           }
           events.push(event);
-          //console.log(goal.time, 
+          //console.log(goal.time,
         }
 
-      console.log(events);
-      return events;
+        console.log(events);
+        return events;
       } else {
         return data;
       }
@@ -607,7 +616,7 @@ export default {
       this.selectedClass = _class != "" ? _class : this.classes[1];
 
       this.statsData = this.seasonStats.filter(
-        (x) => x.season == this.selectedSeason && x.class == _class
+        (x) => x.season == this.selectedSeason && x.class == _class,
       );
     },
     async getStats() {
@@ -682,4 +691,3 @@ a.resultStyle:hover {
   text-decoration: underline;
 }
 </style>
-

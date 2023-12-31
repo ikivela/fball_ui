@@ -35,9 +35,8 @@ export default {
   data() {
     return {};
   },
- 
-  async mounted() {}
-  
+
+  async mounted() {},
 };
 </script>
 
