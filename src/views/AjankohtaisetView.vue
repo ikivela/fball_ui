@@ -1,14 +1,14 @@
 <template>
-  <!-- <div v-else>Tervetuloa Nibacos-ottelut sivulle 💙</div>-->
+  <!-- <div v-else>Tervetuloa Nibacos-ottelut sivulle </div>-->
   <div>
-    <p>Seuraavat ottelut</p>
+    <p>Seuraavat Nibacos-ottelut</p>
     <b-container v-if="this.selectedSeason && this.seasons.length > 0">
       <b-table
         small
         :fields="fields"
         hover
         id="1"
-        stacked="sm"
+        stacked="xs"
         :filter="filter"
         :items="games_table"
         :filter-included-fields="filterOn"
@@ -22,17 +22,25 @@
             {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
           </div>
           <div v-else>
-            {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
-            <a :href="`http://maps.google.com/?q=${data.item.RinkName}`">
-              <b-icon-map></b-icon-map>
+            {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }} <br />
+            <a style="font-size: small;" :href="`http://maps.google.com/?q=${data.item.RinkName}`">
+             {{  data.item.RinkName }}
             </a>
           </div>
         </template>
         <template #cell(Game)="data">
           <div v-if="selectedSeason.value == seasons[0].value">
-            <a :href="`${result_url}${data.item.UniqueID}`">{{
-              `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
-            }}</a>
+            <a :href="`${result_url}${data.item.UniqueID}`">
+             <div v-if="!isSmallScreen">
+                {{
+                  `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
+                }}
+              </div>
+              <div v-else>  
+                {{ data.item.HomeTeamName }} -<br />
+                {{ data.item.AwayTeamName }}
+              </div>
+            </a>
           </div>
           <div v-else>
             <a class="resultStyle" @click="getRoster(data, selectedSeason)">
@@ -41,7 +49,7 @@
                   `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
                 }}
               </div>
-              <div v-else>
+              <div v-else>  
                 {{ data.item.HomeTeamName }} <br />
                 {{ data.item.AwayTeamName }}
               </div>
@@ -86,17 +94,45 @@
         </template>
       </b-table>
     </b-container>
+    <b-modal ok-only v-model="showGameStat">
+      <b-spinner v-if="this.loading" label="">Ladataan...</b-spinner>
+      <div class="d-block text-center">
+        <b>{{ this.currentGame }}</b>
+      </div>
+      <div v-if="gameStats.length == 0 && !this.loading">Ei tilastoja</div>
+
+      <ul v-if="gameStats.length > 0">
+        <li v-for="stat in gameStats" v-bind:key="stat.time">
+          {{ stat.time }}
+          {{ stat.event == "goal" ? stat.result : stat.penalty_time }}
+          {{ stat.team }}
+          {{
+            stat.yv_av
+              ? stat.yv_av == "RL0"
+                ? "Rangaistusl. (epäonnistunut)"
+                : stat.yv_av
+              : ""
+          }}
+          {{
+            stat.event == "goal"
+              ? stat.scorer + (stat.assist ? " (" + stat.assist + ")" : "")
+              : ""
+          }}
+          {{ stat.event == "penalty" ? stat.player + " " + stat.reason : "" }}
+        </li>
+      </ul>
+    </b-modal>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import { DateTime } from "luxon";
-import { BIconArrowUpRightSquare, BIconMap } from "bootstrap-vue";
+import { BIconArrowUpRightSquare } from "bootstrap-vue";
 import { mapActions, mapState } from "vuex";
 
 export default {
-  components: { BIconArrowUpRightSquare, BIconMap },
+  components: { BIconArrowUpRightSquare },
   data() {
     return {
       currentUrl: "",
@@ -117,6 +153,7 @@ export default {
       selectedSeason: null,
       selectedClass: "",
       showStats: false,
+      showGameStat: false,
       currentGame: "",
       sortBy: "",
       sortDesc: "",
@@ -220,6 +257,7 @@ export default {
     },
     getGameStats(_id, _season, _game) {
       this.gameStats = "";
+
       this.showGameStat = true;
       this.loading = true;
       this.currentGame = _game;
@@ -229,7 +267,7 @@ export default {
       axios
         .get(url)
         .then((res) => {
-          this.gameStats = res.data;
+          this.gameStats = this.parseGameStat(_season.value, res.data);
           this.loading = false;
         })
         .catch((err) => {
@@ -239,10 +277,45 @@ export default {
 
       return _id;
     },
-
     async getStats() {
       let res = await axios.get(`${this.baseurl}/seasonstats`);
       this.setStats(res.data);
+    },
+    parseGameStat(season, data) {
+      if (season > 2023 && data.match) {
+        let events = [];
+        //console.log("parseGameStat", data);
+        let clubs = {};
+        clubs[data.match.team_A_id] = data.match.team_A_name;
+        clubs[data.match.team_B_id] = data.match.team_B_name;
+
+        for (let goal of data.match.goals) {
+          let event = {
+            event: "goal",
+            time: goal.time,
+            result: goal.score_A + "-" + goal.score_B,
+            yv_av: goal.description,
+            team: clubs[goal.team_id],
+            scorer: goal.player_name,
+            assist: "",
+          };
+          let assist = data.match.events.filter(
+            (x) => x.code == "syotto" && x.time == goal.time,
+          );
+
+          if (assist.length > 0) {
+            if (Array.isArray(assist)) assist = assist[assist.length - 1];
+            event.assist = assist.player_name;
+          }
+          events.push(event);
+          //console.log(goal.time,
+        }
+
+        console.log(events);
+        return events;
+      } else {
+        return data;
+      }
     },
     /*onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
