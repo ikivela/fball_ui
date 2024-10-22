@@ -2,7 +2,7 @@
 //====================== BOOTSTRAP VARIABLES ======================
 
 // Color system
-$white:    #fff !default;
+$white: #fff !default;
 $gray-100: #f8f9fa !default;
 $gray-200: #e9ecef !default;
 $gray-300: #dee2e6 !default;
@@ -12,63 +12,61 @@ $gray-600: #6c757d !default;
 $gray-700: #495057 !default;
 $gray-800: #343a40 !default;
 $gray-900: #212529 !default;
-$black:    #000 !default;
+$black: #000 !default;
 
 // $grays: () !default;
 
-$blue:    #007bff !default;
-$indigo:  #6610f2 !default;
-$purple:  #6f42c1 !default;
-$pink:    #e83e8c !default;
-$red:     #dc3545 !default;
-$orange:  #fd7e14 !default;
-$yellow:  #ffc107 !default;
-$green:   #28a745 !default;
-$teal:    #20c997 !default;
-$cyan:    #17a2b8 !default;
+$blue: #007bff !default;
+$indigo: #6610f2 !default;
+$purple: #6f42c1 !default;
+$pink: #e83e8c !default;
+$red: #dc3545 !default;
+$orange: #fd7e14 !default;
+$yellow: #ffc107 !default;
+$green: #28a745 !default;
+$teal: #20c997 !default;
+$cyan: #17a2b8 !default;
 
 $colors: () !default;
 
-$primary:       $blue !default;
-$secondary:     $gray-600 !default;
-$success:       $green !default;
-$info:          $cyan !default;
-$warning:       $yellow !default;
-$danger:        $red !default;
-$light:         $gray-100 !default;
-$dark:          $gray-800 !default;
+$primary: $blue !default;
+$secondary: $gray-600 !default;
+$success: $green !default;
+$info: $cyan !default;
+$warning: $yellow !default;
+$danger: $red !default;
+$light: $gray-100 !default;
+$dark: $gray-800 !default;
 
 $theme-colors: () !default;
 
 // Set a specific jump point for requesting color jumps
-$theme-color-interval:      8% !default;
+$theme-color-interval: 8% !default;
 
 // The yiq lightness value that determines when the lightness of color changes from "dark" to "light". Acceptable values are between 0 and 255.
 // $yiq-contrasted-threshold:  150 !default;
 
 // Customize the light and dark text colors for use in our YIQ color contrast function.
-$yiq-text-dark:             $gray-900 !default;
-$yiq-text-light:            $white !default;
-
+$yiq-text-dark: $gray-900 !default;
+$yiq-text-light: $white !default;
 
 // Options
 //
 // Quickly modify global styling by enabling or disabling optional features.
 
-$enable-caret:                                true !default;
-$enable-rounded:                              true !default;
-$enable-shadows:                              false !default;
-$enable-gradients:                            false !default;
-$enable-transitions:                          true !default;
-$enable-prefers-reduced-motion-media-query:   true !default;
-$enable-hover-media-query:                    false !default; // Deprecated, no longer affects any compiled CSS
-$enable-grid-classes:                         true !default;
-$enable-pointer-cursor-for-buttons:           true !default;
-$enable-print-styles:                         true !default;
-$enable-responsive-font-sizes:                false !default;
-$enable-validation-icons:                     true !default;
-$enable-deprecation-messages:                 true !default;
-
+$enable-caret: true !default;
+$enable-rounded: true !default;
+$enable-shadows: false !default;
+$enable-gradients: false !default;
+$enable-transitions: true !default;
+$enable-prefers-reduced-motion-media-query: true !default;
+$enable-hover-media-query: false !default; // Deprecated, no longer affects any compiled CSS
+$enable-grid-classes: true !default;
+$enable-pointer-cursor-for-buttons: true !default;
+$enable-print-styles: true !default;
+$enable-responsive-font-sizes: false !default;
+$enable-validation-icons: true !default;
+$enable-deprecation-messages: true !default;
 
 // Spacing
 //
@@ -77,20 +75,16 @@ $enable-deprecation-messages:                 true !default;
 // You can add more entries to the $spacers map, should you need more variation.
 
 $spacer: 1rem !default;
-$spacers: (
-  
-) !default;
+$spacers: () !default;
 
 // This variable affects the `.h-*` and `.w-*` classes.
 $sizes: () !default;
 
-
 // Body
 //
 // Settings for the `<body>` element.
-$body-bg:                   $white !default;
-$body-color:                $gray-900 !default;
-
+$body-bg: $white !default;
+$body-color: $gray-900 !default;
 
 // Links
 //
@@ -106,8 +100,7 @@ $body-color:                $gray-900 !default;
 // Paragraphs
 //
 // Style p element.
-$paragraph-margin-bottom:   1rem !default;
-
+$paragraph-margin-bottom: 1rem !default;
 
 // Grid breakpoints
 //
@@ -119,7 +112,7 @@ $grid-breakpoints: (
   sm: 576px,
   md: 768px,
   lg: 992px,
-  xl: 1200px
+  xl: 1200px,
 ) !default;
 
 // Grid containers
@@ -129,9 +122,8 @@ $container-max-widths: (
   sm: 540px,
   md: 720px,
   lg: 960px,
-  xl: 1140px
+  xl: 1140px,
 ) !default;
-
 
 // Components
 //
@@ -170,9 +162,12 @@ $container-max-widths: (
 // Font, line-height, and color for body text, headings, and more.
 
 // stylelint-disable value-keyword-case
-$font-family-sans-serif:      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
-$font-family-monospace:       SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !default;
-$font-family-base:            $font-family-sans-serif !default;
+$font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif,
+  "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
+$font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas,
+  "Liberation Mono", "Courier New", monospace !default;
+$font-family-base: $font-family-sans-serif !default;
 // stylelint-enable value-keyword-case
 
 // $font-size-base:              1rem !default; // Assumes the browser default, typically `16px`
@@ -239,7 +234,6 @@ $font-family-base:            $font-family-sans-serif !default;
 
 // $hr-margin-y:                 $spacer !default;
 
-
 // Tables
 //
 // Customizes the `.table` component with basic values, each used across all table variations.
@@ -301,7 +295,6 @@ $font-family-base:            $font-family-sans-serif !default;
 
 // $input-btn-border-width:      $border-width !default;
 
-
 // Buttons
 //
 // For each of Bootstrap's buttons, define text, background, and border color.
@@ -342,7 +335,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $btn-border-radius-sm:        $border-radius-sm !default;
 
 // $btn-transition:              color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out !default;
-
 
 // Forms
 
@@ -544,7 +536,6 @@ $font-family-base:            $font-family-sans-serif !default;
 //   en: "Browse"
 // ) !default;
 
-
 // Form validation
 
 // $form-feedback-margin-top:          $form-text-margin-top !default;
@@ -606,7 +597,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $nav-divider-color:                 $gray-200 !default;
 // $nav-divider-margin-y:              $spacer / 2 !default;
 
-
 // Navbar
 
 // $navbar-padding-y:                  $spacer / 2 !default;
@@ -646,7 +636,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $navbar-dark-brand-color:                 $navbar-dark-active-color !default;
 // $navbar-dark-brand-hover-color:           $navbar-dark-active-color !default;
 
-
 // Dropdowns
 //
 // Dropdown menu container and contents.
@@ -680,7 +669,6 @@ $font-family-base:            $font-family-sans-serif !default;
 
 // $dropdown-header-color:             $gray-600 !default;
 // $dropdown-header-padding:           $dropdown-padding-y $dropdown-item-padding-x !default;
-
 
 // Pagination
 // $pagination-padding-y:              .5rem !default;
@@ -720,7 +708,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $jumbotron-color:                   null !default;
 // $jumbotron-bg:                      $gray-200 !default;
 
-
 // Cards
 
 // $card-spacer-y:                     .75rem !default;
@@ -743,7 +730,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $card-columns-count:                3 !default;
 // $card-columns-gap:                  1.25rem !default;
 // $card-columns-margin:               $card-spacer-y !default;
-
 
 // Tooltips
 
@@ -768,7 +754,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $form-feedback-tooltip-line-height:   $line-height-base !default;
 // $form-feedback-tooltip-opacity:       $tooltip-opacity !default;
 // $form-feedback-tooltip-border-radius: $tooltip-border-radius !default;
-
 
 // Popovers
 
@@ -795,7 +780,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $popover-arrow-color:               $popover-bg !default;
 
 // $popover-arrow-outer-color:         fade-in($popover-border-color, .05) !default;
-
 
 // Toasts
 
@@ -829,7 +813,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // Use a higher than normal value to ensure completely rounded edges when
 // customizing padding or font-size on labels.
 // $badge-pill-border-radius:          10rem !default;
-
 
 // Modals
 
@@ -873,7 +856,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $modal-transition:                  transform .3s ease-out !default;
 // $modal-scale-transform:             scale(1.02) !default;
 
-
 // Alerts
 //
 // Define alert colors, border radius, and padding.
@@ -889,7 +871,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $alert-border-level:                -9 !default;
 // $alert-color-level:                 6 !default;
 
-
 // Progress bars
 
 // $progress-height:                   1rem !default;
@@ -901,7 +882,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $progress-bar-bg:                   theme-color("primary") !default;
 // $progress-bar-animation-timing:     1s linear infinite !default;
 // $progress-bar-transition:           width .6s ease !default;
-
 
 // List group
 
@@ -928,7 +908,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $list-group-action-active-color:    $body-color !default;
 // $list-group-action-active-bg:       $gray-200 !default;
 
-
 // Image thumbnails
 
 // $thumbnail-padding:                 .25rem !default;
@@ -942,7 +921,6 @@ $font-family-base:            $font-family-sans-serif !default;
 
 // $figure-caption-font-size:          90% !default;
 // $figure-caption-color:              $gray-600 !default;
-
 
 // Breadcrumbs
 
@@ -960,7 +938,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $breadcrumb-divider:                quote("/") !default;
 
 // $breadcrumb-border-radius:          $border-radius !default;
-
 
 // Carousel
 
@@ -988,7 +965,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $carousel-transition-duration:       .6s !default;
 // $carousel-transition:                transform $carousel-transition-duration ease-in-out !default; // Define transform transition first if using multiple transitions (e.g., `transform 2s ease, opacity .5s ease-out`)
 
-
 // Spinners
 
 // $spinner-width:         2rem !default;
@@ -998,7 +974,6 @@ $font-family-base:            $font-family-sans-serif !default;
 // $spinner-width-sm:        1rem !default;
 // $spinner-height-sm:       $spinner-width-sm !default;
 // $spinner-border-width-sm: .2em !default;
-
 
 // Close
 

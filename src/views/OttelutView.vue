@@ -2,37 +2,59 @@
   <div id="ottelut">
     <b-container>
       <b-nav-form>
-        <b-form-input
-          id="filter-input"
-          v-model="filter"
-          type="search"
-          filter-debounce="1000"
-          size="sm"
-          class="mr-sm-2"
-          placeholder="Suodata"
-        ></b-form-input>
-        <b-row>
-          <b-button
-            style="margin: 0.1em"
-            pill
-            variant="outline-primary"
-            v-bind:key="season.text"
-            @click="getSelectedSeason(season)"
-            v-for="season in seasons"
-            >{{ season.text }}</b-button
-          >
-        </b-row>
-        <b-row>
-          <b-button
-            style="margin: 0.1em"
-            pill
-            variant="primary"
-            @click="setFilter(value)"
-            v-bind:key="value"
-            v-for="value in classes"
-            >{{ value }}</b-button
-          >
-        </b-row>
+        <b-input-group prepend="Haku" class="mt-3">
+          <b-form-input
+            id="filter-input"
+            v-model="filter"
+            filter-debounce="1000"
+            placeholder="Suodata"
+          ></b-form-input>
+
+          <b-input-group-append>
+            <b-button
+              variant="outline-primary"
+              :pressed.sync="kaudet"
+              v-b-toggle.kaudet
+              >Kaudet</b-button
+            >
+            <b-button
+              variant="outline-primary"
+              :pressed.sync="sarjat"
+              v-b-toggle.sarjat
+              >Sarjat</b-button
+            >
+          </b-input-group-append>
+        </b-input-group>
+
+        <b-collapse id="kaudet">
+          <b-button-toolbar>
+            <b-button-group>
+              <b-button
+                style="font-size: 0.8em; margin: 0.1em"
+                variant="outline-primary"
+                v-bind:key="season.text"
+                @click="getSelectedSeason(season)"
+                v-for="season in seasons"
+                >{{ season.text }}</b-button
+              >
+            </b-button-group>
+          </b-button-toolbar>
+        </b-collapse>
+
+        <b-collapse id="sarjat">
+          <b-button-toolbar>
+            <b-button-group>
+              <b-button
+                style="font-size: 0.8em; margin: 0.1em"
+                variant="primary"
+                @click="setFilter(value)"
+                v-bind:key="value"
+                v-for="value in classes"
+                >{{ value }}</b-button
+              >
+            </b-button-group>
+          </b-button-toolbar>
+        </b-collapse>
       </b-nav-form>
     </b-container>
 
@@ -57,10 +79,10 @@
           }, 
                 Päästetyt maalit: ${this.currentStats.totalGoalsAgainst},
                   Tehdyt maalit/peli ka.: ${this.currentStats.averageGoalsPerGame.toFixed(
-                    1
+                    1,
                   )}, 
                   Päästetyt maalit/peli ka.: ${this.currentStats.averageGoalsAgainstPerGame.toFixed(
-                    1
+                    1,
                   )}`
         }}
       </b-badge>
@@ -84,12 +106,9 @@
           </div>
           <div v-else>
             {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
-            <br />
-            <span style="font-size: 0.8em"
-              ><a :href="`http://maps.google.com/?q=${data.item.RinkName}`">{{
-                data.item.RinkName
-              }}</a></span
-            >
+            <a :href="`http://maps.google.com/?q=${data.item.RinkName}`">
+              <b-icon-map></b-icon-map>
+            </a>
           </div>
         </template>
         <template #cell(Game)="data">
@@ -122,11 +141,8 @@
             data.item.group
           }}</a>
         </template>
-        <template v-if="isSmallScreen" #cell(class)="data">
-          {{ data.item.class }} <br />
-          <a :href="standings_link(data.item.groupID, data.item.class)"
-            ><span style="font-size: 0.8em">{{ data.item.group }}</span></a
-          >
+        <template #cell(class)="data">
+          {{ shorten_classname(data.item.class) }}
         </template>
         <template #cell(Result)="data">
           <div v-if="data.item.GameDate < today">
@@ -137,7 +153,7 @@
                   getGameStats(
                     data.item.UniqueID,
                     selectedSeason,
-                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
+                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName,
                   )
                 "
                 >{{ data.value }}</a
@@ -210,17 +226,18 @@
 <script>
 import axios from "axios";
 import { DateTime } from "luxon";
-import { BIconArrowUpRightSquare } from "bootstrap-vue";
+import { BIconArrowUpRightSquare, BIconMap } from "bootstrap-vue";
 import { mapActions, mapState } from "vuex";
 
 export default {
   name: "OttelutView",
-  components: { BIconArrowUpRightSquare },
+  components: { BIconArrowUpRightSquare, BIconMap },
   data() {
     return {
       currentUrl: "",
       currentTeam: "Nibacos",
-
+      kaudet: true,
+      sarjat: true,
       currentRoster: "",
       currentClass: "",
       standings_url2:
@@ -379,6 +396,7 @@ export default {
     today() {
       return DateTime.now().toISODate();
     },
+
     classes() {
       let classes = this.allGames
         .map((x) => {
@@ -440,9 +458,12 @@ export default {
       let values = data.split("-");
       return `${values[0]}<br />${values[1]}`;
     },
-    parseDate(_str) {
+    parseDate(_str, cr) {
       // console.log(_str);
-      return DateTime.fromISO(_str).toFormat("dd.MM. HH:mm");
+      let date = DateTime.fromISO(_str).toFormat("dd.MM.");
+      let time = DateTime.fromISO(_str).toFormat("HH:mm");
+      if (cr) return `${date}<br />${time}`;
+      else return DateTime.fromISO(_str).toFormat("dd.MM. HH:mm");
     },
 
     updateScreenWidth() {
@@ -457,6 +478,15 @@ export default {
       } else {
         return this.standings_url2 + _id + "&ssn=" + this.selectedSeason.value;
       }
+    },
+    shorten_classname(_classname) {
+      _classname = _classname.replace("SM-SARJA", "SM");
+      _classname = _classname.replace("VALTAKUNNALLINEN", "VK");
+      _classname = _classname.replace("DIVISIOONA", "DIV");
+      _classname = _classname.replace("SÄBÄKIPINÄ", "");
+
+      //console.log("cl", _classname);
+      return _classname;
     },
     roster_link(_id) {
       return this.result_url_url + _id + "/lineups";
@@ -493,7 +523,7 @@ export default {
         "season",
         this.selectedSeason,
         "past",
-        this.showPastValues
+        this.showPastValues,
       );
       this.allGames = this.allGames.sort((a, b) => {
         let a_date = DateTime.fromISO(a.GameDate + "T" + a.GameTime).toMillis();
@@ -532,7 +562,7 @@ export default {
       axios
         .get(url)
         .then((res) => {
-          this.gameStats = res.data;
+          this.gameStats = this.parseGameStat(_season.value, res.data);
           this.loading = false;
         })
         .catch((err) => {
@@ -542,6 +572,42 @@ export default {
 
       return _id;
     },
+    parseGameStat(season, data) {
+      if (season > 2023 && data.match) {
+        let events = [];
+        //console.log("parseGameStat", data);
+        let clubs = {};
+        clubs[data.match.team_A_id] = data.match.team_A_name;
+        clubs[data.match.team_B_id] = data.match.team_B_name;
+
+        for (let goal of data.match.goals) {
+          let event = {
+            event: "goal",
+            time: goal.time,
+            result: goal.score_A + "-" + goal.score_B,
+            yv_av: goal.description,
+            team: clubs[goal.team_id],
+            scorer: goal.player_name,
+            assist: "",
+          };
+          let assist = data.match.events.filter(
+            (x) => x.code == "syotto" && x.time == goal.time,
+          );
+
+          if (assist.length > 0) {
+            if (Array.isArray(assist)) assist = assist[assist.length - 1];
+            event.assist = assist.player_name;
+          }
+          events.push(event);
+          //console.log(goal.time,
+        }
+
+        console.log(events);
+        return events;
+      } else {
+        return data;
+      }
+    },
     setStats(_class, toggle) {
       console.log("setStat class: %s season: %s", _class, this.selectedSeason);
       this.showStats = toggle ? toggle : true;
@@ -550,7 +616,7 @@ export default {
       this.selectedClass = _class != "" ? _class : this.classes[1];
 
       this.statsData = this.seasonStats.filter(
-        (x) => x.season == this.selectedSeason && x.class == _class
+        (x) => x.season == this.selectedSeason && x.class == _class,
       );
     },
     async getStats() {
@@ -585,21 +651,21 @@ export default {
         { key: "class", label: "Sarja", sortable: false },
         { key: "RinkName", label: "Halli", sortable: false },*/
 
-        response.data = response.data.matches.map((match) => {
+        /*response.data = response.data.matches.map((match) => {
           return {
             GameDate: match.date,
             GameTime: match.time,
             UniqueID: match.match_id,
-            HomeTeamName: match.club_A_abbrevation,
-            AwayTeamName: match.club_B_abbrevation,
+            HomeTeamName: match.team_A_description_en,
+            AwayTeamName: match.team_B_description_en,
             Result: `${match.fs_A}-${match.fs_B}`,
-            Game: `${match.club_A_abbrevation}-${match.club_B_abbrevation}`,
+            Game: `${match.team_A_description_en}-${match.team_B_description_en}`,
             group: match.group_name,
             groupID: match.category_abbrevation,
             class: match.category_name,
-            RinkName: match.venue_location_name,
+            RinkName: match.venue_name,
           };
-        });
+        });*/
         return response.data;
       } else {
         return response.data;
@@ -625,4 +691,3 @@ a.resultStyle:hover {
   text-decoration: underline;
 }
 </style>
-
