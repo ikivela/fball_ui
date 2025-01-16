@@ -12,7 +12,6 @@
         :filter="filter"
         :items="games_table"
         :filter-included-fields="filterOn"
-        
       >
         <template v-for="field in fields" :slot="`head-${field.key}`">
           {{ field.label }}
@@ -22,21 +21,25 @@
             {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
           </div>
           <div v-else>
-            {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }} <br />
-            <a style="font-size: small;" :href="`http://maps.google.com/?q=${data.item.RinkName}`">
-             {{  data.item.RinkName }}
+            {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
+            <br />
+            <a
+              style="font-size: small"
+              :href="`http://maps.google.com/?q=${data.item.RinkName}`"
+            >
+              {{ data.item.RinkName }}
             </a>
           </div>
         </template>
         <template #cell(Game)="data">
           <div v-if="selectedSeason.value == seasons[0].value">
             <a :href="`${result_url}${data.item.UniqueID}`">
-             <div v-if="!isSmallScreen">
+              <div v-if="!isSmallScreen">
                 {{
                   `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
                 }}
               </div>
-              <div v-else>  
+              <div v-else>
                 {{ data.item.HomeTeamName }} -<br />
                 {{ data.item.AwayTeamName }}
               </div>
@@ -49,7 +52,7 @@
                   `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
                 }}
               </div>
-              <div v-else>  
+              <div v-else>
                 {{ data.item.HomeTeamName }} <br />
                 {{ data.item.AwayTeamName }}
               </div>
@@ -78,7 +81,7 @@
                   getGameStats(
                     data.item.UniqueID,
                     selectedSeason,
-                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName,
+                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
                   )
                 "
                 >{{ data.value }}</a
@@ -187,7 +190,7 @@ export default {
 
   async mounted() {
     this.pageReady = true;
-    
+
     this.screenWidth = window.matchMedia("(max-width: 600px)").matches;
     window.addEventListener("resize", this.updateScreenWidth);
 
@@ -204,7 +207,7 @@ export default {
       (x) =>
         x.GameDate >=
           DateTime.now().minus({ days: 3 }).toFormat("yyyy-MM-dd") &&
-        x.GameDate <= DateTime.now().plus({ days: 14 }).toFormat("yyyy-MM-dd"),
+        x.GameDate <= DateTime.now().plus({ days: 14 }).toFormat("yyyy-MM-dd")
     );
     console.log("ajankohtaiset mounted() games_table:", this.games_table);
   },
@@ -300,7 +303,7 @@ export default {
             assist: "",
           };
           let assist = data.match.events.filter(
-            (x) => x.code == "syotto" && x.time == goal.time,
+            (x) => x.code == "syotto" && x.time == goal.time
           );
 
           if (assist.length > 0) {
@@ -324,11 +327,14 @@ export default {
       this.currentPage = 1;
     },*/
     standings_link(_id, _class) {
-      //console.log("class", _class);
+      let current_year =
+        DateTime.now().month < 8
+          ? DateTime.now().year - 1
+          : DateTime.now().year;
       if (this.seasons[0].value == this.selectedSeason.value) {
         if (_class.includes("PM"))
-          return this.standings_url + _id + "!sb2023pm/tables";
-        else return this.standings_url + _id + "!sb2023/tables";
+          return this.standings_url + _id + "!sb" + current_year + "pm/tables";
+        else return this.standings_url + _id + "!sb" + current_year + "/tables";
       } else {
         return this.standings_url2 + _id + "&ssn=" + this.selectedSeason.value;
       }
@@ -348,7 +354,7 @@ export default {
     getResultLink(data) {
       const gameDate = DateTime.fromFormat(
         data.item.GameDate,
-        "dd.MM. HH:mm",
+        "dd.MM. HH:mm"
       ).toISODate();
       if (gameDate <= DateTime.now().toISODate()) {
         console.log(data.item.GameDate, DateTime.now().toISODate());

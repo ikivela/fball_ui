@@ -79,10 +79,10 @@
           }, 
                 Päästetyt maalit: ${this.currentStats.totalGoalsAgainst},
                   Tehdyt maalit/peli ka.: ${this.currentStats.averageGoalsPerGame.toFixed(
-                    1,
+                    1
                   )}, 
                   Päästetyt maalit/peli ka.: ${this.currentStats.averageGoalsAgainstPerGame.toFixed(
-                    1,
+                    1
                   )}`
         }}
       </b-badge>
@@ -153,7 +153,7 @@
                   getGameStats(
                     data.item.UniqueID,
                     selectedSeason,
-                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName,
+                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
                   )
                 "
                 >{{ data.value }}</a
@@ -470,11 +470,14 @@ export default {
       this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
     },
     standings_link(_id, _class) {
-      //console.log("class", _class);
+      let current_year =
+        DateTime.now().monthShort < 8
+          ? DateTime.now().year - 1
+          : DateTime.now().year;
       if (this.seasons[0].value == this.selectedSeason.value) {
         if (_class.includes("PM"))
-          return this.standings_url + _id + "!sb2023pm/tables";
-        else return this.standings_url + _id + "!sb2023/tables";
+          return this.standings_url + _id + "!sb" + current_year + "pm/tables";
+        else return this.standings_url + _id + "!sb" + current_year + "/tables";
       } else {
         return this.standings_url2 + _id + "&ssn=" + this.selectedSeason.value;
       }
@@ -523,7 +526,7 @@ export default {
         "season",
         this.selectedSeason,
         "past",
-        this.showPastValues,
+        this.showPastValues
       );
       this.allGames = this.allGames.sort((a, b) => {
         let a_date = DateTime.fromISO(a.GameDate + "T" + a.GameTime).toMillis();
@@ -591,7 +594,7 @@ export default {
             assist: "",
           };
           let assist = data.match.events.filter(
-            (x) => x.code == "syotto" && x.time == goal.time,
+            (x) => x.code == "syotto" && x.time == goal.time
           );
 
           if (assist.length > 0) {
@@ -616,7 +619,7 @@ export default {
       this.selectedClass = _class != "" ? _class : this.classes[1];
 
       this.statsData = this.seasonStats.filter(
-        (x) => x.season == this.selectedSeason && x.class == _class,
+        (x) => x.season == this.selectedSeason && x.class == _class
       );
     },
     async getStats() {
