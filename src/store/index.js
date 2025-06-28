@@ -1,11 +1,8 @@
-import Vue from "vue";
-import Vuex from "vuex";
+import { createStore } from "vuex";
 import { DateTime } from "luxon";
 import axios from "axios";
 
-Vue.use(Vuex);
-
-export default new Vuex.Store({
+export default createStore({
   state: {
     seasons: [],
     stats: {},

@@ -1,141 +1,235 @@
 <template>
-  <!-- <div v-else>Tervetuloa Nibacos-ottelut sivulle </div>-->
-  <div>
-    <p>Seuraavat Nibacos-ottelut</p>
-    <b-container v-if="this.selectedSeason && this.seasons.length > 0">
-      <b-table
-        small
-        :fields="fields"
-        hover
-        id="1"
-        stacked="xs"
-        :filter="filter"
-        :items="games_table"
-        :filter-included-fields="filterOn"
-      >
-        <template v-for="field in fields" :slot="`head-${field.key}`">
-          {{ field.label }}
-        </template>
-        <template #cell(Date)="data">
-          <div v-if="!isSmallScreen">
-            {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
+  <div class="ajankohtaiset-view">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-8">
+            <h1 class="hero-title">
+              <i class="fas fa-hockey-puck me-3"></i>
+              Seuraavat Nibacos-ottelut
+            </h1>
+            <p class="hero-subtitle">
+              Pysy ajan tasalla joukkueen otteluista ja tuloksista
+            </p>
           </div>
-          <div v-else>
-            {{ `${parseDate(data.item.GameDate + "T" + data.item.GameTime)}` }}
-            <br />
-            <a
-              style="font-size: small"
-              :href="`http://maps.google.com/?q=${data.item.RinkName}`"
-            >
-              {{ data.item.RinkName }}
-            </a>
-          </div>
-        </template>
-        <template #cell(Game)="data">
-          <div v-if="selectedSeason.value == seasons[0].value">
-            <a :href="`${result_url}${data.item.UniqueID}`">
-              <div v-if="!isSmallScreen">
-                {{
-                  `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
-                }}
+          <div class="col-lg-4 text-end">
+            <div class="stats-card">
+              <div class="stats-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Kausi: {{ selectedSeason ? selectedSeason.text : 'Ladataan...' }}</span>
               </div>
-              <div v-else>
-                {{ data.item.HomeTeamName }} -<br />
-                {{ data.item.AwayTeamName }}
+              <div class="stats-item">
+                <i class="fas fa-gamepad"></i>
+                <span>Otteluita: {{ games_table.length }}</span>
               </div>
-            </a>
-          </div>
-          <div v-else>
-            <a class="resultStyle" @click="getRoster(data, selectedSeason)">
-              <div v-if="!isSmallScreen">
-                {{
-                  `${data.item.HomeTeamName}&nbsp;-&nbsp;${data.item.AwayTeamName}`
-                }}
-              </div>
-              <div v-else>
-                {{ data.item.HomeTeamName }} <br />
-                {{ data.item.AwayTeamName }}
-              </div>
-            </a>
-          </div>
-        </template>
-        <template v-if="!isSmallScreen" #cell(RinkName)="data">
-          <a :href="`http://maps.google.com/?q=${data.item.RinkName}`">{{
-            data.item.RinkName
-          }}</a>
-        </template>
-        <template v-if="!isSmallScreen" #cell(group)="data">
-          <a :href="standings_link(data.item.groupID, data.item.class)">{{
-            data.item.group
-          }}</a>
-        </template>
-        <template #cell(class)="data">
-          {{ shorten_classname(data.item.class) }}
-        </template>
-        <template #cell(Result)="data">
-          <div v-if="data.item.GameDate < today">
-            <div v-if="data.value != '-'">
-              <a
-                class="resultStyle"
-                @click="
-                  getGameStats(
-                    data.item.UniqueID,
-                    selectedSeason,
-                    data.item.HomeTeamName + ' - ' + data.item.AwayTeamName
-                  )
-                "
-                >{{ data.value }}</a
-              >
             </div>
-            <div v-else></div>
           </div>
-          <div v-else>
-            <a :href="`${result_url}${data.item.UniqueID}`" class="resultStyle"
-              ><b-icon-arrow-up-right-square></b-icon-arrow-up-right-square
-            ></a>
-          </div>
-        </template>
-      </b-table>
-    </b-container>
-    <b-modal ok-only v-model="showGameStat">
-      <b-spinner v-if="this.loading" label="">Ladataan...</b-spinner>
-      <div class="d-block text-center">
-        <b>{{ this.currentGame }}</b>
+        </div>
       </div>
-      <div v-if="gameStats.length == 0 && !this.loading">Ei tilastoja</div>
+    </div>
 
-      <ul v-if="gameStats.length > 0">
-        <li v-for="stat in gameStats" v-bind:key="stat.time">
-          {{ stat.time }}
-          {{ stat.event == "goal" ? stat.result : stat.penalty_time }}
-          {{ stat.team }}
-          {{
-            stat.yv_av
-              ? stat.yv_av == "RL0"
-                ? "Rangaistusl. (epäonnistunut)"
-                : stat.yv_av
-              : ""
-          }}
-          {{
-            stat.event == "goal"
-              ? stat.scorer + (stat.assist ? " (" + stat.assist + ")" : "")
-              : ""
-          }}
-          {{ stat.event == "penalty" ? stat.player + " " + stat.reason : "" }}
-        </li>
-      </ul>
-    </b-modal>
+    <!-- Games Section -->
+    <div class="games-section">
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <div class="card games-card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-list me-2"></i>
+                  Ottelut
+                </h2>
+                <div class="card-actions">
+                  <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input
+                      type="text"
+                      v-model="filter"
+                      placeholder="Hae otteluita..."
+                      class="form-control search-input"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-body p-0">
+                <div v-if="this.selectedSeason && this.seasons.length > 0">
+                  <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                      <thead>
+                        <tr>
+                          <th v-for="field in fields" :key="field.key">
+                            <i class="fas fa-sort me-1"></i>
+                            {{ field.label }}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="game in games_table" :key="game.UniqueID" class="game-row">
+                          <td class="game-date">
+                            <div class="date-info">
+                              <div class="date-main">
+                                {{ parseDate(game.GameDate + "T" + game.GameTime) }}
+                              </div>
+                              <div v-if="isSmallScreen" class="date-location">
+                                <a :href="`http://maps.google.com/?q=${game.RinkName}`" class="location-link">
+                                  <i class="fas fa-map-marker-alt me-1"></i>
+                                  {{ game.RinkName }}
+                                </a>
+                              </div>
+                            </div>
+                          </td>
+                          
+                          <td class="game-teams">
+                            <div v-if="selectedSeason.value == seasons[0].value">
+                              <a :href="`${result_url}${game.UniqueID}`" class="team-link">
+                                <div class="team-names">
+                                  <span class="home-team">{{ game.HomeTeamName }}</span>
+                                  <span class="vs-separator">vs</span>
+                                  <span class="away-team">{{ game.AwayTeamName }}</span>
+                                </div>
+                              </a>
+                            </div>
+                            <div v-else>
+                              <a class="team-link resultStyle" @click="getRoster(game, selectedSeason)">
+                                <div class="team-names">
+                                  <span class="home-team">{{ game.HomeTeamName }}</span>
+                                  <span class="vs-separator">vs</span>
+                                  <span class="away-team">{{ game.AwayTeamName }}</span>
+                                </div>
+                              </a>
+                            </div>
+                          </td>
+                          
+                          <td v-if="!isSmallScreen" class="game-rink">
+                            <a :href="`http://maps.google.com/?q=${game.RinkName}`" class="rink-link">
+                              <i class="fas fa-map-marker-alt me-1"></i>
+                              {{ game.RinkName }}
+                            </a>
+                          </td>
+                          
+                          <td v-if="!isSmallScreen" class="game-group">
+                            <a :href="standings_link(game.groupID)" class="group-link">
+                              {{ game.group }}
+                            </a>
+                          </td>
+                          
+                          <td class="game-class">
+                            <span class="class-badge">{{ shorten_classname(game.class || '') }}</span>
+                          </td>
+                          
+                          <td class="game-result">
+                            <div v-if="game.GameDate < today">
+                              <div v-if="game.Result != '-'">
+                                <a
+                                  class="result-link"
+                                  @click="getGameStats(game.UniqueID, selectedSeason, game.HomeTeamName + ' - ' + game.AwayTeamName)"
+                                >
+                                  <span class="result-score" :class="getResultColor(game)">{{ game.Result }}</span>
+                                </a>
+                              </div>
+                              <div v-else class="no-result">-</div>
+                            </div>
+                            <div v-else>
+                              <a :href="`${result_url}${game.UniqueID}`" class="live-link">
+                                <i class="fas fa-external-link-alt"></i>
+                                <span>Live</span>
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div v-if="games_table.length === 0" class="no-games">
+                    <div class="no-games-content">
+                      <i class="fas fa-calendar-times"></i>
+                      <h3>Ei otteluita</h3>
+                      <p>Ei löytynyt otteluita valitulla hakuehdolla.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div v-else class="loading-section">
+                  <div class="loading-content">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Ladataan otteluita...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Stats Modal -->
+    <div class="modal fade" id="gameStatsModal" tabindex="-1" :class="{ show: showGameStat }" v-if="showGameStat">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-chart-line me-2"></i>
+              {{ currentGame }}
+            </h5>
+            <button type="button" class="btn-close btn-close-white" @click="showGameStat = false"></button>
+          </div>
+          <div class="modal-body">
+            <div v-if="loading" class="loading-modal">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Ladataan tilastoja...</p>
+            </div>
+            
+            <div v-else-if="gameStats.length === 0" class="no-stats">
+              <i class="fas fa-chart-bar"></i>
+              <p>Ei tilastoja saatavilla</p>
+            </div>
+            
+            <div v-else class="game-stats">
+              <div class="stats-timeline">
+                <div v-for="stat in gameStats" :key="stat.time" class="stat-item">
+                  <div class="stat-time">{{ stat.time }}</div>
+                  <div class="stat-content">
+                    <div class="stat-event">
+                      <span class="event-type" :class="stat.event">
+                        {{ stat.event === 'goal' ? '⚽ Maali' : '🟨 Rangaistus' }}
+                      </span>
+                      <span class="event-result">{{ stat.event === 'goal' ? stat.result : stat.penalty_time }}</span>
+                    </div>
+                    <div class="stat-details">
+                      <span class="team-name">{{ stat.team }}</span>
+                      <span v-if="stat.yv_av" class="special-play">
+                        {{ stat.yv_av === 'RL0' ? 'Rangaistusl. (epäonnistunut)' : stat.yv_av }}
+                      </span>
+                    </div>
+                    <div v-if="stat.event === 'goal'" class="goal-details">
+                      <span class="scorer">{{ stat.scorer }}</span>
+                      <span v-if="stat.assist" class="assist">({{ stat.assist }})</span>
+                    </div>
+                    <div v-if="stat.event === 'penalty'" class="penalty-details">
+                      <span class="player">{{ stat.player }}</span>
+                      <span class="reason">{{ stat.reason }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import { DateTime } from "luxon";
-import { BIconArrowUpRightSquare } from "bootstrap-vue";
 import { mapActions, mapState } from "vuex";
 
 export default {
-  components: { BIconArrowUpRightSquare },
+  components: {},
   data() {
     return {
       currentUrl: "",
@@ -201,181 +295,623 @@ export default {
       await this.fetchGames(this.seasons[0].value);
     }
     this.selectedSeason = this.seasons[0];
-    console.log("ajankohtaiset mounted() seasons:", this.seasons);
-    this.games_table = this.games[this.seasons[0].value];
-    this.games_table = this.games_table.filter(
-      (x) =>
-        x.GameDate >=
-          DateTime.now().minus({ days: 3 }).toFormat("yyyy-MM-dd") &&
-        x.GameDate <= DateTime.now().plus({ days: 14 }).toFormat("yyyy-MM-dd")
-    );
-    console.log("ajankohtaiset mounted() games_table:", this.games_table);
+    this.games_table = this.games[this.seasons[0].value] || [];
+    this.updateScreenWidth();
   },
+
   computed: {
-    ...mapState({
-      games: (state) => state.games,
-      seasons: (state) => state.seasons,
-      seasonStats: (state) => state.stats,
-    }),
-
-    today() {
-      return DateTime.now().toISODate();
-    },
+    ...mapState(["games", "seasons"]),
     fields() {
-      //console.log("isSmallScreen", this.isSmallScreen);
-      if (this.isSmallScreen) {
-        return this.tablecolumns.filter((x) => this.scFields.includes(x.key));
-      } else return this.tablecolumns;
+      return this.isSmallScreen ? this.scFields : this.tablecolumns;
     },
-    /*games_table: {
-      get: () => {
-        console.log("games table", this.selectedSeason, this.games.length);
-        if (this.selectedSeason && this.games[this.selectedSeason.value]) {
-          return this.games[this.selectedSeason.value].filter(
-            (x) =>
-              x.GameDate >=
-                DateTime.now().minus({ days: 3 }).toFormat("yyyy-MM-dd") &&
-              x.GameDate <=
-                DateTime.now().plus({ days: 14 }).toFormat("yyyy-MM-dd")
-          );
-        } else {
-          console.log("games table", this.selectedSeason, this.games.length);
-          return [];
-        }
-      },
-      set: (value) => {
-        return value;
-      },  
-    },*/
+    today() {
+      return DateTime.now().toFormat("yyyy-MM-dd");
+    },
   },
+
   methods: {
-    ...mapActions({
-      fetchGames: "fetchGames",
-      fetchSeasons: "fetchSeasons",
-      setStats: "setStats",
-    }),
-    parseDate(_str) {
-      // console.log(_str);
-      return DateTime.fromISO(_str).toFormat("dd.MM. HH:mm");
-    },
-    getGameStats(_id, _season, _game) {
-      this.gameStats = "";
-
-      this.showGameStat = true;
-      this.loading = true;
-      this.currentGame = _game;
-
-      console.log("get gamestats", _season.value, this.currentGame);
-      var url = `${this.baseurl}/gamestats/?season=${_season.value}&gameid=${_id}`;
-      axios
-        .get(url)
-        .then((res) => {
-          this.gameStats = this.parseGameStat(_season.value, res.data);
-          this.loading = false;
-        })
-        .catch((err) => {
-          this.showGameStat = false;
-          console.error(err);
-        });
-
-      return _id;
-    },
-    async getStats() {
-      let res = await axios.get(`${this.baseurl}/seasonstats`);
-      this.setStats(res.data);
-    },
-    parseGameStat(season, data) {
-      if (season > 2023 && data.match) {
-        let events = [];
-        //console.log("parseGameStat", data);
-        let clubs = {};
-        clubs[data.match.team_A_id] = data.match.team_A_name;
-        clubs[data.match.team_B_id] = data.match.team_B_name;
-
-        for (let goal of data.match.goals) {
-          let event = {
-            event: "goal",
-            time: goal.time,
-            result: goal.score_A + "-" + goal.score_B,
-            yv_av: goal.description,
-            team: clubs[goal.team_id],
-            scorer: goal.player_name,
-            assist: "",
-          };
-          let assist = data.match.events.filter(
-            (x) => x.code == "syotto" && x.time == goal.time
-          );
-
-          if (assist.length > 0) {
-            if (Array.isArray(assist)) assist = assist[assist.length - 1];
-            event.assist = assist.player_name;
-          }
-          events.push(event);
-          //console.log(goal.time,
-        }
-
-        console.log(events);
-        return events;
-      } else {
-        return data;
-      }
-    },
-    /*onFiltered(filteredItems) {
-      // Trigger pagination to update the number of buttons/pages due to filtering
-      console.log("filtered length", filteredItems.length);
-      this.totalRows = filteredItems.length;
-      this.currentPage = 1;
-    },*/
-    standings_link(_id, _class) {
-      let current_year = ( DateTime.now().month >= 1 && DateTime.now().month <= 6 ) 
-          ? DateTime.now().year - 1
-          : DateTime.now().year;
-      if (this.seasons[0].value == this.selectedSeason.value) {
-        if (_class.includes("PM"))
-          return this.standings_url + _id + "!sb" + current_year + "pm/tables";
-        else return this.standings_url + _id + "!sb" + current_year + "/tables";
-      } else {
-        return this.standings_url2 + _id + "&ssn=" + this.selectedSeason.value;
-      }
-    },
+    ...mapActions(["fetchGames", "fetchSeasons"]),
     updateScreenWidth() {
       this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
     },
-    shorten_classname(_classname) {
-      _classname = _classname.replace("SM-SARJA", "SM");
-      _classname = _classname.replace("VALTAKUNNALLINEN", "VK");
-      _classname = _classname.replace("DIVISIOONA", "DIV");
-      _classname = _classname.replace("SÄBÄKIPINÄ", "");
-
-      //console.log("cl", _classname);
-      return _classname;
+    parseDate(dateString) {
+      return DateTime.fromISO(dateString).toFormat("dd.MM.yyyy HH:mm");
     },
-    getResultLink(data) {
-      const gameDate = DateTime.fromFormat(
-        data.item.GameDate,
-        "dd.MM. HH:mm"
-      ).toISODate();
-      if (gameDate <= DateTime.now().toISODate()) {
-        console.log(data.item.GameDate, DateTime.now().toISODate());
-        return `<a href="#" onclick="this.getGameStats(data.item.UniqueID,
-                selectedSeason, data.item.HomeTeamName + ' - ' + data.item.AwayTeamName);return false;
-            ">${data.item.Result}</a>`;
+    shorten_classname(classname) {
+      if (!classname) return '';
+      return classname.replace("Salibandy", "SB");
+    },
+    standings_link(groupID) {
+      return `${this.standings_url}${groupID}`;
+    },
+    async getRoster(game, season) {
+      // TODO: Implement roster functionality
+      console.log('Roster requested for game:', game, 'season:', season);
+    },
+    async getGameStats(uniqueID, season, gameName) {
+      this.loading = true;
+      this.currentGame = gameName;
+      this.showGameStat = true;
+      
+      try {
+        const response = await axios.get(
+          `${this.baseurl}/api/game-stats/${uniqueID}/${season.value}`
+        );
+        this.gameStats = response.data;
+      } catch (error) {
+        console.error("Error fetching game stats:", error);
+        this.gameStats = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    getResultColor(game) {
+      if (!game.Result || game.Result === '-') return 'neutral';
+      
+      const teamName = 'Nibacos';
+      const isHomeTeam = game.HomeTeamName.includes(teamName);
+      
+      if (!isHomeTeam && !game.AwayTeamName.includes(teamName)) {
+        return 'neutral'; // Nibacos not in this game
+      }
+      
+      const scores = game.Result.split('-');
+      if (scores.length !== 2) return 'neutral';
+      
+      const homeScore = parseInt(scores[0].trim());
+      const awayScore = parseInt(scores[1].trim());
+      
+      if (isNaN(homeScore) || isNaN(awayScore)) return 'neutral';
+      
+      if (isHomeTeam) {
+        return homeScore > awayScore ? 'win' : homeScore < awayScore ? 'loss' : 'tie';
       } else {
-        console.log("Forwarding", this.result_url + data.item.UniqueID);
-        window.open(this.result_url + data.item.UniqueID, "_blank");
-        // window.location.href = this.result_url + data.item.UniqueID;
+        return awayScore > homeScore ? 'win' : awayScore < homeScore ? 'loss' : 'tie';
       }
     },
   },
 };
 </script>
 
-<style lang="scss">
-@import "~@/assets/scss/vendors/bootstrap-vue/index";
+<style lang="scss" scoped>
+.ajankohtaiset-view {
+  min-height: 100vh;
+}
 
-a.resultStyle:hover {
-  color: green;
-  background-color: yellow;
-  text-decoration: underline;
+// Hero Section
+.hero-section {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 3rem 0;
+  margin-bottom: 2rem;
+  
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    
+    i {
+      color: var(--accent-color);
+    }
+  }
+  
+  .hero-subtitle {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+  }
+  
+  .stats-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    
+    .stats-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      i {
+        margin-right: 0.75rem;
+        color: var(--accent-color);
+        width: 20px;
+      }
+      
+      span {
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Games Section
+.games-section {
+  .games-card {
+    border: none;
+    box-shadow: var(--shadow-lg);
+    
+    .card-header {
+      background: var(--bg-white);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1.5rem;
+      display: flex;
+      justify-content: between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      
+      .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text-dark);
+        
+        i {
+          color: var(--primary-color);
+        }
+      }
+      
+      .card-actions {
+        .search-box {
+          position: relative;
+          min-width: 300px;
+          
+          .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            z-index: 2;
+          }
+          
+          .search-input {
+            padding-left: 2.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            
+            &:focus {
+              border-color: var(--primary-color);
+              box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Table Styles
+.table {
+  margin: 0;
+  
+  thead th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    border: none;
+    
+    i {
+      opacity: 0.7;
+    }
+  }
+  
+  tbody tr {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(59, 130, 246, 0.05);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+  }
+  
+  td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-color: var(--border-color);
+  }
+}
+
+// Game Row Styles
+.game-row {
+  .game-date {
+    .date-info {
+      .date-main {
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+      
+      .date-location {
+        margin-top: 0.25rem;
+        
+        .location-link {
+          color: var(--primary-color);
+          text-decoration: none;
+          font-size: 0.875rem;
+          
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+  
+  .game-teams {
+    .team-link {
+      text-decoration: none;
+      color: inherit;
+      
+      .team-names {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        
+        .home-team, .away-team {
+          font-weight: 600;
+          color: var(--text-dark);
+        }
+        
+        .vs-separator {
+          color: var(--text-light);
+          font-size: 0.875rem;
+          font-weight: 500;
+        }
+      }
+      
+      &:hover {
+        .team-names {
+          .home-team, .away-team {
+            color: var(--primary-color);
+          }
+        }
+      }
+    }
+  }
+  
+  .game-rink {
+    .rink-link {
+      color: var(--primary-color);
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+  
+  .game-group {
+    .group-link {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+  
+  .game-class {
+    .class-badge {
+      background: linear-gradient(135deg, var(--accent-color) 0%, #fbbf24 100%);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--border-radius);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  }
+  
+  .game-result {
+    .result-link {
+      text-decoration: none;
+      
+      .result-score {
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        
+        &.win {
+          background: #10b981;
+          color: white;
+        }
+        
+        &.loss {
+          background: #ef4444;
+          color: white;
+        }
+        
+        &.tie {
+          background: #f59e0b;
+          color: white;
+        }
+        
+        &.neutral {
+          background: var(--secondary-color);
+          color: white;
+        }
+        
+        &:hover {
+          transform: scale(1.05);
+          box-shadow: var(--shadow-sm);
+        }
+      }
+    }
+    
+    .no-result {
+      color: var(--text-light);
+      font-style: italic;
+    }
+    
+    .live-link {
+      color: var(--accent-color);
+      text-decoration: none;
+      font-weight: 600;
+      
+      i {
+        margin-right: 0.25rem;
+      }
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// No Games State
+.no-games {
+  padding: 3rem 1rem;
+  text-align: center;
+  
+  .no-games-content {
+    i {
+      font-size: 3rem;
+      color: var(--text-light);
+      margin-bottom: 1rem;
+    }
+    
+    h3 {
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+    
+    p {
+      color: var(--text-light);
+      margin: 0;
+    }
+  }
+}
+
+// Loading State
+.loading-section {
+  padding: 3rem 1rem;
+  text-align: center;
+  
+  .loading-content {
+    i {
+      font-size: 2rem;
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+    }
+    
+    p {
+      color: var(--text-light);
+      margin: 0;
+    }
+  }
+}
+
+// Modal Styles
+.modal {
+  .modal-content {
+    border-radius: var(--border-radius-lg);
+    border: none;
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .modal-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    color: white;
+    border-bottom: none;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    
+    .modal-title {
+      font-weight: 600;
+    }
+  }
+  
+  .modal-body {
+    padding: 2rem;
+  }
+  
+  &.show {
+    display: block;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+// Loading Modal
+.loading-modal {
+  text-align: center;
+  padding: 2rem;
+  
+  i {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: var(--text-light);
+    margin: 0;
+  }
+}
+
+// No Stats
+.no-stats {
+  text-align: center;
+  padding: 2rem;
+  
+  i {
+    font-size: 3rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: var(--text-light);
+    margin: 0;
+  }
+}
+
+// Game Stats
+.game-stats {
+  .stats-timeline {
+    .stat-item {
+      display: flex;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: var(--bg-light);
+      border-radius: var(--border-radius);
+      border-left: 4px solid var(--primary-color);
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .stat-time {
+        font-weight: 600;
+        color: var(--primary-color);
+        min-width: 60px;
+        margin-right: 1rem;
+      }
+      
+      .stat-content {
+        flex: 1;
+        
+        .stat-event {
+          margin-bottom: 0.5rem;
+          
+          .event-type {
+            font-weight: 600;
+            margin-right: 0.5rem;
+            
+            &.goal {
+              color: var(--secondary-color);
+            }
+            
+            &.penalty {
+              color: var(--accent-color);
+            }
+          }
+          
+          .event-result {
+            font-weight: 500;
+          }
+        }
+        
+        .stat-details {
+          margin-bottom: 0.25rem;
+          
+          .team-name {
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-right: 0.5rem;
+          }
+          
+          .special-play {
+            color: var(--primary-color);
+            font-size: 0.875rem;
+          }
+        }
+        
+        .goal-details, .penalty-details {
+          font-size: 0.875rem;
+          color: var(--text-light);
+          
+          .scorer, .player {
+            font-weight: 500;
+            color: var(--text-dark);
+          }
+          
+          .assist, .reason {
+            margin-left: 0.25rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 0;
+    
+    .hero-title {
+      font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+      font-size: 1rem;
+    }
+    
+    .stats-card {
+      margin-top: 1rem;
+    }
+  }
+  
+  .games-section {
+    .games-card {
+      .card-header {
+        flex-direction: column;
+        align-items: stretch;
+        
+        .card-actions {
+          .search-box {
+            min-width: auto;
+          }
+        }
+      }
+    }
+  }
+  
+  .table {
+    font-size: 0.875rem;
+    
+    td {
+      padding: 0.75rem 0.5rem;
+    }
+  }
+  
+  .game-row {
+    .game-teams {
+      .team-link {
+        .team-names {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.25rem;
+          
+          .vs-separator {
+            display: none;
+          }
+        }
+      }
+    }
+  }
 }
 </style>

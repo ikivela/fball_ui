@@ -1,5 +1,7 @@
-import Vue from "vue";
+import { BootstrapVueNext } from "bootstrap-vue-next";
 
-import BootstrapVue from "bootstrap-vue";
-
-Vue.use(BootstrapVue);
+export default {
+  install: (app) => {
+    app.use(BootstrapVueNext);
+  },
+};
