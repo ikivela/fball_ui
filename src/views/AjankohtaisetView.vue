@@ -327,8 +327,7 @@ export default {
       this.currentPage = 1;
     },*/
     standings_link(_id, _class) {
-      let current_year =
-        DateTime.now().month < 8
+      let current_year = ( DateTime.now().month >= 1 && DateTime.now().month <= 6 ) 
           ? DateTime.now().year - 1
           : DateTime.now().year;
       if (this.seasons[0].value == this.selectedSeason.value) {
