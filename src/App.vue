@@ -81,7 +81,22 @@ export default {
     return {};
   },
 
-  async mounted() {},
+  async mounted() {
+    // Initialize Bootstrap components
+    this.initializeBootstrap();
+  },
+
+  methods: {
+    initializeBootstrap() {
+      // Import Bootstrap JavaScript dynamically
+      import('bootstrap/dist/js/bootstrap.bundle.min.js').then(() => {
+        // Bootstrap is now available globally
+        console.log('Bootstrap initialized');
+      }).catch(error => {
+        console.error('Failed to load Bootstrap:', error);
+      });
+    }
+  }
 };
 </script>
 

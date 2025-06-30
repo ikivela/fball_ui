@@ -256,6 +256,7 @@
                         </td>
                         
                         <td v-if="!isSmallScreen" class="game-group">
+                          {{ game }}
                           <a :href="standings_link(game.groupID)" class="group-link">
                             {{ game.group }}
                           </a>
@@ -617,7 +618,11 @@ export default {
     },
     
     standings_link(groupID) {
-      return `${this.standings_url}${groupID}`;
+      if (/^\d+$/.test(groupID) && this.selectedSeason && this.selectedSeason.value) {
+        const year = String(this.selectedSeason.value).split('-')[0];
+        return `${this.standings_url}${groupID}!sb${year}/`;
+      }
+      return this.standings_url;
     },
     
     async getSelectedSeason(season) {
@@ -797,7 +802,7 @@ export default {
 
 // Filters Section
 .filters-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   
   .filters-card {
     background: var(--bg-white);
@@ -806,10 +811,10 @@ export default {
     border: 1px solid var(--border-color);
     
     .filters-header {
-      padding: 1.5rem 1.5rem 0;
+      padding: 1rem 1rem 0;
       
       .filters-title {
-        font-size: 1.25rem;
+        font-size: 1.125rem;
         font-weight: 600;
         margin: 0;
         color: var(--text-dark);
@@ -821,7 +826,7 @@ export default {
     }
     
     .filters-content {
-      padding: 1.5rem;
+      padding: 1rem;
       
       .search-group {
         .form-label {
@@ -857,14 +862,15 @@ export default {
       
       .filter-buttons {
         display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
+        gap: 0.5rem;
+        margin-top: 1rem;
         
         .filter-btn {
           flex: 1;
-          padding: 0.75rem 1.5rem;
+          padding: 0.5rem 1rem;
           border-radius: var(--border-radius);
           font-weight: 500;
+          font-size: 0.875rem;
           transition: all 0.2s ease;
           
           &.active {
@@ -881,30 +887,34 @@ export default {
       }
       
       .filter-options {
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--border-color);
+        margin-top: 1rem;
         
         .filter-section {
+          margin-bottom: 1rem;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
           .filter-section-title {
-            font-size: 1rem;
+            font-size: 0.875rem;
             font-weight: 600;
             color: var(--text-dark);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
           }
           
           .filter-options-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 0.375rem;
             
             .filter-option-btn {
-              padding: 0.5rem 1rem;
+              padding: 0.375rem 0.75rem;
               border: 1px solid var(--border-color);
               background: var(--bg-white);
               color: var(--text-dark);
               border-radius: var(--border-radius);
-              font-size: 0.875rem;
+              font-size: 0.75rem;
               font-weight: 500;
               transition: all 0.2s ease;
               cursor: pointer;
