@@ -36,13 +36,13 @@
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/ottelut">
-                <i class="fas fa-hockey-puck me-2"></i>Kaikki ottelut
+              <router-link class="nav-link" to="/tilastot">
+                <i class="fas fa-chart-bar me-2"></i>Tilastot
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/tilastot">
-                <i class="fas fa-chart-bar me-2"></i>Tilastot
+              <router-link class="nav-link" to="/vertaile">
+                <i class="fas fa-table me-2"></i>Vertaile sarjoja
               </router-link>
             </li>
           </ul>

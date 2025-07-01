@@ -1,58 +1,26 @@
 <template>
   <div class="ajankohtaiset-view">
-    <!-- Hero Section -->
-    <div class="hero-section">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-lg-8">
-            <h1 class="hero-title">
-              <i class="fas fa-hockey-puck me-3"></i>
-              Seuraavat Nibacos-ottelut
-            </h1>
-            <p class="hero-subtitle">
-              Pysy ajan tasalla joukkueen otteluista ja tuloksista
-            </p>
-          </div>
-          <div class="col-lg-4 text-end">
-            <div class="stats-card">
-              <div class="stats-item">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Kausi: {{ selectedSeason ? selectedSeason.text : 'Ladataan...' }}</span>
-              </div>
-              <div class="stats-item">
-                <i class="fas fa-gamepad"></i>
-                <span>Otteluita: {{ games_table.length }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Games Section -->
     <div class="games-section">
       <div class="container">
         <div class="row">
           <div class="col-12">
             <div class="card games-card">
-              <div class="card-header">
-                <h2 class="card-title">
+              <div class="card-header d-flex align-items-center justify-content-between">
+                <h2 class="card-title mb-0">
                   <i class="fas fa-list me-2"></i>
                   Ottelut
                 </h2>
-                <div class="card-actions">
-                  <div class="search-box">
-                    <i class="fas fa-search search-icon"></i>
-                    <input
-                      type="text"
-                      v-model="filter"
-                      placeholder="Hae otteluita..."
-                      class="form-control search-input"
-                    />
-                  </div>
+                <div class="season-dropdown ms-3">
+                  <select v-model="selectedSeasonValue" @change="onSeasonChange" :disabled="seasonLoading" class="form-select form-select-sm clickable">
+                    <option v-for="season in seasons" :key="season.value" :value="season.value">{{ season.text }}</option>
+                  </select>
+                  <span v-if="seasonLoading" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                </div>
+                <div class="filter-form ms-3">
+                  <input type="text" v-model="filter" class="form-control form-control-sm" placeholder="Suodata otteluita..." />
                 </div>
               </div>
-              
               <div class="card-body p-0">
                 <div v-if="this.selectedSeason && this.seasons.length > 0">
                   <div class="table-responsive">
@@ -66,7 +34,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="game in games_table" :key="game.UniqueID" class="game-row">
+                        <tr v-for="game in filteredGames" :key="game.UniqueID" class="game-row">
                           <td class="game-date">
                             <div class="date-info">
                               <div class="date-main">
@@ -143,7 +111,7 @@
                     </table>
                   </div>
                   
-                  <div v-if="games_table.length === 0" class="no-games">
+                  <div v-if="filteredGames.length === 0" class="no-games">
                     <div class="no-games-content">
                       <i class="fas fa-calendar-times"></i>
                       <h3>Ei otteluita</h3>
@@ -255,7 +223,7 @@ export default {
       sortBy: "",
       sortDesc: "",
       scFields: ["Date", "Game", "class", "Result"],
-      filter: "",
+      filter: '',
       filterOn: [],
 
       items: [],
@@ -274,6 +242,8 @@ export default {
         { key: "class", label: "Sarja", sortable: false },
         { key: "RinkName", label: "Halli", sortable: false },
       ],
+      selectedSeasonValue: null,
+      seasonLoading: false,
     };
   },
   async created() {
@@ -290,12 +260,17 @@ export default {
 
     console.log("ajankohtaiset games length", this.games.length);
     console.log("ajankohtaiset season length:", this.seasons.length);
-    if (this.seasons.length == 0) await this.fetchSeasons(); //this.seasons[0];
-    if (!this.games[this.seasons[0].value]) {
-      await this.fetchGames(this.seasons[0].value);
+    if (this.seasons.length == 0) await this.fetchSeasons();
+    if (this.seasons.length > 0) {
+      if (!this.games[this.seasons[0].value]) {
+        await this.fetchGames(this.seasons[0].value);
+      }
+      this.selectedSeason = this.seasons[0];
+      this.games_table = this.games[this.seasons[0].value] || [];
+    } else {
+      this.selectedSeason = null;
+      this.games_table = [];
     }
-    this.selectedSeason = this.seasons[0];
-    this.games_table = this.games[this.seasons[0].value] || [];
     this.updateScreenWidth();
   },
 
@@ -307,6 +282,27 @@ export default {
     today() {
       return DateTime.now().toFormat("yyyy-MM-dd");
     },
+    filteredGames() {
+      if (!this.filter) return this.games_table;
+      return this.games_table.filter(item => {
+        return (
+          (item.HomeTeamName && item.HomeTeamName.toLowerCase().includes(this.filter.toLowerCase())) ||
+          (item.AwayTeamName && item.AwayTeamName.toLowerCase().includes(this.filter.toLowerCase())) ||
+          (item.RinkName && item.RinkName.toLowerCase().includes(this.filter.toLowerCase())) ||
+          (item.group && item.group.toLowerCase().includes(this.filter.toLowerCase())) ||
+          (item.class && item.class.toLowerCase().includes(this.filter.toLowerCase()))
+        );
+      });
+    },
+  },
+
+  watch: {
+    selectedSeason: {
+      immediate: true,
+      handler(val) {
+        if (val) this.selectedSeasonValue = val.value;
+      }
+    }
   },
 
   methods: {
@@ -322,7 +318,12 @@ export default {
       return classname.replace("Salibandy", "SB");
     },
     standings_link(groupID) {
-      return `${this.standings_url}${groupID}`;
+      if (!groupID || !/^\d+$/.test(groupID)) return '';
+      if (this.selectedSeason && this.selectedSeason.text) {
+        const year = String(this.selectedSeason.text).split('-')[0];
+        return `${this.standings_url}${groupID}!sb${year}`;
+      }
+      return this.standings_url;
     },
     async getRoster(game, season) {
       // TODO: Implement roster functionality
@@ -370,6 +371,16 @@ export default {
         return awayScore > homeScore ? 'win' : awayScore < homeScore ? 'loss' : 'tie';
       }
     },
+    async onSeasonChange() {
+      this.seasonLoading = true;
+      const seasonObj = this.seasons.find(s => s.value === this.selectedSeasonValue);
+      this.selectedSeason = seasonObj;
+      if (!this.games[seasonObj.value]) {
+        await this.fetchGames(seasonObj.value);
+      }
+      this.games_table = this.games[seasonObj.value] || [];
+      this.seasonLoading = false;
+    },
   },
 };
 </script>
@@ -377,57 +388,6 @@ export default {
 <style lang="scss" scoped>
 .ajankohtaiset-view {
   min-height: 100vh;
-}
-
-// Hero Section
-.hero-section {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
-  color: white;
-  padding: 3rem 0;
-  margin-bottom: 2rem;
-  
-  .hero-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    
-    i {
-      color: var(--accent-color);
-    }
-  }
-  
-  .hero-subtitle {
-    font-size: 1.125rem;
-    opacity: 0.9;
-    margin-bottom: 0;
-  }
-  
-  .stats-card {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: var(--border-radius-lg);
-    padding: 1.5rem;
-    backdrop-filter: blur(10px);
-    
-    .stats-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 0.75rem;
-      
-      &:last-child {
-        margin-bottom: 0;
-      }
-      
-      i {
-        margin-right: 0.75rem;
-        color: var(--accent-color);
-        width: 20px;
-      }
-      
-      span {
-        font-weight: 500;
-      }
-    }
-  }
 }
 
 // Games Section
@@ -454,33 +414,6 @@ export default {
         
         i {
           color: var(--primary-color);
-        }
-      }
-      
-      .card-actions {
-        .search-box {
-          position: relative;
-          min-width: 300px;
-          
-          .search-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light);
-            z-index: 2;
-          }
-          
-          .search-input {
-            padding-left: 2.5rem;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            
-            &:focus {
-              border-color: var(--primary-color);
-              box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            }
-          }
         }
       }
     }
@@ -859,33 +792,11 @@ export default {
 
 // Responsive Design
 @media (max-width: 768px) {
-  .hero-section {
-    padding: 2rem 0;
-    
-    .hero-title {
-      font-size: 2rem;
-    }
-    
-    .hero-subtitle {
-      font-size: 1rem;
-    }
-    
-    .stats-card {
-      margin-top: 1rem;
-    }
-  }
-  
   .games-section {
     .games-card {
       .card-header {
         flex-direction: column;
         align-items: stretch;
-        
-        .card-actions {
-          .search-box {
-            min-width: auto;
-          }
-        }
       }
     }
   }
@@ -913,5 +824,18 @@ export default {
       }
     }
   }
+}
+
+.season-dropdown {
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+}
+.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+.filter-form {
+  min-width: 220px;
 }
 </style>

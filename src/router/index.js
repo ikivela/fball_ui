@@ -3,15 +3,15 @@ import { createRouter, createWebHistory } from "vue-router";
 const routes = [
   {
     path: "/",
-    name: "AjankohtaisetView",
+    name: "OttelutView",
     component: () =>
       import(
-        /* webpackChunkName: "Ottelut" */ "../views/AjankohtaisetView.vue"
+        /* webpackChunkName: "Ottelut" */ "../views/OttelutView.vue"
       ),
   },
   {
     path: "/ottelut",
-    name: "OttelutView",
+    name: "OttelutViewAlias",
     component: () =>
       import(/* webpackChunkName: "Ottelut" */ "../views/OttelutView.vue"),
   },
@@ -23,6 +23,11 @@ const routes = [
     // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "About" */ "../views/TilastotView.vue"),
+  },
+  {
+    path: '/vertaile',
+    name: 'ClassMatrix',
+    component: () => import('../views/ClassMatrixView.vue')
   },
   /* {
      path: '/pelaajat',
