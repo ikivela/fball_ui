@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import PelaajaView from '../views/PelaajaView.vue';
 
 const routes = [
   {
@@ -16,6 +17,12 @@ const routes = [
       import(/* webpackChunkName: "Ottelut" */ "../views/OttelutView.vue"),
   },
   {
+    path: "/pelaajat",
+    name: "PelaajatView",
+    component: () =>
+      import(/* webpackChunkName: "Ottelut" */ "../views/PelaajatView.vue"),
+  },
+  {
     path: "/tilastot",
     name: "TilastotView",
     // route level code-splitting
@@ -28,6 +35,12 @@ const routes = [
     path: '/vertaile',
     name: 'ClassMatrix',
     component: () => import('../views/ClassMatrixView.vue')
+  },
+  {
+    path: '/pelaaja/:player_id',
+    name: 'PelaajaView',
+    component: PelaajaView,
+    props: true
   },
   /* {
      path: '/pelaajat',

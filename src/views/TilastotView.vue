@@ -1,51 +1,15 @@
 <template>
   <div class="tilastot-view">
-    <!-- Hero Section -->
-    <div class="hero-section">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-lg-8">
-            <h1 class="hero-title">
-              <i class="fas fa-chart-bar me-3"></i>
-              Nibacos Tilastot
-            </h1>
-            <p class="hero-subtitle">
-              Pelaajien tilastot ja suoritukset kaudella
-            </p>
-          </div>
-          <div class="col-lg-4 text-end">
-            <div class="stats-overview">
-              <div class="stat-card">
-                <div class="stat-icon">
-                  <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                  <div class="stat-value">{{ totalPlayers }}</div>
-                  <div class="stat-label">Pelaajia</div>
-                </div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-icon">
-                  <i class="fas fa-trophy"></i>
-                </div>
-                <div class="stat-content">
-                  <div class="stat-value">{{ totalGoals }}</div>
-                  <div class="stat-label">Maaleja</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Filters Section -->
     <div class="filters-section">
       <div class="container">
+
         <div class="row">
           <div class="col-12">
             <div class="filters-card">
               <div class="filters-header">
+                <p>Tässä tilastoja aiemmilta kausilta, kun torneopal ei ollut vielä käytössä</p>
+
                 <h3 class="filters-title">
                   <i class="fas fa-filter me-2"></i>
                   Suodattimet
@@ -289,65 +253,6 @@ export default {
 <style lang="scss" scoped>
 .tilastot-view {
   min-height: 100vh;
-}
-
-// Hero Section
-.hero-section {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
-  color: white;
-  padding: 3rem 0;
-  margin-bottom: 2rem;
-  
-  .hero-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    
-    i {
-      color: var(--accent-color);
-    }
-  }
-  
-  .hero-subtitle {
-    font-size: 1.125rem;
-    opacity: 0.9;
-    margin-bottom: 0;
-  }
-  
-  .stats-overview {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    
-    .stat-card {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: var(--border-radius);
-      padding: 1rem;
-      text-align: center;
-      backdrop-filter: blur(10px);
-      min-width: 80px;
-      
-      .stat-icon {
-        font-size: 1.5rem;
-        color: var(--accent-color);
-        margin-bottom: 0.5rem;
-      }
-      
-      .stat-content {
-        .stat-value {
-          font-size: 1.5rem;
-          font-weight: 700;
-          line-height: 1;
-        }
-        
-        .stat-label {
-          font-size: 0.75rem;
-          opacity: 0.8;
-          margin-top: 0.25rem;
-        }
-      }
-    }
-  }
 }
 
 // Filters Section
@@ -609,23 +514,6 @@ export default {
 
 // Responsive Design
 @media (max-width: 768px) {
-  .hero-section {
-    padding: 2rem 0;
-    
-    .hero-title {
-      font-size: 2rem;
-    }
-    
-    .hero-subtitle {
-      font-size: 1rem;
-    }
-    
-    .stats-overview {
-      justify-content: center;
-      margin-top: 1rem;
-    }
-  }
-  
   .filters-section {
     .filters-card {
       .filters-content {
@@ -665,5 +553,14 @@ export default {
       gap: 0.5rem;
     }
   }
+}
+
+// Tiivistetyt taulukko-otsikot
+.stats-table .table thead th {
+  font-size: 0.95rem;
+  padding: 0.4rem 0.5rem;
+}
+.stats-table .table td {
+  padding: 0.4rem 0.5rem;
 }
 </style>

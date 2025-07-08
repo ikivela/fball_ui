@@ -31,17 +31,22 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <router-link class="nav-link" to="/">
+              <router-link class="nav-link" to="/" @click="closeNavbar">
                 <i class="fas fa-home me-2"></i>Koti
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/tilastot">
+              <router-link class="nav-link" to="/tilastot" @click="closeNavbar">
                 <i class="fas fa-chart-bar me-2"></i>Tilastot
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/vertaile">
+              <router-link class="nav-link" to="/pelaajat" @click="closeNavbar">
+                <i class="fas fa-users me-2"></i>Pelaajat
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link class="nav-link" to="/vertaile" @click="closeNavbar">
                 <i class="fas fa-table me-2"></i>Vertaile sarjoja
               </router-link>
             </li>
@@ -95,6 +100,15 @@ export default {
       }).catch(error => {
         console.error('Failed to load Bootstrap:', error);
       });
+    },
+    closeNavbar() {
+      const nav = document.getElementById('navbarNav');
+      if (nav && nav.classList.contains('show')) {
+        // Bootstrap 5 collapse
+        const collapse = window.bootstrap ? window.bootstrap.Collapse.getOrCreateInstance(nav) : null;
+        if (collapse) collapse.hide();
+        else nav.classList.remove('show');
+      }
     }
   }
 };
