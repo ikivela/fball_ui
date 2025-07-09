@@ -65,10 +65,10 @@
       <div class="container">
         <div class="row">
           <div class="col-md-6">
-            <p>&copy; 2024 Nibacos. Kaikki oikeudet pidätetään.</p>
+            <p></p>
           </div>
           <div class="col-md-6 text-end">
-            <p>Salibandy-tilastot ja ottelut</p>
+            <p></p>
           </div>
         </div>
       </div>

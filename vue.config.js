@@ -24,14 +24,20 @@ module.exports = {
     });
   },
   // Lisää tämä osio:
-  configureWebpack: {
-    optimization: {
-      minimize: true // Minimointi takaisin päälle
-    },
-    plugins: [
-      new WebpackObfuscator({
-        rotateStringArray: true
-      }, []) // Tyhjä taulukko: ei poissuljettuja bundleja
-    ]
+  configureWebpack: config => {
+    const baseConfig = {
+      optimization: {
+        minimize: true
+      },
+      plugins: []
+    };
+    if (process.env.NODE_ENV === 'production') {
+      baseConfig.plugins.push(
+        new WebpackObfuscator({
+          rotateStringArray: true
+        }, [])
+      );
+    }
+    return baseConfig;
   }
 };
