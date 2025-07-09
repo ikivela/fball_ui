@@ -1,5 +1,8 @@
+const WebpackObfuscator = require('webpack-obfuscator');
+
 module.exports = {
   css: {
+    extract: true,
     loaderOptions: {
       sass: {
         additionalData: "",
@@ -8,7 +11,9 @@ module.exports = {
         additionalData: "",
       },
     },
+    sourceMap: false
   },
+  
   publicPath: process.env.NODE_ENV === "production" ? "/nibacos" : "/",
   chainWebpack: (config) => {
     config.plugin("html").tap((args) => {
@@ -18,4 +23,15 @@ module.exports = {
       return args;
     });
   },
+  // Lisää tämä osio:
+  configureWebpack: {
+    optimization: {
+      minimize: true // Minimointi takaisin päälle
+    },
+    plugins: [
+      new WebpackObfuscator({
+        rotateStringArray: true
+      }, []) // Tyhjä taulukko: ei poissuljettuja bundleja
+    ]
+  }
 };
