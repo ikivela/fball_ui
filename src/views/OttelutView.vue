@@ -280,11 +280,13 @@
                           <span v-if="event.team == gameReport.homeId">
                             <span class="timeline-event-content">
                               <span class="fw-semibold">
-                                <a v-if="event.player_id" href="#" class="player-link" @click.prevent="handlePlayerLinkClick(event.player_id)">
-                                  {{ event.player_name || event.name }}
-                                </a>
+                                <template v-if="event.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')">
+                                  <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(event.player_id)">
+                                    {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
+                                  </a>
+                                </template>
                                 <template v-else>
-                                  {{ event.player_name || event.name }}
+                                  {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
                                 </template>
                               </span>
                               <span v-if="event.type === 'goal'">&nbsp;🥅</span>
@@ -302,11 +304,13 @@
                           <span v-if="event.team == gameReport.awayId">
                             <span class="timeline-event-content">
                               <span class="fw-semibold">
-                                <a v-if="event.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')" href="#" class="player-link" @click.prevent="handlePlayerLinkClick(event.player_id)">
-                                  {{ event.player_name || event.name }}
-                                </a>
+                                <template v-if="event.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')">
+                                  <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(event.player_id)">
+                                    {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
+                                  </a>
+                                </template>
                                 <template v-else>
-                                  {{ event.player_name || event.name }}
+                                  {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
                                 </template>
                               </span>
                               <span v-if="event.type === 'goal'">&nbsp;🥅</span>
@@ -327,9 +331,11 @@
                     <li v-for="p in gameReport.homeLineup" :key="p.player_id || p.id || p.name" class="mb-1">
                       <span class="me-2">{{ p.player_shirt_number || p.shirt_number || '' }}</span>
                       <span class="fw-semibold">
-                        <a v-if="p.player_id" href="#" class="player-link" @click.prevent="handlePlayerLinkClick(p.player_id)">
-                          {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
-                        </a>
+                        <template v-if="p.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')">
+                          <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(p.player_id)">
+                            {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
+                          </a>
+                        </template>
                         <template v-else>
                           {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
                         </template>
@@ -343,9 +349,11 @@
                     <li v-for="p in gameReport.awayLineup" :key="p.player_id || p.id || p.name" class="mb-1">
                       <span class="me-2">{{ p.player_shirt_number || p.shirt_number || '' }}</span>
                       <span class="fw-semibold">
-                        <a v-if="p.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')" href="#" class="player-link" @click.prevent="handlePlayerLinkClick(p.player_id)">
-                          {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
-                        </a>
+                        <template v-if="p.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')">
+                          <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(p.player_id)">
+                            {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
+                          </a>
+                        </template>
                         <template v-else>
                           {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
                         </template>
@@ -556,6 +564,17 @@ export default {
       fetchSeasons: "fetchSeasons",
       fetchStats: "fetchStats",
     }),
+    
+    // Muotoilee nimen: SUKUNIMI Etunimi -> Sukunimi Etunimi
+    formatName(name) {
+      if (!name) return '';
+      // Jos nimi on jo oikeassa muodossa, palautetaan sellaisenaan
+      if (/^[A-ZÅÄÖ]+ [A-ZÅÄÖa-zåäö]+$/.test(name)) {
+        const [last, first] = name.split(' ');
+        return last.charAt(0).toUpperCase() + last.slice(1).toLowerCase() + ' ' + (first.charAt(0).toUpperCase() + first.slice(1).toLowerCase());
+      }
+      return name;
+    },
     
     updateScreenWidth() {
       this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
@@ -854,6 +873,37 @@ export default {
         const response = await axios.get(url);
         const data = response.data;
         console.log('openGameReport: API response data:', data);
+        // --- VANHA MUOTO: pelkkä array (ennen 2023-2024) ---
+        if (Array.isArray(data)) {
+          // Yritetään päätellä kotijoukkue ja vierasjoukkue match-parametristä
+          let homeName = match.HomeTeamName || match.team_A_name || match.homeName || 'Koti';
+          let awayName = match.AwayTeamName || match.team_B_name || match.awayName || 'Vieras';
+          let date = match.GameDate || match.date || '';
+          // Muunna vanhan muodon eventit oikeaan muotoon
+          const allEvents = data.map(ev => ({
+            ...ev,
+            type: ev.event || null,
+            event_time: ev.time || '',
+            team: ev.team || null
+          }));
+          this.gameReport = {
+            date,
+            homeId: homeName,
+            awayId: awayName,
+            homeGoals: [],
+            awayGoals: [],
+            homePenalties: [],
+            awayPenalties: [],
+            homeLineup: [],
+            awayLineup: [],
+            homeName,
+            awayName,
+            allEvents
+          };
+          this.reportLoading = false;
+          return;
+        }
+        // --- UUSI MUOTO ---
         const root = data.match ? data.match : data;
         const homeId = root.team_A_id || (root.goals && root.goals[0] && root.goals[0].team_id);
         const awayId = root.team_B_id || (root.goals && root.goals.find(g => g.team_id !== homeId)?.team_id);

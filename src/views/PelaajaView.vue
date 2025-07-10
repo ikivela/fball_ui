@@ -108,9 +108,11 @@
                                       <span v-if="event.team == gameReport.homeId">
                                         <span class="timeline-event-content">
                                           <span class="fw-semibold">
-                                            <a v-if="event.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')" href="#" class="player-link" @click.prevent="handlePlayerLinkClick(event.player_id)">
-                                              {{ event.player_name || event.name }}
-                                            </a>
+                                            <template v-if="event.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')">
+                                              <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(event.player_id)">
+                                                {{ event.player_name || event.name }}
+                                              </a>
+                                            </template>
                                             <template v-else>
                                               {{ event.player_name || event.name }}
                                             </template>
@@ -130,9 +132,11 @@
                                       <span v-if="event.team == gameReport.awayId">
                                         <span class="timeline-event-content">
                                           <span class="fw-semibold">
-                                            <a v-if="event.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')" href="#" class="player-link" @click.prevent="handlePlayerLinkClick(event.player_id)">
-                                              {{ event.player_name || event.name }}
-                                            </a>
+                                            <template v-if="event.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')">
+                                              <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(event.player_id)">
+                                                {{ event.player_name || event.name }}
+                                              </a>
+                                            </template>
                                             <template v-else>
                                               {{ event.player_name || event.name }}
                                             </template>
@@ -155,9 +159,11 @@
                                 <li v-for="p in gameReport.homeLineup" :key="p.player_id || p.id || p.name" class="mb-1">
                                   <span class="me-2">{{ p.player_shirt_number || p.shirt_number || '' }}</span>
                                   <span class="fw-semibold">
-                                    <a v-if="p.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')" href="#" class="player-link" @click.prevent="handlePlayerLinkClick(p.player_id)">
-                                      {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
-                                    </a>
+                                    <template v-if="p.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')">
+                                      <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(p.player_id)">
+                                        {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
+                                      </a>
+                                    </template>
                                     <template v-else>
                                       {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
                                     </template>
@@ -171,9 +177,11 @@
                                 <li v-for="p in gameReport.awayLineup" :key="p.player_id || p.id || p.name" class="mb-1">
                                   <span class="me-2">{{ p.player_shirt_number || p.shirt_number || '' }}</span>
                                   <span class="fw-semibold">
-                                    <a v-if="p.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')" href="#" class="player-link" @click.prevent="handlePlayerLinkClick(p.player_id)">
-                                      {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
-                                    </a>
+                                    <template v-if="p.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')">
+                                      <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(p.player_id)">
+                                        {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
+                                      </a>
+                                    </template>
                                     <template v-else>
                                       {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
                                     </template>
