@@ -372,6 +372,10 @@ export default {
 .player-link:hover {
   text-decoration: underline;
 }
+.card-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%) !important;
+  color: white !important;
+}
 @media (max-width: 768px) {
   .timeline-dot {
     width: 2em;
