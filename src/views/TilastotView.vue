@@ -563,4 +563,8 @@ export default {
 .stats-table .table td {
   padding: 0.4rem 0.5rem;
 }
+
+.games-card {
+  padding: 2rem 2rem 1.5rem 2rem;
+}
 </style>

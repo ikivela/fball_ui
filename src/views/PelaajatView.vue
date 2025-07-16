@@ -76,7 +76,7 @@
                 :fields="fields"
                 :items="filteredPlayers"
                 :empty-text="emptyText"
-                class="table-sm compact-table"
+                class="table table-sm table-bordered table-responsive"
                 v-model:sortBy="sortBy"
                 v-model:sortDesc="sortDesc"
               >
@@ -268,20 +268,6 @@ export default {
 
 <style scoped>
 @import '../assets/_shared-sections.scss';
-.compact-table th,
-.compact-table td {
-  padding-left: 0.2rem;
-  padding-right: 0.2rem;
-  padding-top: 0.1rem;
-  padding-bottom: 0.1rem;
-  font-size: 0.92rem;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-.compact-table th:first-child,
-.compact-table td:first-child {
-  width: 1%;
-}
 .narrow-table-wrapper {
   max-width: 500px;
   margin: 0 auto;
@@ -317,5 +303,19 @@ export default {
 .birthyear-filter-row {
   gap: 1.5rem;
   margin-bottom: 0.5rem;
+}
+.games-card {
+  padding: 2rem 2rem 1.5rem 2rem;
+}
+.games-card .table-responsive {
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+}
+
+</style>
+
+<style>
+.table.table-sm td,
+.table.table-sm th {
+  padding: 0.2rem 0.5rem !important;
 }
 </style>

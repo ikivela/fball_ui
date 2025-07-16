@@ -104,7 +104,20 @@
                           <template v-else-if="field.key === 'Result'">
                             <div v-if="game.GameDate < today">
                               <div v-if="game.Result != '-'">
-                                <span class="result-score" :class="getResultColor(game)" style="cursor:pointer; text-decoration:underline;" @click="openGameReport(game)">{{ game.Result }}</span>
+                                <router-link
+                                  :to="{
+                                    name: 'OtteluViewQuery',
+                                    query: {
+                                      season: ((game.season_id || game.season || selectedSeason?.text || '').split('-')[1] || (game.season_id || game.season || selectedSeason?.text)),
+                                      gameid: (game.match_id || game.UniqueID || game.gameid)
+                                    }
+                                  }"
+                                  class="result-score"
+                                  :class="getResultColor(game)"
+                                  style="cursor:pointer; text-decoration:underline;"
+                                >
+                                  {{ game.Result }}
+                                </router-link>
                               </div>
                               <div v-else class="no-result">
                                 <a :href="`${result_url}${game.UniqueID}`" class="live-link">
@@ -255,124 +268,7 @@
     </div>
 
     <!-- Otteluraportti-modal -->
-    <div v-if="showGameReport" class="modal fade show" id="gameReportModal" tabindex="-1" aria-labelledby="gameReportModalLabel" aria-modal="true" style="display: block;" ref="gameReportModal">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="gameReportModalLabel">
-              <span v-if="gameReport && gameReport.homeName && gameReport.awayName && gameReport.date">
-                {{ formattedGameReportTitle }}
-              </span>
-            </h5>
-            <button type="button" class="btn-close" @click="showGameReport = false" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div v-if="reportLoading">Ladataan otteluraporttia...</div>
-            <div v-else-if="reportError" class="text-danger">{{ reportError }}</div>
-            <div v-else-if="gameReport">
-              <div class="mb-4">
-                <div class="timeline-container">
-                  <div class="timeline">
-                    <div v-for="event in gameReport.allEvents" :key="event.event_id || event.time + event.type + event.player_id">
-                      <div class="timeline-row d-flex align-items-center mb-2">
-                        <!-- Vasen: kotijoukkueen tapahtuma -->
-                        <div class="timeline-col text-end">
-                          <span v-if="event.team == gameReport.homeId">
-                            <span class="timeline-event-content">
-                              <span class="fw-semibold">
-                                <template v-if="event.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')">
-                                  <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(event.player_id)">
-                                    {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
-                                  </a>
-                                </template>
-                                <template v-else>
-                                  {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
-                                </template>
-                              </span>
-                              <span v-if="event.type === 'goal'">&nbsp;🥅</span>
-                              <span v-if="event.type === 'penalty'">&nbsp;🚫</span>
-                              <span class="text-muted ms-1">{{ event.description || event.code }}&nbsp;</span>
-                            </span>
-                          </span>
-                        </div>
-                        <!-- Keskellä: kellonaika -->
-                        <div class="timeline-col timeline-time-col">
-                          <div class="timeline-time-box">{{ event.event_time }}</div>
-                        </div>
-                        <!-- Oikea: vierasjoukkueen tapahtuma -->
-                        <div class="timeline-col text-start">
-                          <span v-if="event.team == gameReport.awayId">
-                            <span class="timeline-event-content">
-                              <span class="fw-semibold">
-                                <template v-if="event.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')">
-                                  <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(event.player_id)">
-                                    {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
-                                  </a>
-                                </template>
-                                <template v-else>
-                                  {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
-                                </template>
-                              </span>
-                              <span v-if="event.type === 'goal'">&nbsp;🥅</span>
-                              <span v-if="event.type === 'penalty'">&nbsp;🚫</span>
-                              <span class="text-muted ms-1">{{ event.description || event.code }}&nbsp;</span>
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="d-flex flex-column flex-md-row gap-4">
-                <div class="flex-fill bg-light rounded p-3 mb-3 mb-md-0 shadow-sm">
-                  <h5 class="text-center mb-3">{{ gameReport.homeName }}</h5>
-                  <ul class="list-unstyled">
-                    <li v-for="p in gameReport.homeLineup" :key="p.player_id || p.id || p.name" class="mb-1">
-                      <span class="me-2">{{ p.player_shirt_number || p.shirt_number || '' }}</span>
-                      <span class="fw-semibold">
-                        <template v-if="p.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')">
-                          <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(p.player_id)">
-                            {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
-                          </a>
-                        </template>
-                        <template v-else>
-                          {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
-                        </template>
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-                <div class="flex-fill bg-light rounded p-3 shadow-sm">
-                  <h5 class="text-center mb-3">{{ gameReport.awayName }}</h5>
-                  <ul class="list-unstyled">
-                    <li v-for="p in gameReport.awayLineup" :key="p.player_id || p.id || p.name" class="mb-1">
-                      <span class="me-2">{{ p.player_shirt_number || p.shirt_number || '' }}</span>
-                      <span class="fw-semibold">
-                        <template v-if="p.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')">
-                          <a href="#" class="player-link" @click.prevent="handlePlayerLinkClick(p.player_id)">
-                            {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
-                          </a>
-                        </template>
-                        <template v-else>
-                          {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
-                        </template>
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div v-else>Ei otteluraporttia saatavilla.</div>
-          </div>
-          <div class="modal-footer justify-content-end">
-            <button type="button" class="btn btn-outline-secondary" @click="showGameReport = false" aria-label="Close">
-              &#10005; Sulje
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- (Remove the modal markup and all related modal logic) -->
   </div>
 </template>
 
@@ -653,7 +549,7 @@ export default {
       
       try {
         const response = await axios.get(
-          `${this.baseurl}/api/game-stats/${uniqueID}/${season.value}`
+          `${this.baseurl}/api/gamestats/${season.value}&${uniqueID}`
         );
         this.gameStats = response.data;
       } catch (error) {
@@ -835,165 +731,6 @@ export default {
       };
     },
 
-    async openGameReport(match) {
-      this.gameReport = null;
-      this.reportError = '';
-      this.reportLoading = true;
-      this.showGameReport = true;
-      try {
-        console.log('openGameReport: match object:', match);
-        let season = '';
-        if (match.season_id && typeof match.season_id === 'string' && match.season_id.includes('-')) {
-          season = match.season_id.split('-')[1];
-        } else if (match.season && typeof match.season === 'string' && match.season.includes('-')) {
-          season = match.season.split('-')[1];
-        } else if (match.GameSeason && typeof match.GameSeason === 'string' && match.GameSeason.includes('-')) {
-          season = match.GameSeason.split('-')[1];
-        } else if (this.selectedSeason && this.selectedSeason.text && this.selectedSeason.text.includes('-')) {
-          season = this.selectedSeason.text.split('-')[1];
-        } else if (match.season_id) {
-          season = match.season_id;
-        } else if (match.season) {
-          season = match.season;
-        } else if (match.GameSeason) {
-          season = match.GameSeason;
-        } else if (this.selectedSeason && this.selectedSeason.text) {
-          season = this.selectedSeason.text;
-        } else if (match.GameDate) {
-          season = match.GameDate.substring(0,4);
-        } else if (match.date) {
-          season = match.date.substring(0,4);
-        }
-        const gameid = match.match_id || match.UniqueID || match.gameid;
-        console.log('openGameReport: season:', season, 'gameid:', gameid);
-        const baseurl = process.env.VUE_APP_BACKEND_URL;
-        const url = `${baseurl}/gamestats/?season=${season}&gameid=${gameid}`;
-        if (!season || !gameid) throw new Error('Puuttuvat ottelun tunnistetiedot');
-        console.log("OpenGameReport", url);
-        const response = await axios.get(url);
-        const data = response.data;
-        console.log('openGameReport: API response data:', data);
-        // --- VANHA MUOTO: pelkkä array (ennen 2023-2024) ---
-        if (Array.isArray(data)) {
-          // Yritetään päätellä kotijoukkue ja vierasjoukkue match-parametristä
-          let homeName = match.HomeTeamName || match.team_A_name || match.homeName || 'Koti';
-          let awayName = match.AwayTeamName || match.team_B_name || match.awayName || 'Vieras';
-          let date = match.GameDate || match.date || '';
-          // Muunna vanhan muodon eventit oikeaan muotoon
-          const allEvents = data.map(ev => ({
-            ...ev,
-            type: ev.event || null,
-            event_time: ev.time || '',
-            team: ev.team || null
-          }));
-          this.gameReport = {
-            date,
-            homeId: homeName,
-            awayId: awayName,
-            homeGoals: [],
-            awayGoals: [],
-            homePenalties: [],
-            awayPenalties: [],
-            homeLineup: [],
-            awayLineup: [],
-            homeName,
-            awayName,
-            allEvents
-          };
-          this.reportLoading = false;
-          return;
-        }
-        // --- UUSI MUOTO ---
-        const root = data.match ? data.match : data;
-        const homeId = root.team_A_id || (root.goals && root.goals[0] && root.goals[0].team_id);
-        const awayId = root.team_B_id || (root.goals && root.goals.find(g => g.team_id !== homeId)?.team_id);
-        let homeLineup = [];
-        let awayLineup = [];
-        if (Array.isArray(root.lineups)) {
-          homeLineup = root.lineups.filter(p => p.team_id == homeId);
-          awayLineup = root.lineups.filter(p => p.team_id == awayId);
-        } else if (root.lineups && typeof root.lineups === 'object') {
-          homeLineup = root.lineups[homeId] || [];
-          awayLineup = root.lineups[awayId] || [];
-        }
-        const allEvents = [
-          ...((root.goals || []).map(g => ({
-            ...g,
-            type: 'goal',
-            event_time: g.time,
-            team: g.team_id
-          }))),
-          ...((root.events || [])
-            .filter(e =>
-              e.code && (
-                e.code.toLowerCase().includes('pen') ||
-                e.code.toLowerCase().includes('jäähy') ||
-                e.code.toLowerCase().includes('rangaistus') ||
-                e.code.toLowerCase().includes('pun') ||
-                e.code.toLowerCase().includes('2min') ||
-                e.code.toLowerCase().includes('5min')
-              )
-            )
-            .map(e => ({
-              ...e,
-              type: 'penalty',
-              event_time: e.time,
-              team: e.team_id
-            }))
-          )
-        ];
-        allEvents.sort((a, b) => {
-          const toSeconds = t => {
-            if (!t) return 0;
-            const parts = t.split(':');
-            return parseInt(parts[0] || 0) * 60 + parseInt(parts[1] || 0);
-          };
-          return toSeconds(a.event_time) - toSeconds(b.event_time);
-        });
-        this.gameReport = {
-          date: root.date || '',
-          homeId,
-          awayId,
-          homeGoals: (root.goals || []).filter(g => g.team_id == homeId),
-          awayGoals: (root.goals || []).filter(g => g.team_id == awayId),
-          homePenalties: (root.events || []).filter(e =>
-            e.code && (
-              e.code.toLowerCase().includes('pen') ||
-              e.code.toLowerCase().includes('jäähy') ||
-              e.code.toLowerCase().includes('rangaistus') ||
-              e.code.toLowerCase().includes('pun') ||
-              e.code.toLowerCase().includes('2min') ||
-              e.code.toLowerCase().includes('5min')
-            ) && e.team_id == homeId
-          ),
-          awayPenalties: (root.events || []).filter(e =>
-            e.code && (
-              e.code.toLowerCase().includes('pen') ||
-              e.code.toLowerCase().includes('jäähy') ||
-              e.code.toLowerCase().includes('rangaistus') ||
-              e.code.toLowerCase().includes('pun') ||
-              e.code.toLowerCase().includes('2min') ||
-              e.code.toLowerCase().includes('5min')
-            ) && e.team_id == awayId
-          ),
-          homeLineup,
-          awayLineup,
-          homeName: root.team_A_name || root.team_A_description_en || 'Koti',
-          awayName: root.team_B_name || root.team_B_description_en || 'Vieras',
-          allEvents
-        };
-      } catch (e) {
-        this.reportError = 'Otteluraportin haku epäonnistui.';
-      } finally {
-        this.reportLoading = false;
-      }
-    },
-    closeGameReportModal() {
-      if (this.$refs.gameReportModal) {
-        const modal = window.bootstrap ? window.bootstrap.Modal.getInstance(this.$refs.gameReportModal) : null;
-        if (modal) modal.hide();
-      }
-    },
     handlePlayerLinkClick(playerId) {
       this.showGameReport = false;
       this.$nextTick(() => {
@@ -1031,6 +768,7 @@ export default {
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
+    padding: 2rem 2rem 1.5rem 2rem;
     
     .games-header {
       padding: 1.5rem;
@@ -1057,18 +795,11 @@ export default {
           display: flex;
           gap: 1rem;
           flex-wrap: wrap;
-          
-          .summary-badge {
-            background: var(--bg-light);
-            color: var(--text-dark);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            font-size: 0.875rem;
-            font-weight: 500;
-            
-            i {
-              color: var(--primary-color);
-            }
+          padding: 0.5rem 0.5rem;
+        }
+        @media (max-width: 600px) {
+          .games-summary {
+            padding: 0.5rem 0.25rem;
           }
         }
       }
@@ -1106,7 +837,7 @@ export default {
           background: var(--primary-color);
           color: white;
           font-weight: 600;
-          padding: 1rem;
+          padding: 0.6rem 0.75rem;
           border: none;
           
           i {
@@ -1125,7 +856,7 @@ export default {
         }
         
         td {
-          padding: 1rem;
+          padding: 0.6rem 0.75rem;
           vertical-align: middle;
           border-color: var(--border-color);
         }
@@ -1493,6 +1224,16 @@ export default {
     font-weight: 500;
     letter-spacing: 0.01em;
   }
+
+  .result-score {
+    margin: 0.25rem 0;
+    display: inline-block;
+  }
+  .summary-badge {
+    margin: 0.25rem 0;
+    line-height: 1;
+    display: inline-block;
+  }
 }
 
 .summary-badge.clickable {
@@ -1618,5 +1359,33 @@ export default {
     height: 2em;
     font-size: 0.95em;
   }
+}
+
+@media (max-width: 600px) {
+  .stats-badges .badge {
+    margin: 0.25rem 0.25rem !important;
+    display: inline-block;
+  }
+  .stats-badges {
+    flex-wrap: wrap !important;
+    gap: 0.25rem !important;
+  }
+  .stats-badges .badge {
+    line-height: .5;
+  }
+}
+.stats-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.5em;
+  margin: 0.25rem 0;
+  align-items: flex-start;
+}
+.stats-badges .badge {
+  margin: 0.15em 0.25em !important;
+  line-height: 1.1 !important;
+  padding-top: 0.2em !important;
+  padding-bottom: 0.2em !important;
+  display: inline-block !important;
 }
 </style>
