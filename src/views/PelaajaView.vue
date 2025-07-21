@@ -75,7 +75,7 @@
                       </td>
                       <td>
                         <router-link
-                          v-if="match.fs_A && match.fs_B"
+                          v-if="match.fs_A && match.fs_B && ((match.team_A_name && match.team_A_name.toLowerCase().includes('nibacos')) || (match.team_B_name && match.team_B_name.toLowerCase().includes('nibacos')))"
                           :to="{
                             name: 'OtteluViewQuery',
                             query: {
