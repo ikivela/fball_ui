@@ -14,7 +14,7 @@
                 <div class="timeline-row d-flex align-items-center mb-2">
                   <!-- Vasen: kotijoukkueen tapahtuma -->
                   <div class="timeline-col text-end">
-                    <span v-if="event.team == gameReport.homeId">
+                    <span v-if="isHomeEvent(event)">
                       <span class="timeline-event-content">
                         <span class="fw-semibold">
                           <template v-if="event.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')">
@@ -28,7 +28,7 @@
                         </span>
                         <span v-if="event.type === 'goal'">&nbsp;🥅</span>
                         <span v-if="event.type === 'penalty'">&nbsp;🚫</span>
-                        <span class="text-muted ms-1">{{ event.description || event.code }}&nbsp;</span>
+                        <span class="text-muted ms-1">{{ event.description || event.code || event.reason }}</span>
                       </span>
                     </span>
                   </div>
@@ -38,7 +38,7 @@
                   </div>
                   <!-- Oikea: vierasjoukkueen tapahtuma -->
                   <div class="timeline-col text-start">
-                    <span v-if="event.team == gameReport.awayId">
+                    <span v-if="isAwayEvent(event)">
                       <span class="timeline-event-content">
                         <span class="fw-semibold">
                           <template v-if="event.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')">
@@ -52,7 +52,7 @@
                         </span>
                         <span v-if="event.type === 'goal'">&nbsp;🥅</span>
                         <span v-if="event.type === 'penalty'">&nbsp;🚫</span>
-                        <span class="text-muted ms-1">{{ event.description || event.code }}&nbsp;</span>
+                        <span class="text-muted ms-1">{{ event.description || event.code || event.reason }}</span>
                       </span>
                     </span>
                   </div>
@@ -103,6 +103,10 @@
     </div>
     <div v-else>Ei otteluraporttia saatavilla.</div>
     <div v-if="!loading && !error && !gameReport">Ei dataa ladattu eikä virhettä havaittu.</div>
+    <!-- Esimerkki back-napista -->
+    <button @click="goToOttelutView" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Takaisin otteluihin
+    </button>
   </div>
 </template>
 
@@ -118,16 +122,7 @@ export default {
       error: '',
     };
   },
-  async created() {
-    await this.fetchGameReport();
-  },
   watch: {
-    '$route.query.season': {
-      immediate: true,
-      handler() {
-        this.fetchGameReport();
-      }
-    },
     '$route.query.gameid': {
       immediate: true,
       handler() {
@@ -273,6 +268,19 @@ export default {
     goToPlayer(playerId) {
       this.$router.push({ name: 'PelaajaView', params: { player_id: playerId } });
     },
+    isHomeEvent(event) {
+      if (!event.team || !this.gameReport.homeId) return false;
+      return event.team.toLowerCase().includes(this.gameReport.homeId.toLowerCase());
+    },
+    isAwayEvent(event) {
+      if (!event.team || !this.gameReport.awayId) return false;
+      return event.team.toLowerCase().includes(this.gameReport.awayId.toLowerCase());
+    },
+    goToOttelutView() {
+      // Navigoi takaisin otteluiden listaan ja säilytä kausi query-parametrissa
+      this.$router.push({ name: 'OttelutView', query: { season: this.$route.query.season || this.gameReport?.date?.slice(0, 4) } });
+      
+    }
   },
   computed: {
     formattedGameReportTitle() {
@@ -383,4 +391,4 @@ export default {
     font-size: 0.95em;
   }
 }
-</style> 
+</style>

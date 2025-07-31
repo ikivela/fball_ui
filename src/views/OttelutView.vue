@@ -40,7 +40,7 @@
                             :style="'background: var(--accent-color); color: var(--primary-color);'">
                         <span class="me-1">tasurit</span>{{ filteredStats().ties }}
                       </span>
-                      <span class="badge me-1" data-bs-toggle="tooltip" title="Maaliero: Nibacoksen tekemät maalit miinus päästetyt maalit."
+                      <span class="badge" data-bs-toggle="tooltip" title="Maaliero: Nibacoksen tekemät maalit miinus päästetyt maalit."
                             :style="'background: var(--info-color, #0dcaf0); color: var(--text-dark);'">
                         <span class="me-1">maaliero</span>{{ filteredStats().goalDifference > 0 ? '+' : '' }}{{ filteredStats().goalDifference }}
                       </span>
@@ -99,7 +99,10 @@
                             </div>
                           </template>
                           <template v-else-if="field.key === 'class'">
-                            <span class="sarja-mobile">{{ shorten_classname(game.class || '') }}</span>
+                            <div class="sarja-info">
+                              <div class="sarja-main">{{ shorten_classname(game.class || '') }}</div>
+                              <div v-if="game.competition" class="competition-name">{{ game.competition }}</div>
+                            </div>
                           </template>
                           <template v-else-if="field.key === 'Result'">
                             <div v-if="game.GameDate < today">
@@ -108,8 +111,12 @@
                                   :to="{
                                     name: 'OtteluViewQuery',
                                     query: {
-                                      season: ((game.season_id || game.season || selectedSeason?.text || '').split('-')[1] || (game.season_id || game.season || selectedSeason?.text)),
-                                      gameid: (game.match_id || game.UniqueID || game.gameid)
+                                      season: selectedSeasonValue,
+                                      gameid: (game.match_id || game.UniqueID || game.gameid),
+                                      home: game.HomeTeamName,
+                                      away: game.AwayTeamName,
+                                      date: game.GameDate,
+                                      class: currentClass
                                     }
                                   }"
                                   class="result-score"
@@ -141,7 +148,7 @@
                           </template>
                           <template v-else-if="field.key === 'group'">
                             <a :href="standings_link(game.groupID)" class="group-link">
-                              {{ game.group }}
+                              {{game.group}}
                             </a>
                           </template>
                           <template v-else>
@@ -358,7 +365,13 @@ export default {
     if (this.seasons.length == 0) await this.fetchSeasons();
     if (this.seasonStats.length == 0) await this.fetchStats();
 
-    await this.getSelectedSeason();
+    // Synkkaa query-parametrin kausi
+    if (this.$route.query.season) {
+      console.log("Query season found:", this.$route.query.season);
+      this.selectedSeasonValue = this.$route.query.season;
+    }
+
+    await this.getSelectedSeason(this.seasons.find(s => s.value === this.selectedSeasonValue));
     this.$nextTick(() => {
       this.scrollToUpcomingGame();
       // Initialize Bootstrap tooltips
@@ -497,6 +510,10 @@ export default {
     async getSelectedSeason(season) {
       if (season) {
         this.selectedSeason = season;
+      } else if (this.selectedSeasonValue && this.seasons && this.seasons.length > 0) {
+        // Etsi kausi, joka vastaa selectedSeasonValue
+        const found = this.seasons.find(s => s.value === this.selectedSeasonValue);
+        this.selectedSeason = found || this.seasons[0];
       } else if (this.seasons && this.seasons.length > 0) {
         this.selectedSeason = this.seasons[0];
       } else {
@@ -505,15 +522,14 @@ export default {
       }
       
       console.log('getSelectedSeason:', this.selectedSeason);
-      console.log('games for season:', this.games[this.selectedSeason.value]);
       
       if (this.selectedSeason && !this.games[this.selectedSeason.value]) {
-        console.log('Fetching games for season:', this.selectedSeason.value);
+        //console.log('Fetching games for season:', this.selectedSeason.value);
         await this.fetchGames(this.selectedSeason.value);
       }
       
       this.currentGames = this.selectedSeason && this.games[this.selectedSeason.value] ? this.games[this.selectedSeason.value] : [];
-      console.log('currentGames set to:', this.currentGames);
+      //console.log('currentGames set to:', this.currentGames);
     },
     
     setFilter(value) {
@@ -611,7 +627,10 @@ export default {
 
     async onSeasonChange() {
       this.seasonLoading = true;
+      console.log('onSeasonChange called with selectedSeasonValue:', this.selectedSeasonValue);
       const seasonObj = this.seasons.find(s => s.value === this.selectedSeasonValue);
+      // update query url
+      this.$router.replace({ query: { ...this.$route.query, season: this.selectedSeasonValue } });
       await this.getSelectedSeason(seasonObj);
       this.seasonLoading = false;
     },
@@ -739,9 +758,19 @@ export default {
         this.$router.push({ name: 'PelaajaView', params: { player_id: playerId } });
       });
     },
+
+    goToOttelutView() {
+      this.$router.push({
+        name: 'OttelutView',
+        query: {
+          season: this.selectedSeasonValue
+        }
+      });
+    },
   },
 
   watch: {
+  
     filteredGames() {
       this.$nextTick(() => {
         this.scrollToUpcomingGame();
@@ -1387,5 +1416,23 @@ export default {
   padding-top: 0.2em !important;
   padding-bottom: 0.2em !important;
   display: inline-block !important;
+}
+
+.sarja-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.sarja-main {
+  font-size: 0.95em;
+  color: var(--primary-color);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.competition-name {
+  font-size: 0.8em;
+  color: #888;
+  font-weight: 400;
+  font-style: italic;
 }
 </style>
