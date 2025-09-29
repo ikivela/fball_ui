@@ -6,47 +6,106 @@
         <div class="row">
           <div class="col-12">
             <div class="games-card">
-              <div class="games-header d-flex align-items-center justify-content-between">
+              <div
+                class="games-header d-flex align-items-center justify-content-between"
+              >
                 <div class="games-info d-flex align-items-center">
                   <h2 class="games-title mb-0">
                     <i class="fas fa-hockey-puck me-2"></i>
                     Ottelut
                   </h2>
                   <div class="season-dropdown ms-3">
-                    <select v-model="selectedSeasonValue" @change="onSeasonChange" :disabled="seasonLoading" class="form-select form-select-sm clickable">
-                      <option v-for="season in seasons" :key="season.value" :value="season.value">{{ season.text }}</option>
+                    <select
+                      v-model="selectedSeasonValue"
+                      @change="onSeasonChange"
+                      :disabled="seasonLoading"
+                      class="form-select form-select-sm clickable"
+                    >
+                      <option
+                        v-for="season in seasons"
+                        :key="season.value"
+                        :value="season.value"
+                      >
+                        {{ season.text }}
+                      </option>
                     </select>
-                    <span v-if="seasonLoading" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                    <span
+                      v-if="seasonLoading"
+                      class="spinner-border spinner-border-sm ms-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
                   </div>
                 </div>
                 <div class="filter-form ms-3">
-                  <input type="text" v-model="filter" class="form-control form-control-sm" placeholder="Suodata otteluita..." />
+                  <input
+                    type="text"
+                    v-model="filter"
+                    class="form-control form-control-sm"
+                    placeholder="Suodata otteluita..."
+                  />
                 </div>
                 <div class="games-summary ms-3">
                   <span class="summary-badge">
                     <i class="fas fa-list me-1"></i>
                     {{ filteredGames.length }} ottelua
-                    <span v-if="selectedSeason">, kausi {{ selectedSeason.text }}</span>
-                    <span v-if="filteredStats() && (filteredStats().wins > 0 || filteredStats().losses > 0 || filteredStats().ties > 0)" class="stats-badges ms-2">
-                      <span class="badge me-1" data-bs-toggle="tooltip" title="Voitot: Ottelut, joissa Nibacos on tehnyt enemmän maaleja kuin vastustaja."
-                            :style="'background: var(--primary-color); color: #fff;'">
-                        <span class="me-1">voitot</span>{{ filteredStats().wins }}
+                    <span v-if="selectedSeason"
+                      >, kausi {{ selectedSeason.text }}</span
+                    >
+                    <span
+                      v-if="
+                        filteredStats() &&
+                        (filteredStats().wins > 0 ||
+                          filteredStats().losses > 0 ||
+                          filteredStats().ties > 0)
+                      "
+                      class="stats-badges ms-2"
+                    >
+                      <span
+                        class="badge me-1"
+                        data-bs-toggle="tooltip"
+                        title="Voitot: Ottelut, joissa Nibacos on tehnyt enemmän maaleja kuin vastustaja."
+                        :style="'background: var(--primary-color); color: #fff;'"
+                      >
+                        <span class="me-1">voitot</span
+                        >{{ filteredStats().wins }}
                       </span>
-                      <span class="badge me-1" data-bs-toggle="tooltip" title="Tappiot: Ottelut, joissa Nibacos on tehnyt vähemmän maaleja kuin vastustaja."
-                            :style="'background: var(--secondary-color); color: #fff;'">
-                        <span class="me-1">tappiot</span>{{ filteredStats().losses }}
+                      <span
+                        class="badge me-1"
+                        data-bs-toggle="tooltip"
+                        title="Tappiot: Ottelut, joissa Nibacos on tehnyt vähemmän maaleja kuin vastustaja."
+                        :style="'background: var(--secondary-color); color: #fff;'"
+                      >
+                        <span class="me-1">tappiot</span
+                        >{{ filteredStats().losses }}
                       </span>
-                      <span class="badge me-1" data-bs-toggle="tooltip" title="Tasapelit: Ottelut, joissa maalit ovat tasan."
-                            :style="'background: var(--accent-color); color: var(--primary-color);'">
-                        <span class="me-1">tasurit</span>{{ filteredStats().ties }}
+                      <span
+                        class="badge me-1"
+                        data-bs-toggle="tooltip"
+                        title="Tasapelit: Ottelut, joissa maalit ovat tasan."
+                        :style="'background: var(--accent-color); color: var(--primary-color);'"
+                      >
+                        <span class="me-1">tasurit</span
+                        >{{ filteredStats().ties }}
                       </span>
-                      <span class="badge" data-bs-toggle="tooltip" title="Maaliero: Nibacoksen tekemät maalit miinus päästetyt maalit."
-                            :style="'background: var(--info-color, #0dcaf0); color: var(--text-dark);'">
-                        <span class="me-1">maaliero</span>{{ filteredStats().goalDifference > 0 ? '+' : '' }}{{ filteredStats().goalDifference }}
+                      <span
+                        class="badge"
+                        data-bs-toggle="tooltip"
+                        title="Maaliero: Nibacoksen tekemät maalit miinus päästetyt maalit."
+                        :style="'background: var(--info-color, #0dcaf0); color: var(--text-dark);'"
+                      >
+                        <span class="me-1">maaliero</span
+                        >{{ filteredStats().goalDifference > 0 ? "+" : ""
+                        }}{{ filteredStats().goalDifference }}
                       </span>
-                      <span class="badge" data-bs-toggle="tooltip" title="Ka. maaleja/ottelu: Nibacoksen tekemien maalien keskiarvo per ottelu."
-                            :style="'background: var(--secondary-color); color: #fff;'">
-                        <span class="me-1">maalikeskiarvo</span>{{ filteredStats().averageGoalsPerGame.toFixed(2) }}
+                      <span
+                        class="badge"
+                        data-bs-toggle="tooltip"
+                        title="Ka. maaleja/ottelu: Nibacoksen tekemien maalien keskiarvo per ottelu."
+                        :style="'background: var(--secondary-color); color: #fff;'"
+                      >
+                        <span class="me-1">maalikeskiarvo</span
+                        >{{ filteredStats().averageGoalsPerGame.toFixed(2) }}
                       </span>
                     </span>
                   </span>
@@ -63,45 +122,99 @@
                   <table class="table table-hover">
                     <thead>
                       <tr>
-                        <th v-for="field in fields" :key="field.key" @click="toggleSort(field.key)" :class="{ sortable: true, sorted: sortBy === field.key }">
-                          <i class="fas fa-sort me-1" v-if="sortBy !== field.key"></i>
-                          <i v-if="sortBy === field.key && !sortDesc" class="fas fa-sort-up me-1"></i>
-                          <i v-if="sortBy === field.key && sortDesc" class="fas fa-sort-down me-1"></i>
+                        <th
+                          v-for="field in fields"
+                          :key="field.key"
+                          @click="toggleSort(field.key)"
+                          :class="{
+                            sortable: true,
+                            sorted: sortBy === field.key,
+                          }"
+                        >
+                          <i
+                            class="fas fa-sort me-1"
+                            v-if="sortBy !== field.key"
+                          ></i>
+                          <i
+                            v-if="sortBy === field.key && !sortDesc"
+                            class="fas fa-sort-up me-1"
+                          ></i>
+                          <i
+                            v-if="sortBy === field.key && sortDesc"
+                            class="fas fa-sort-down me-1"
+                          ></i>
                           {{ field.label }}
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="(game, idx) in filteredGames" :key="game.UniqueID" class="game-row" :ref="setGameRowRef(idx)">
-                        <td v-for="field in fields" :key="field.key" :class="getFieldClass(field.key)">
+                      <tr
+                        v-for="(game, idx) in filteredGames"
+                        :key="game.UniqueID"
+                        class="game-row"
+                        :ref="setGameRowRef(idx)"
+                      >
+                        <td
+                          v-for="field in fields"
+                          :key="field.key"
+                          :class="getFieldClass(field.key)"
+                        >
                           <template v-if="field.key === 'Date'">
                             <div class="date-info">
                               <div class="date-main">
-                                {{ parseDate(game.GameDate + "T" + game.GameTime) }}
+                                {{
+                                  parseDate(game.GameDate + "T" + game.GameTime)
+                                }}
                               </div>
-                              <div v-if="isSmallScreen && game.RinkName && fields.some(f => f.key === 'RinkName')" class="date-location-mobile">
-                                <a :href="`http://maps.google.com/?q=${game.RinkName}`" class="location-link-mobile">
+                              <div
+                                v-if="
+                                  isSmallScreen &&
+                                  game.RinkName &&
+                                  fields.some((f) => f.key === 'RinkName')
+                                "
+                                class="date-location-mobile"
+                              >
+                                <a
+                                  :href="`http://maps.google.com/?q=${game.RinkName}`"
+                                  class="location-link-mobile"
+                                >
                                   <i class="fas fa-map-marker-alt me-1"></i>
-                                  <span class="rink-mobile">{{ game.RinkName }}</span>
+                                  <span class="rink-mobile">{{
+                                    game.RinkName
+                                  }}</span>
                                 </a>
                               </div>
                             </div>
                           </template>
                           <template v-else-if="field.key === 'Game'">
                             <div>
-                              <a :href="`${result_url}${game.UniqueID}`" class="team-link">
+                              <a
+                                :href="`${result_url}${game.UniqueID}`"
+                                class="team-link"
+                              >
                                 <div class="team-names">
-                                  <span class="home-team">{{ game.HomeTeamName }}</span>
+                                  <span class="home-team">{{
+                                    game.HomeTeamName
+                                  }}</span>
                                   <span class="vs-separator">vs</span>
-                                  <span class="away-team">{{ game.AwayTeamName }}</span>
+                                  <span class="away-team">{{
+                                    game.AwayTeamName
+                                  }}</span>
                                 </div>
                               </a>
                             </div>
                           </template>
                           <template v-else-if="field.key === 'class'">
                             <div class="sarja-info">
-                              <div class="sarja-main">{{ shorten_classname(game.class || '') }}</div>
-                              <div v-if="game.competition" class="competition-name">{{ game.competition }}</div>
+                              <div class="sarja-main">
+                                {{ shorten_classname(game.class || "") }}
+                              </div>
+                              <div
+                                v-if="game.competition"
+                                class="competition-name"
+                              >
+                                {{ game.competition }}
+                              </div>
                             </div>
                           </template>
                           <template v-else-if="field.key === 'Result'">
@@ -112,43 +225,61 @@
                                     name: 'OtteluViewQuery',
                                     query: {
                                       season: selectedSeasonValue,
-                                      gameid: (game.match_id || game.UniqueID || game.gameid),
+                                      gameid:
+                                        game.match_id ||
+                                        game.UniqueID ||
+                                        game.gameid,
                                       home: game.HomeTeamName,
                                       away: game.AwayTeamName,
                                       date: game.GameDate,
-                                      class: currentClass
-                                    }
+                                      class: currentClass,
+                                    },
                                   }"
                                   class="result-score"
                                   :class="getResultColor(game)"
-                                  style="cursor:pointer; text-decoration:underline;"
+                                  style="
+                                    cursor: pointer;
+                                    text-decoration: underline;
+                                  "
                                 >
                                   {{ game.Result }}
                                 </router-link>
                               </div>
                               <div v-else class="no-result">
-                                <a :href="`${result_url}${game.UniqueID}`" class="live-link">
+                                <a
+                                  :href="`${result_url}${game.UniqueID}`"
+                                  class="live-link"
+                                >
                                   <i class="fas fa-external-link-alt"></i>
                                   <span>Live</span>
                                 </a>
                               </div>
                             </div>
                             <div v-else>
-                              <a :href="`${result_url}${game.UniqueID}`" class="live-link">
+                              <a
+                                :href="`${result_url}${game.UniqueID}`"
+                                class="live-link"
+                              >
                                 <i class="fas fa-external-link-alt"></i>
                                 <span>Live</span>
                               </a>
                             </div>
                           </template>
                           <template v-else-if="field.key === 'RinkName'">
-                            <a :href="`http://maps.google.com/?q=${game.RinkName}`" class="rink-link">
+                            <a
+                              :href="`http://maps.google.com/?q=${game.RinkName}`"
+                              class="rink-link"
+                            >
                               <i class="fas fa-map-marker-alt me-1"></i>
                               {{ game.RinkName }}
                             </a>
                           </template>
                           <template v-else-if="field.key === 'group'">
-                            <a :href="standings_link(game.groupID)" class="group-link">
-                              {{game.group}}
+                            <a
+                              :href="standings_link(game.groupID)"
+                              class="group-link"
+                            >
+                              {{ game.group }}
                             </a>
                           </template>
                           <template v-else>
@@ -167,7 +298,13 @@
     </div>
 
     <!-- Game Stats Modal -->
-    <div class="modal fade" id="gameStatsModal" tabindex="-1" :class="{ show: showGameStat }" v-if="showGameStat">
+    <div
+      class="modal fade"
+      id="gameStatsModal"
+      tabindex="-1"
+      :class="{ show: showGameStat }"
+      v-if="showGameStat"
+    >
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
@@ -175,41 +312,62 @@
               <i class="fas fa-chart-line me-2"></i>
               {{ currentGame }}
             </h5>
-            <button type="button" class="btn-close btn-close-white" @click="showGameStat = false"></button>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              @click="showGameStat = false"
+            ></button>
           </div>
           <div class="modal-body">
             <div v-if="loading" class="loading-modal">
               <i class="fas fa-spinner fa-spin"></i>
               <p>Ladataan tilastoja...</p>
             </div>
-            
+
             <div v-else-if="gameStats.length === 0" class="no-stats">
               <i class="fas fa-chart-bar"></i>
               <p>Ei tilastoja saatavilla</p>
             </div>
-            
+
             <div v-else class="game-stats">
               <div class="stats-timeline">
-                <div v-for="stat in gameStats" :key="stat.time" class="stat-item">
+                <div
+                  v-for="stat in gameStats"
+                  :key="stat.time"
+                  class="stat-item"
+                >
                   <div class="stat-time">{{ stat.time }}</div>
                   <div class="stat-content">
                     <div class="stat-event">
                       <span class="event-type" :class="stat.event">
-                        {{ stat.event === 'goal' ? '⚽ Maali' : '🟨 Rangaistus' }}
+                        {{
+                          stat.event === "goal" ? "⚽ Maali" : "🟨 Rangaistus"
+                        }}
                       </span>
-                      <span class="event-result">{{ stat.event === 'goal' ? stat.result : stat.penalty_time }}</span>
+                      <span class="event-result">{{
+                        stat.event === "goal" ? stat.result : stat.penalty_time
+                      }}</span>
                     </div>
                     <div class="stat-details">
                       <span class="team-name">{{ stat.team }}</span>
                       <span v-if="stat.yv_av" class="special-play">
-                        {{ stat.yv_av === 'RL0' ? 'Rangaistusl. (epäonnistunut)' : stat.yv_av }}
+                        {{
+                          stat.yv_av === "RL0"
+                            ? "Rangaistusl. (epäonnistunut)"
+                            : stat.yv_av
+                        }}
                       </span>
                     </div>
                     <div v-if="stat.event === 'goal'" class="goal-details">
                       <span class="scorer">{{ stat.scorer }}</span>
-                      <span v-if="stat.assist" class="assist">({{ stat.assist }})</span>
+                      <span v-if="stat.assist" class="assist"
+                        >({{ stat.assist }})</span
+                      >
                     </div>
-                    <div v-if="stat.event === 'penalty'" class="penalty-details">
+                    <div
+                      v-if="stat.event === 'penalty'"
+                      class="penalty-details"
+                    >
                       <span class="player">{{ stat.player }}</span>
                       <span class="reason">{{ stat.reason }}</span>
                     </div>
@@ -223,7 +381,13 @@
     </div>
 
     <!-- Roster Modal -->
-    <div class="modal fade" id="rosterModal" tabindex="-1" :class="{ show: showRoster }" v-if="showRoster">
+    <div
+      class="modal fade"
+      id="rosterModal"
+      tabindex="-1"
+      :class="{ show: showRoster }"
+      v-if="showRoster"
+    >
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
@@ -231,24 +395,36 @@
               <i class="fas fa-users me-2"></i>
               Kokoonpano
             </h5>
-            <button type="button" class="btn-close btn-close-white" @click="showRoster = false"></button>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              @click="showRoster = false"
+            ></button>
           </div>
           <div class="modal-body">
             <div v-if="loading" class="loading-modal">
               <i class="fas fa-spinner fa-spin"></i>
               <p>Ladataan kokoonpanoa...</p>
             </div>
-            
-            <div v-else-if="!Array.isArray(currentRoster) || currentRoster.length === 0" class="no-roster">
+
+            <div
+              v-else-if="
+                !Array.isArray(currentRoster) || currentRoster.length === 0
+              "
+              class="no-roster"
+            >
               <i class="fas fa-users-slash"></i>
               <p>Kokoonpanoa ei löytynyt</p>
             </div>
-            
+
             <div v-else class="roster-content">
               <div class="roster-header">
-                <h6>{{ currentRoster[0].GameDate }}, {{ currentRoster[0].StatName }}</h6>
+                <h6>
+                  {{ currentRoster[0].GameDate }},
+                  {{ currentRoster[0].StatName }}
+                </h6>
               </div>
-              
+
               <div class="table-responsive">
                 <table class="table table-hover">
                   <thead>
@@ -259,7 +435,10 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="player in currentRoster" :key="player.PlayerJerseyNr">
+                    <tr
+                      v-for="player in currentRoster"
+                      :key="player.PlayerJerseyNr"
+                    >
                       <td>{{ player.PlayerJerseyNr }}</td>
                       <td>{{ player.PlayerFirstName }}</td>
                       <td>{{ player.PlayerLastName }}</td>
@@ -321,10 +500,10 @@ export default {
       showStats: false,
       currentGame: "",
       currentGames: [],
-      sortBy: '',
+      sortBy: "",
       sortDesc: false,
       items: [],
-      filter: '',
+      filter: "",
       filterOn: [],
       totalRows: 1,
       isSmallScreen: false,
@@ -339,16 +518,16 @@ export default {
         { key: "Date", label: "Aika", sortable: false },
         { key: "Game", label: "Ottelu", sortable: false },
         { key: "Result", label: "Tulos", sortable: false },
+        { key: "RinkName", label: "Paikka", sortable: false },
         { key: "group", label: "Lohko", sortable: false },
         { key: "class", label: "Sarja", sortable: false },
-        { key: "RinkName", label: "Paikka", sortable: false },
       ],
       selectedSeasonValue: null,
       seasonLoading: false,
       gameRowRefs: [],
       gameReport: null,
       reportLoading: false,
-      reportError: '',
+      reportError: "",
       showGameReport: false,
     };
   },
@@ -369,13 +548,19 @@ export default {
     if (this.$route.query.season) {
       console.log("Query season found:", this.$route.query.season);
       this.selectedSeasonValue = this.$route.query.season;
+    } else if (this.seasons && this.seasons.length > 0) {
+      this.selectedSeasonValue = this.seasons[0].value;
     }
 
-    await this.getSelectedSeason(this.seasons.find(s => s.value === this.selectedSeasonValue));
+    await this.getSelectedSeason(
+      this.seasons.find((s) => s.value === this.selectedSeasonValue)
+    );
     this.$nextTick(() => {
       this.scrollToUpcomingGame();
       // Initialize Bootstrap tooltips
-      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      const tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      );
       tooltipTriggerList.forEach(function (tooltipTriggerEl) {
         if (window.bootstrap && window.bootstrap.Tooltip) {
           new window.bootstrap.Tooltip(tooltipTriggerEl);
@@ -383,7 +568,7 @@ export default {
       });
     });
   },
-  
+
   computed: {
     ...mapState({
       games: (state) => state.games,
@@ -401,16 +586,27 @@ export default {
 
     mobileFields() {
       return [
-        { key: 'Date', label: 'Aika' },
-        { key: 'Game', label: 'Ottelu' },
-        { key: 'class', label: 'Sarja' },
-        { key: 'Result', label: 'Tila' },
+        { key: "Date", label: "Aika" },
+        { key: "Game", label: "Ottelu" },
+        { key: "Result", label: "Tulos" },
+        { key: "class", label: "Sarja" },
+        { key: "RinkName", label: "Paikka" },
+        { key: "group", label: "Lohko" },
       ];
     },
 
     classes() {
-      if (!this.selectedSeason || !this.games[this.selectedSeason.value] || !Array.isArray(this.games[this.selectedSeason.value])) return [];
-      const uniqueClasses = [...new Set(this.games[this.selectedSeason.value].map(game => game.class))];
+      if (
+        !this.selectedSeason ||
+        !this.games[this.selectedSeason.value] ||
+        !Array.isArray(this.games[this.selectedSeason.value])
+      )
+        return [];
+      const uniqueClasses = [
+        ...new Set(
+          this.games[this.selectedSeason.value].map((game) => game.class)
+        ),
+      ];
       return uniqueClasses.sort();
     },
 
@@ -419,25 +615,36 @@ export default {
       if (!this.filter) {
         games = [...games];
       } else {
-        games = games.filter(item => {
+        games = games.filter((item) => {
           return (
-            (item.HomeTeamName && item.HomeTeamName.toLowerCase().includes(this.filter.toLowerCase())) ||
-            (item.AwayTeamName && item.AwayTeamName.toLowerCase().includes(this.filter.toLowerCase())) ||
-            (item.RinkName && item.RinkName.toLowerCase().includes(this.filter.toLowerCase())) ||
-            (item.group && item.group.toLowerCase().includes(this.filter.toLowerCase())) ||
-            (item.class && item.class.toLowerCase().includes(this.filter.toLowerCase()))
+            (item.HomeTeamName &&
+              item.HomeTeamName.toLowerCase().includes(
+                this.filter.toLowerCase()
+              )) ||
+            (item.AwayTeamName &&
+              item.AwayTeamName.toLowerCase().includes(
+                this.filter.toLowerCase()
+              )) ||
+            (item.RinkName &&
+              item.RinkName.toLowerCase().includes(
+                this.filter.toLowerCase()
+              )) ||
+            (item.group &&
+              item.group.toLowerCase().includes(this.filter.toLowerCase())) ||
+            (item.class &&
+              item.class.toLowerCase().includes(this.filter.toLowerCase()))
           );
         });
       }
       // Sorting
       if (this.sortBy) {
         games = [...games].sort((a, b) => {
-          let aVal = a[this.sortBy] || '';
-          let bVal = b[this.sortBy] || '';
+          let aVal = a[this.sortBy] || "";
+          let bVal = b[this.sortBy] || "";
           // For date, sort as date
-          if (this.sortBy === 'Date' || this.sortBy === 'GameDate') {
-            aVal = a.GameDate + 'T' + (a.GameTime || '00:00');
-            bVal = b.GameDate + 'T' + (b.GameTime || '00:00');
+          if (this.sortBy === "Date" || this.sortBy === "GameDate") {
+            aVal = a.GameDate + "T" + (a.GameTime || "00:00");
+            bVal = b.GameDate + "T" + (b.GameTime || "00:00");
             aVal = new Date(aVal);
             bVal = new Date(bVal);
           } else {
@@ -453,16 +660,22 @@ export default {
     },
 
     formattedGameReportTitle() {
-      if (!this.gameReport || !this.gameReport.date || !this.gameReport.homeName || !this.gameReport.awayName) return '';
+      if (
+        !this.gameReport ||
+        !this.gameReport.date ||
+        !this.gameReport.homeName ||
+        !this.gameReport.awayName
+      )
+        return "";
       let dateStr = this.gameReport.date;
-      let timeStr = '';
-      if (dateStr.includes(' ')) {
-        const parts = dateStr.split(' ');
+      let timeStr = "";
+      if (dateStr.includes(" ")) {
+        const parts = dateStr.split(" ");
         dateStr = parts[0];
-        timeStr = parts[1] ? parts[1].slice(0,5) : '';
+        timeStr = parts[1] ? parts[1].slice(0, 5) : "";
       }
-      const [yyyy, mm, dd] = dateStr.split('-');
-      const formatted = `${dd}.${mm}.${yyyy}` + (timeStr ? ` ${timeStr}` : '');
+      const [yyyy, mm, dd] = dateStr.split("-");
+      const formatted = `${dd}.${mm}.${yyyy}` + (timeStr ? ` ${timeStr}` : "");
       return `${formatted} ${this.gameReport.homeName} vs ${this.gameReport.awayName}`;
     },
   },
@@ -473,46 +686,56 @@ export default {
       fetchSeasons: "fetchSeasons",
       fetchStats: "fetchStats",
     }),
-    
+
     // Muotoilee nimen: SUKUNIMI Etunimi -> Sukunimi Etunimi
     formatName(name) {
-      if (!name) return '';
+      if (!name) return "";
       // Jos nimi on jo oikeassa muodossa, palautetaan sellaisenaan
       if (/^[A-ZÅÄÖ]+ [A-ZÅÄÖa-zåäö]+$/.test(name)) {
-        const [last, first] = name.split(' ');
-        return last.charAt(0).toUpperCase() + last.slice(1).toLowerCase() + ' ' + (first.charAt(0).toUpperCase() + first.slice(1).toLowerCase());
+        const [last, first] = name.split(" ");
+        return (
+          last.charAt(0).toUpperCase() +
+          last.slice(1).toLowerCase() +
+          " " +
+          (first.charAt(0).toUpperCase() + first.slice(1).toLowerCase())
+        );
       }
       return name;
     },
-    
+
     updateScreenWidth() {
       this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
     },
-    
+
     parseDate(dateString) {
       return DateTime.fromISO(dateString).toFormat("dd.MM.yyyy HH:mm");
     },
-    
+
     shorten_classname(classname) {
-      if (!classname) return '';
+      if (!classname) return "";
       return classname.replace("Salibandy", "SB");
     },
-    
+
     standings_link(groupID) {
-      if (!groupID || !/^\d+$/.test(groupID)) return '';
+      if (!groupID || !/^\d+$/.test(groupID)) return "";
       if (this.selectedSeason && this.selectedSeason.text) {
-        const year = String(this.selectedSeason.text).split('-')[0];
+        const year = String(this.selectedSeason.text).split("-")[0];
         return `${this.standings_url}${groupID}!sb${year}`;
       }
       return this.standings_url;
     },
-    
+
     async getSelectedSeason(season) {
       if (season) {
         this.selectedSeason = season;
-      } else if (this.selectedSeasonValue && this.seasons && this.seasons.length > 0) {
-        // Etsi kausi, joka vastaa selectedSeasonValue
-        const found = this.seasons.find(s => s.value === this.selectedSeasonValue);
+      } else if (
+        this.selectedSeasonValue &&
+        this.seasons &&
+        this.seasons.length > 0
+      ) {
+        const found = this.seasons.find(
+          (s) => s.value === this.selectedSeasonValue
+        );
         this.selectedSeason = found || this.seasons[0];
       } else if (this.seasons && this.seasons.length > 0) {
         this.selectedSeason = this.seasons[0];
@@ -520,31 +743,34 @@ export default {
         this.selectedSeason = null;
         return;
       }
-      
-      console.log('getSelectedSeason:', this.selectedSeason);
-      
+
+      console.log("getSelectedSeason:", this.selectedSeason);
+
       if (this.selectedSeason && !this.games[this.selectedSeason.value]) {
         //console.log('Fetching games for season:', this.selectedSeason.value);
         await this.fetchGames(this.selectedSeason.value);
       }
-      
-      this.currentGames = this.selectedSeason && this.games[this.selectedSeason.value] ? this.games[this.selectedSeason.value] : [];
+
+      this.currentGames =
+        this.selectedSeason && this.games[this.selectedSeason.value]
+          ? this.games[this.selectedSeason.value]
+          : [];
       //console.log('currentGames set to:', this.currentGames);
     },
-    
+
     setFilter(value) {
       this.currentClass = value;
       if (this.selectedSeason && this.games[this.selectedSeason.value]) {
         this.currentGames = this.games[this.selectedSeason.value].filter(
-          game => game.class === value
+          (game) => game.class === value
         );
       }
     },
-    
+
     async getRoster(game, season) {
       this.loading = true;
       this.showRoster = true;
-      
+
       try {
         const response = await axios.get(
           `${this.baseurl}/api/roster/${game.UniqueID}/${season.value}`
@@ -557,12 +783,12 @@ export default {
         this.loading = false;
       }
     },
-    
+
     async getGameStats(uniqueID, season, gameName) {
       this.loading = true;
       this.currentGame = gameName;
       this.showGameStat = true;
-      
+
       try {
         const response = await axios.get(
           `${this.baseurl}/api/gamestats/${season.value}&${uniqueID}`
@@ -575,15 +801,15 @@ export default {
         this.loading = false;
       }
     },
-    
+
     onFiltered(filteredItems) {
       this.totalRows = filteredItems.length;
     },
-    
+
     filterTable(items, filter) {
       if (!filter) return items;
-      
-      return items.filter(item => {
+
+      return items.filter((item) => {
         return (
           item.HomeTeamName.toLowerCase().includes(filter.toLowerCase()) ||
           item.AwayTeamName.toLowerCase().includes(filter.toLowerCase()) ||
@@ -594,49 +820,66 @@ export default {
     },
 
     getResultColor(game) {
-      if (!game.Result || game.Result === '-') return 'neutral';
-      
+      if (!game.Result || game.Result === "-") return "neutral";
+
       const teamName = this.currentTeam;
       const isHomeTeam = game.HomeTeamName.includes(teamName);
-      
+
       if (!isHomeTeam && !game.AwayTeamName.includes(teamName)) {
-        return 'neutral'; // Nibacos not in this game
+        return "neutral"; // Nibacos not in this game
       }
-      
-      const scores = game.Result.split('-');
-      if (scores.length !== 2) return 'neutral';
-      
+
+      const scores = game.Result.split("-");
+      if (scores.length !== 2) return "neutral";
+
       const homeScore = parseInt(scores[0].trim());
       const awayScore = parseInt(scores[1].trim());
-      
-      if (isNaN(homeScore) || isNaN(awayScore)) return 'neutral';
-      
+
+      if (isNaN(homeScore) || isNaN(awayScore)) return "neutral";
+
       if (isHomeTeam) {
-        return homeScore > awayScore ? 'win' : homeScore < awayScore ? 'loss' : 'tie';
+        return homeScore > awayScore
+          ? "win"
+          : homeScore < awayScore
+          ? "loss"
+          : "tie";
       } else {
-        return awayScore > homeScore ? 'win' : awayScore < homeScore ? 'loss' : 'tie';
+        return awayScore > homeScore
+          ? "win"
+          : awayScore < homeScore
+          ? "loss"
+          : "tie";
       }
     },
 
     cycleSeason() {
       if (!this.seasons || this.seasons.length === 0) return;
-      const idx = this.seasons.findIndex(s => s.value === this.selectedSeason.value);
+      const idx = this.seasons.findIndex(
+        (s) => s.value === this.selectedSeason.value
+      );
       const nextIdx = (idx + 1) % this.seasons.length;
       this.getSelectedSeason(this.seasons[nextIdx]);
     },
 
     async onSeasonChange() {
       this.seasonLoading = true;
-      console.log('onSeasonChange called with selectedSeasonValue:', this.selectedSeasonValue);
-      const seasonObj = this.seasons.find(s => s.value === this.selectedSeasonValue);
+      console.log(
+        "onSeasonChange called with selectedSeasonValue:",
+        this.selectedSeasonValue
+      );
+      const seasonObj = this.seasons.find(
+        (s) => s.value === this.selectedSeasonValue
+      );
       // update query url
-      this.$router.replace({ query: { ...this.$route.query, season: this.selectedSeasonValue } });
+      this.$router.replace({
+        query: { ...this.$route.query, season: this.selectedSeasonValue },
+      });
       await this.getSelectedSeason(seasonObj);
       this.seasonLoading = false;
     },
 
     setGameRowRef(idx) {
-      return el => {
+      return (el) => {
         this.gameRowRefs[idx] = el;
       };
     },
@@ -655,12 +898,15 @@ export default {
       // If all games are in the past, do nothing
       if (scrollIdx === null) return;
       // If the first future game is today, skip to the next one if possible
-      if (this.filteredGames[scrollIdx].GameDate === today && scrollIdx + 1 < this.filteredGames.length) {
+      if (
+        this.filteredGames[scrollIdx].GameDate === today &&
+        scrollIdx + 1 < this.filteredGames.length
+      ) {
         scrollIdx++;
       }
       const rowEl = this.gameRowRefs[scrollIdx];
       if (rowEl && rowEl.scrollIntoView) {
-        rowEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        rowEl.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     },
 
@@ -674,13 +920,14 @@ export default {
     },
 
     getFieldClass(key) {
-      if (key === 'Date') return 'game-date';
-      if (key === 'Game') return 'game-teams';
-      if (key === 'class') return this.isSmallScreen ? 'game-class-mobile' : 'game-class';
-      if (key === 'Result') return 'game-result';
-      if (key === 'RinkName') return 'game-rink';
-      if (key === 'group') return 'game-group';
-      return '';
+      if (key === "Date") return "game-date";
+      if (key === "Game") return "game-teams";
+      if (key === "class")
+        return this.isSmallScreen ? "game-class-mobile" : "game-class";
+      if (key === "Result") return "game-result";
+      if (key === "RinkName") return "game-rink";
+      if (key === "group") return "game-group";
+      return "";
     },
 
     filteredStats() {
@@ -709,13 +956,17 @@ export default {
       for (let i = 0; i < games.length; i++) {
         const game = games[i];
         if (
-          game.HomeTeamName && game.AwayTeamName &&
-          (game.HomeTeamName.includes(team_name) || game.AwayTeamName.includes(team_name)) &&
-          typeof game.Result === 'string' &&
+          game.HomeTeamName &&
+          game.AwayTeamName &&
+          (game.HomeTeamName.includes(team_name) ||
+            game.AwayTeamName.includes(team_name)) &&
+          typeof game.Result === "string" &&
           /^\d+\s*-\s*\d+$/.test(game.Result.trim())
         ) {
           const isHomeTeam = game.HomeTeamName.includes(team_name);
-          let [home, away] = game.Result.split('-').map(s => parseInt(s.trim(), 10));
+          let [home, away] = game.Result.split("-").map((s) =>
+            parseInt(s.trim(), 10)
+          );
           if (isNaN(home) || isNaN(away)) continue;
           let teamScore = isHomeTeam ? home : away;
           let opponentScore = isHomeTeam ? away : home;
@@ -736,7 +987,8 @@ export default {
 
       let goalDifference = totalGoals - totalGoalsAgainst;
       let averageGoalsPerGame = validGames > 0 ? totalGoals / validGames : 0;
-      let averageGoalsAgainstPerGame = validGames > 0 ? totalGoalsAgainst / validGames : 0;
+      let averageGoalsAgainstPerGame =
+        validGames > 0 ? totalGoalsAgainst / validGames : 0;
 
       return {
         wins: wins,
@@ -753,24 +1005,28 @@ export default {
     handlePlayerLinkClick(playerId) {
       this.showGameReport = false;
       this.$nextTick(() => {
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.parentNode.removeChild(el));
-        document.body.classList.remove('modal-open');
-        this.$router.push({ name: 'PelaajaView', params: { player_id: playerId } });
+        document
+          .querySelectorAll(".modal-backdrop")
+          .forEach((el) => el.parentNode.removeChild(el));
+        document.body.classList.remove("modal-open");
+        this.$router.push({
+          name: "PelaajaView",
+          params: { player_id: playerId },
+        });
       });
     },
 
     goToOttelutView() {
       this.$router.push({
-        name: 'OttelutView',
+        name: "OttelutView",
         query: {
-          season: this.selectedSeasonValue
-        }
+          season: this.selectedSeasonValue,
+        },
       });
     },
   },
 
   watch: {
-  
     filteredGames() {
       this.$nextTick(() => {
         this.scrollToUpcomingGame();
@@ -798,7 +1054,7 @@ export default {
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
     padding: 2rem 2rem 1.5rem 2rem;
-    
+
     .games-header {
       padding: 1.5rem;
       border-bottom: 1px solid var(--border-color);
@@ -807,19 +1063,19 @@ export default {
       align-items: flex-start;
       flex-wrap: wrap;
       gap: 1rem;
-      
+
       .games-info {
         .games-title {
           font-size: 1.5rem;
           font-weight: 600;
           margin: 0 0 1rem 0;
           color: var(--text-dark);
-          
+
           i {
             color: var(--primary-color);
           }
         }
-        
+
         .games-summary {
           display: flex;
           gap: 1rem;
@@ -832,22 +1088,22 @@ export default {
           }
         }
       }
-      
+
       .games-stats {
         display: flex;
         gap: 1.5rem;
         flex-wrap: wrap;
-        
+
         .stat-item {
           text-align: center;
-          
+
           .stat-label {
             display: block;
             font-size: 0.75rem;
             color: var(--text-light);
             margin-bottom: 0.25rem;
           }
-          
+
           .stat-value {
             display: block;
             font-size: 1.25rem;
@@ -857,33 +1113,33 @@ export default {
         }
       }
     }
-    
+
     .games-content {
       .table {
         margin: 0;
-        
+
         thead th {
           background: var(--primary-color);
           color: white;
           font-weight: 600;
           padding: 0.6rem 0.75rem;
           border: none;
-          
+
           i {
             opacity: 0.7;
           }
         }
-        
+
         tbody tr {
           transition: all 0.2s ease;
-          
+
           &:hover {
             background-color: rgba(59, 130, 246, 0.05);
             transform: translateY(-1px);
             box-shadow: var(--shadow-sm);
           }
         }
-        
+
         td {
           padding: 0.6rem 0.75rem;
           vertical-align: middle;
@@ -902,15 +1158,15 @@ export default {
         font-weight: 600;
         color: var(--text-dark);
       }
-      
+
       .date-location {
         margin-top: 0.25rem;
-        
+
         .location-link {
           color: var(--primary-color);
           text-decoration: none;
           font-size: 0.875rem;
-          
+
           &:hover {
             text-decoration: underline;
           }
@@ -918,63 +1174,65 @@ export default {
       }
     }
   }
-  
+
   .game-teams {
     .team-link {
       text-decoration: none;
       color: inherit;
-      
+
       .team-names {
         display: flex;
         align-items: center;
         gap: 0.5rem;
         flex-wrap: wrap;
-        
-        .home-team, .away-team {
+
+        .home-team,
+        .away-team {
           font-weight: 600;
           color: var(--text-dark);
         }
-        
+
         .vs-separator {
           color: var(--text-light);
           font-size: 0.875rem;
           font-weight: 500;
         }
       }
-      
+
       &:hover {
         .team-names {
-          .home-team, .away-team {
+          .home-team,
+          .away-team {
             color: var(--primary-color);
           }
         }
       }
     }
   }
-  
+
   .game-rink {
     .rink-link {
       color: var(--primary-color);
       text-decoration: none;
-      
+
       &:hover {
         text-decoration: underline;
       }
     }
   }
-  
+
   .game-group {
     .group-link {
       color: var(--primary-color);
       text-decoration: none;
       font-weight: 500;
-      
+
       &:hover {
         text-decoration: underline;
       }
     }
   }
-  
+
   .game-class {
     .class-badge {
       background: linear-gradient(135deg, var(--accent-color) 0%, #fbbf24 100%);
@@ -986,59 +1244,59 @@ export default {
       text-transform: uppercase;
     }
   }
-  
+
   .game-result {
     .result-link {
       text-decoration: none;
-      
+
       .result-score {
         padding: 0.25rem 0.75rem;
         border-radius: var(--border-radius);
         font-weight: 600;
         font-size: 0.875rem;
         transition: all 0.2s ease;
-        
+
         &.win {
           background: #10b981;
           color: white;
         }
-        
+
         &.loss {
           background: #ef4444;
           color: white;
         }
-        
+
         &.tie {
           background: #f59e0b;
           color: white;
         }
-        
+
         &.neutral {
           background: var(--secondary-color);
           color: white;
         }
-        
+
         &:hover {
           transform: scale(1.05);
           box-shadow: var(--shadow-sm);
         }
       }
     }
-    
+
     .no-result {
       color: var(--text-light);
       font-style: italic;
     }
-    
+
     .live-link {
       color: var(--accent-color);
       text-decoration: none;
       font-weight: 600;
-      
+
       i {
         margin-right: 0.25rem;
       }
-      
+
       &:hover {
         text-decoration: underline;
       }
@@ -1053,22 +1311,26 @@ export default {
     border: none;
     box-shadow: var(--shadow-lg);
   }
-  
+
   .modal-header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--primary-color) 0%,
+      var(--primary-light) 100%
+    );
     color: white;
     border-bottom: none;
     border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-    
+
     .modal-title {
       font-weight: 600;
     }
   }
-  
+
   .modal-body {
     padding: 2rem;
   }
-  
+
   &.show {
     display: block;
     background-color: rgba(0, 0, 0, 0.5);
@@ -1083,13 +1345,13 @@ export default {
 .loading-modal {
   text-align: center;
   padding: 2rem;
-  
+
   i {
     font-size: 2rem;
     color: var(--primary-color);
     margin-bottom: 1rem;
   }
-  
+
   p {
     color: var(--text-light);
     margin: 0;
@@ -1097,16 +1359,17 @@ export default {
 }
 
 // No Stats/Roster
-.no-stats, .no-roster {
+.no-stats,
+.no-roster {
   text-align: center;
   padding: 2rem;
-  
+
   i {
     font-size: 3rem;
     color: var(--text-light);
     margin-bottom: 1rem;
   }
-  
+
   p {
     color: var(--text-light);
     margin: 0;
@@ -1123,67 +1386,70 @@ export default {
       background: var(--bg-light);
       border-radius: var(--border-radius);
       border-left: 4px solid var(--primary-color);
-      
+
       &:last-child {
         margin-bottom: 0;
       }
-      
+
       .stat-time {
         font-weight: 600;
         color: var(--primary-color);
         min-width: 60px;
         margin-right: 1rem;
       }
-      
+
       .stat-content {
         flex: 1;
-        
+
         .stat-event {
           margin-bottom: 0.5rem;
-          
+
           .event-type {
             font-weight: 600;
             margin-right: 0.5rem;
-            
+
             &.goal {
               color: var(--secondary-color);
             }
-            
+
             &.penalty {
               color: var(--accent-color);
             }
           }
-          
+
           .event-result {
             font-weight: 500;
           }
         }
-        
+
         .stat-details {
           margin-bottom: 0.25rem;
-          
+
           .team-name {
             font-weight: 500;
             color: var(--text-dark);
             margin-right: 0.5rem;
           }
-          
+
           .special-play {
             color: var(--primary-color);
             font-size: 0.875rem;
           }
         }
-        
-        .goal-details, .penalty-details {
+
+        .goal-details,
+        .penalty-details {
           font-size: 0.875rem;
           color: var(--text-light);
-          
-          .scorer, .player {
+
+          .scorer,
+          .player {
             font-weight: 500;
             color: var(--text-dark);
           }
-          
-          .assist, .reason {
+
+          .assist,
+          .reason {
             margin-left: 0.25rem;
           }
         }
@@ -1198,7 +1464,7 @@ export default {
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
-    
+
     h6 {
       margin: 0;
       color: var(--text-dark);
@@ -1211,14 +1477,14 @@ export default {
 .loading-section {
   padding: 3rem 1rem;
   text-align: center;
-  
+
   .loading-content {
     i {
       font-size: 2rem;
       color: var(--primary-color);
       margin-bottom: 1rem;
     }
-    
+
     p {
       color: var(--text-light);
       margin: 0;
@@ -1233,18 +1499,19 @@ export default {
       .games-header {
         flex-direction: column;
         align-items: stretch;
-        
+
         .games-stats {
           justify-content: center;
         }
       }
     }
   }
-  
+
   .table {
     font-size: 0.95em;
   }
-  td, th {
+  td,
+  th {
     padding: 0.4rem 0.3rem !important;
   }
   .game-class-mobile .sarja-mobile {
@@ -1400,7 +1667,7 @@ export default {
     gap: 0.25rem !important;
   }
   .stats-badges .badge {
-    line-height: .5;
+    line-height: 0.5;
   }
 }
 .stats-badges {
