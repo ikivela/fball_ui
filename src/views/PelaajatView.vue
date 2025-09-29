@@ -4,9 +4,17 @@
       <div class="row">
         <div class="col-12">
           <div class="games-card">
-            <div class="games-header d-flex flex-wrap align-items-center gap-2 mb-3">
-              <div class="w-100 d-flex flex-wrap align-items-center mb-2 birthyear-filter-row">
-                <b-form-group label="Syntymävuosi vähintään" label-for="birthyear-filter-min" class="mb-0 mr-3">
+            <div
+              class="games-header d-flex flex-wrap align-items-center gap-2 mb-3"
+            >
+              <div
+                class="w-100 d-flex flex-wrap align-items-center mb-2 birthyear-filter-row"
+              >
+                <b-form-group
+                  label="Syntymävuosi vähintään"
+                  label-for="birthyear-filter-min"
+                  class="mb-0 mr-3"
+                >
                   <b-form-input
                     id="birthyear-filter-min"
                     v-model.number="birthYearFilterMin"
@@ -15,10 +23,14 @@
                     max="2099"
                     placeholder="Esim. 2007"
                     class="mr-2"
-                    style="max-width: 150px;"
+                    style="max-width: 150px"
                   />
                 </b-form-group>
-                <b-form-group label="Syntymävuosi enintään" label-for="birthyear-filter-max" class="mb-0 mr-3">
+                <b-form-group
+                  label="Syntymävuosi enintään"
+                  label-for="birthyear-filter-max"
+                  class="mb-0 mr-3"
+                >
                   <b-form-input
                     id="birthyear-filter-max"
                     v-model.number="birthYearFilterMax"
@@ -27,7 +39,7 @@
                     max="2099"
                     placeholder="Esim. 2010"
                     class="mr-2"
-                    style="max-width: 150px;"
+                    style="max-width: 150px"
                   />
                 </b-form-group>
                 <div class="gender-checkbox-group ms-3">
@@ -37,13 +49,15 @@
                     value="M"
                     unchecked-value=""
                     class="gender-checkbox"
-                  >Mies/poika</b-form-checkbox>
+                    >Mies/poika</b-form-checkbox
+                  >
                   <b-form-checkbox
                     v-model="genderFilterF"
                     value="F"
                     unchecked-value=""
                     class="gender-checkbox"
-                  >Nainen/tyttö</b-form-checkbox>
+                    >Nainen/tyttö</b-form-checkbox
+                  >
                 </div>
                 <div class="junior-checkbox-group ms-3">
                   <b-form-checkbox
@@ -51,7 +65,8 @@
                     value="junior"
                     unchecked-value=""
                     class="junior-checkbox"
-                  >Junioreita (19v tai nuorempia)</b-form-checkbox>
+                    >Junioreita (19v tai nuorempia)</b-form-checkbox
+                  >
                 </div>
               </div>
               <b-form-group label="" label-for="search-input" class="mb-0 mr-3">
@@ -81,7 +96,13 @@
                 v-model:sortDesc="sortDesc"
               >
                 <template #cell(player)="data">
-                  <router-link :to="{ name: 'PelaajaView', params: { player_id: data.item.player_id } }" class="player-link">
+                  <router-link
+                    :to="{
+                      name: 'PelaajaView',
+                      params: { player_id: data.item.player_id },
+                    }"
+                    class="player-link"
+                  >
                     {{ data.item.firstname }} {{ data.item.lastname }}
                   </router-link>
                 </template>
@@ -104,7 +125,7 @@ export default {
   name: "PelaajatView",
   data() {
     return {
-      baseurl: process.env.VUE_APP_BACKEND_URL,
+      baseurl: import.meta.env.VITE_APP_BACKEND_URL,
       players: [],
       searchTerm: "",
       genderFilterM: "M",
@@ -117,7 +138,7 @@ export default {
         { key: "games", label: "Ottelut", sortable: true },
       ],
       emptyText: "Ei pelaajia löytynyt.",
-      sortBy: 'player',
+      sortBy: "player",
       sortDesc: false,
     };
   },
@@ -137,15 +158,17 @@ export default {
     },
     juniorBirthYear() {
       // Kaudella 2025-2026 juniorit ovat 2007 tai sitä myöhemmin syntyneet
-      const seasonEndYear = parseInt(this.currentSeason.split('-')[1]);
+      const seasonEndYear = parseInt(this.currentSeason.split("-")[1]);
       return seasonEndYear - 19; // 2026 - 19 = 2007
     },
     allSeasons() {
       // Kerää kaikki kaudet kaikilta pelaajilta
       const seasons = new Set();
-      this.players.forEach(p => {
+      this.players.forEach((p) => {
         if (p.games_per_year) {
-          Object.keys(p.games_per_year).forEach(season => seasons.add(season));
+          Object.keys(p.games_per_year).forEach((season) =>
+            seasons.add(season)
+          );
         }
       });
       return Array.from(seasons).sort().reverse();
@@ -157,23 +180,25 @@ export default {
       let filtered = this.players;
       if (this.searchTerm) {
         const term = this.searchTerm.toLowerCase();
-        filtered = filtered.filter(p => {
-          const fullName = `${p.firstname || ''} ${p.lastname || ''}`.toLowerCase();
+        filtered = filtered.filter((p) => {
+          const fullName = `${p.firstname || ""} ${
+            p.lastname || ""
+          }`.toLowerCase();
           return fullName.includes(term);
         });
       }
       // Sukupuolisuodatus
       const genders = [];
-      if (this.genderFilterM === 'M') genders.push('M');
-      if (this.genderFilterF === 'F') genders.push('F');
+      if (this.genderFilterM === "M") genders.push("M");
+      if (this.genderFilterF === "F") genders.push("F");
       if (genders.length === 1) {
-        filtered = filtered.filter(p => p.gender === genders[0]);
+        filtered = filtered.filter((p) => p.gender === genders[0]);
       } else if (genders.length === 0) {
         filtered = [];
       }
       // Juniorisuodatus
-      if (this.juniorFilter === 'junior') {
-        filtered = filtered.filter(p => {
+      if (this.juniorFilter === "junior") {
+        filtered = filtered.filter((p) => {
           const birthYear = p.birth_year || p.birth_day;
           if (!birthYear) return false;
           return parseInt(birthYear) > this.juniorBirthYear;
@@ -181,29 +206,33 @@ export default {
       }
       // Syntymävuosifiltterit
       if (this.birthYearFilterMin) {
-        filtered = filtered.filter(p => {
+        filtered = filtered.filter((p) => {
           const birthYear = p.birth_year || p.birth_day;
           if (!birthYear) return false;
           return parseInt(birthYear) >= this.birthYearFilterMin;
         });
       }
       if (this.birthYearFilterMax) {
-        filtered = filtered.filter(p => {
+        filtered = filtered.filter((p) => {
           const birthYear = p.birth_year || p.birth_day;
           if (!birthYear) return false;
           return parseInt(birthYear) <= this.birthYearFilterMax;
         });
       }
       // Sort
-      if (this.sortBy === 'player') {
+      if (this.sortBy === "player") {
         filtered = filtered.slice().sort((a, b) => {
-          const nameA = `${a.firstname || ''} ${a.lastname || ''}`.toLowerCase();
-          const nameB = `${b.firstname || ''} ${b.lastname || ''}`.toLowerCase();
+          const nameA = `${a.firstname || ""} ${
+            a.lastname || ""
+          }`.toLowerCase();
+          const nameB = `${b.firstname || ""} ${
+            b.lastname || ""
+          }`.toLowerCase();
           if (nameA < nameB) return this.sortDesc ? 1 : -1;
           if (nameA > nameB) return this.sortDesc ? -1 : 1;
           return 0;
         });
-      } else if (this.sortBy === 'games') {
+      } else if (this.sortBy === "games") {
         filtered = filtered.slice().sort((a, b) => {
           const gamesA = this.totalGames(a);
           const gamesB = this.totalGames(b);
@@ -213,7 +242,7 @@ export default {
         });
       }
       return filtered;
-    }
+    },
   },
   methods: {
     async fetchPlayers() {
@@ -226,7 +255,10 @@ export default {
         // Tarkistetaan, onko data lista vai objektin kenttä
         if (Array.isArray(response.data)) {
           this.players = response.data;
-        } else if (response.data.players && Array.isArray(response.data.players)) {
+        } else if (
+          response.data.players &&
+          Array.isArray(response.data.players)
+        ) {
           this.players = response.data.players;
         } else {
           this.players = [];
@@ -252,22 +284,21 @@ export default {
       return Object.values(player.games_per_year).reduce((a, b) => a + b, 0);
     },
     gamesTooltip(player) {
-      if (!player.games_per_year) return '';
+      if (!player.games_per_year) return "";
       return Object.entries(player.games_per_year)
         .map(([season, count]) => `${season}: ${count}`)
-        .join('\n');
+        .join("\n");
     },
   },
   mounted() {
     this.fetchPlayers();
   },
-  watch: {
-  },
+  watch: {},
 };
 </script>
 
 <style scoped>
-@import '../assets/_shared-sections.scss';
+@import "../assets/_shared-sections.scss";
 .narrow-table-wrapper {
   max-width: 500px;
   margin: 0 auto;
@@ -310,7 +341,6 @@ export default {
 .games-card .table-responsive {
   padding: 0.5rem 0.5rem 0.5rem 0.5rem;
 }
-
 </style>
 
 <style>

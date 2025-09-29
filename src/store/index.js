@@ -50,13 +50,18 @@ export default createStore({
     async fetchGames({ commit }, year) {
       console.log("fetching year % from api", year);
       let response = await axios.get(
-        `${process.env.VUE_APP_BACKEND_URL}/games/?year=${year}`,
+        `${import.meta.env.VITE_APP_BACKEND_URL}/games/?year=${year}`,
       );
       commit("SET_games", { games: response.data, season: year });
     },
     async fetchSeasons({ commit }) {
-      let res = await axios.get(`${process.env.VUE_APP_BACKEND_URL}/seasons`);
+
+      console.log(" env var", import.meta.env.VITE_APP_BACKEND_URL);
+
+      let res = await axios.get(`${import.meta.env.VITE_APP_BACKEND_URL}/seasons`);
       let seasons = res.data.data;
+      if (seasons.length === 0) return [];
+
       seasons = seasons.sort((a, b) => (a > b ? -1 : 1));
       seasons = seasons.map((x) => {
         return {
@@ -69,12 +74,12 @@ export default createStore({
     },
     async fetchStats({ commit }) {
       let res = await axios.get(
-        `${process.env.VUE_APP_BACKEND_URL}/seasonstats`,
+        `${import.meta.env.VITE_APP_BACKEND_URL}/seasonstats`,
       );
       commit("SET_stats", res.data);
     },
     async fetchPlayers({ commit }) {
-      let res = await axios.get(`${process.env.VUE_APP_BACKEND_URL}/players`);
+      let res = await axios.get(`${import.meta.env.VITE_APP_BACKEND_URL}/players`);
       commit("SET_players", res.data);
     },
   },

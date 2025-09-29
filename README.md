@@ -7,8 +7,8 @@ This repository contains frontend code for [fball_backend](https://github.com/ik
 Create `.env` and modify following variables
 
 ```
-VUE_APP_SITE_TITLE=Demo site
-VUE_APP_BACKEND_URL=http://yoursite.com
+VITE_APP_SITE_TITLE=Demo site
+VITE_APP_BACKEND_URL=http://yoursite.com
 ```
 
 In `vue.config.js`, line 13, set `publicPath`. Root path '/' is used in development mode

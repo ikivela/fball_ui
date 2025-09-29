@@ -10,25 +10,60 @@
         <div class="card-body">
           <div class="timeline-container mb-4">
             <div class="timeline">
-              <div v-for="event in gameReport.allEvents" :key="event.event_id || event.time + event.type + event.player_id">
+              <div
+                v-for="event in gameReport.allEvents"
+                :key="
+                  event.event_id || event.time + event.type + event.player_id
+                "
+              >
                 <div class="timeline-row d-flex align-items-center mb-2">
                   <!-- Vasen: kotijoukkueen tapahtuma -->
                   <div class="timeline-col text-end">
                     <span v-if="isHomeEvent(event)">
                       <span class="timeline-event-content">
                         <span class="fw-semibold">
-                          <template v-if="event.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')">
-                            <a href="#" class="player-link" @click.prevent="goToPlayer(event.player_id)">
-                              {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
+                          <template
+                            v-if="
+                              event.player_id &&
+                              gameReport.homeName &&
+                              gameReport.homeName
+                                .toLowerCase()
+                                .includes('nibacos')
+                            "
+                          >
+                            <a
+                              href="#"
+                              class="player-link"
+                              @click.prevent="goToPlayer(event.player_id)"
+                            >
+                              {{
+                                event.player_name ||
+                                event.name ||
+                                (event.type === "goal"
+                                  ? event.scorer
+                                  : event.type === "penalty"
+                                  ? event.player
+                                  : "")
+                              }}
                             </a>
                           </template>
                           <template v-else>
-                            {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
+                            {{
+                              event.player_name ||
+                              event.name ||
+                              (event.type === "goal"
+                                ? event.scorer
+                                : event.type === "penalty"
+                                ? event.player
+                                : "")
+                            }}
                           </template>
                         </span>
                         <span v-if="event.type === 'goal'">&nbsp;🥅</span>
                         <span v-if="event.type === 'penalty'">&nbsp;🚫</span>
-                        <span class="text-muted ms-1">{{ event.description || event.code || event.reason }}</span>
+                        <span class="text-muted ms-1">{{
+                          event.description || event.code || event.reason
+                        }}</span>
                       </span>
                     </span>
                   </div>
@@ -41,18 +76,48 @@
                     <span v-if="isAwayEvent(event)">
                       <span class="timeline-event-content">
                         <span class="fw-semibold">
-                          <template v-if="event.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')">
-                            <a href="#" class="player-link" @click.prevent="goToPlayer(event.player_id)">
-                              {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
+                          <template
+                            v-if="
+                              event.player_id &&
+                              gameReport.awayName &&
+                              gameReport.awayName
+                                .toLowerCase()
+                                .includes('nibacos')
+                            "
+                          >
+                            <a
+                              href="#"
+                              class="player-link"
+                              @click.prevent="goToPlayer(event.player_id)"
+                            >
+                              {{
+                                event.player_name ||
+                                event.name ||
+                                (event.type === "goal"
+                                  ? event.scorer
+                                  : event.type === "penalty"
+                                  ? event.player
+                                  : "")
+                              }}
                             </a>
                           </template>
                           <template v-else>
-                            {{ event.player_name || event.name || (event.type === 'goal' ? event.scorer : (event.type === 'penalty' ? event.player : '')) }}
+                            {{
+                              event.player_name ||
+                              event.name ||
+                              (event.type === "goal"
+                                ? event.scorer
+                                : event.type === "penalty"
+                                ? event.player
+                                : "")
+                            }}
                           </template>
                         </span>
                         <span v-if="event.type === 'goal'">&nbsp;🥅</span>
                         <span v-if="event.type === 'penalty'">&nbsp;🚫</span>
-                        <span class="text-muted ms-1">{{ event.description || event.code || event.reason }}</span>
+                        <span class="text-muted ms-1">{{
+                          event.description || event.code || event.reason
+                        }}</span>
                       </span>
                     </span>
                   </div>
@@ -64,12 +129,30 @@
             <div class="flex-fill bg-light rounded p-3 mb-3 mb-md-0 shadow-sm">
               <h5 class="text-center mb-3">{{ gameReport.homeName }}</h5>
               <ul class="list-unstyled">
-                <li v-for="p in gameReport.homeLineup" :key="p.player_id || p.id || p.name" class="mb-1">
-                  <span class="me-2">{{ p.player_shirt_number || p.shirt_number || '' }}</span>
+                <li
+                  v-for="p in gameReport.homeLineup"
+                  :key="p.player_id || p.id || p.name"
+                  class="mb-1"
+                >
+                  <span class="me-2">{{
+                    p.player_shirt_number || p.shirt_number || ""
+                  }}</span>
                   <span class="fw-semibold">
-                    <template v-if="p.player_id && gameReport.homeName && gameReport.homeName.toLowerCase().includes('nibacos')">
-                      <a href="#" class="player-link" @click.prevent="goToPlayer(p.player_id)">
-                        {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
+                    <template
+                      v-if="
+                        p.player_id &&
+                        gameReport.homeName &&
+                        gameReport.homeName.toLowerCase().includes('nibacos')
+                      "
+                    >
+                      <a
+                        href="#"
+                        class="player-link"
+                        @click.prevent="goToPlayer(p.player_id)"
+                      >
+                        {{
+                          p.name || p.player_name || p.id || JSON.stringify(p)
+                        }}
                       </a>
                     </template>
                     <template v-else>
@@ -82,12 +165,30 @@
             <div class="flex-fill bg-light rounded p-3 shadow-sm">
               <h5 class="text-center mb-3">{{ gameReport.awayName }}</h5>
               <ul class="list-unstyled">
-                <li v-for="p in gameReport.awayLineup" :key="p.player_id || p.id || p.name" class="mb-1">
-                  <span class="me-2">{{ p.player_shirt_number || p.shirt_number || '' }}</span>
+                <li
+                  v-for="p in gameReport.awayLineup"
+                  :key="p.player_id || p.id || p.name"
+                  class="mb-1"
+                >
+                  <span class="me-2">{{
+                    p.player_shirt_number || p.shirt_number || ""
+                  }}</span>
                   <span class="fw-semibold">
-                    <template v-if="p.player_id && gameReport.awayName && gameReport.awayName.toLowerCase().includes('nibacos')">
-                      <a href="#" class="player-link" @click.prevent="goToPlayer(p.player_id)">
-                        {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
+                    <template
+                      v-if="
+                        p.player_id &&
+                        gameReport.awayName &&
+                        gameReport.awayName.toLowerCase().includes('nibacos')
+                      "
+                    >
+                      <a
+                        href="#"
+                        class="player-link"
+                        @click.prevent="goToPlayer(p.player_id)"
+                      >
+                        {{
+                          p.name || p.player_name || p.id || JSON.stringify(p)
+                        }}
                       </a>
                     </template>
                     <template v-else>
@@ -102,7 +203,9 @@
       </div>
     </div>
     <div v-else>Ei otteluraporttia saatavilla.</div>
-    <div v-if="!loading && !error && !gameReport">Ei dataa ladattu eikä virhettä havaittu.</div>
+    <div v-if="!loading && !error && !gameReport">
+      Ei dataa ladattu eikä virhettä havaittu.
+    </div>
     <!-- Esimerkki back-napista -->
     <button @click="goToOttelutView" class="btn btn-secondary">
       <i class="fas fa-arrow-left"></i> Takaisin otteluihin
@@ -111,57 +214,61 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
-  name: 'OtteluView',
+  name: "OtteluView",
   data() {
     return {
       gameReport: null,
       loading: true,
-      error: '',
+      error: "",
     };
   },
   watch: {
-    '$route.query.gameid': {
+    "$route.query.gameid": {
       immediate: true,
       handler() {
         this.fetchGameReport();
-      }
-    }
+      },
+    },
   },
   methods: {
     async fetchGameReport() {
       this.loading = true;
-      this.error = '';
+      this.error = "";
       this.gameReport = null;
       const gameid = this.$route.query.gameid;
       const season = this.$route.query.season;
-      console.log('fetchGameReport', { season, gameid });
+      console.log("fetchGameReport", { season, gameid });
       try {
-        const baseurl = process.env.VUE_APP_BACKEND_URL;
-        if (!gameid) throw new Error('Puuttuva ottelun tunniste');
-        if (!season) throw new Error('Puuttuva kausi');
+        const baseurl = import.meta.env.VITE_APP_BACKEND_URL;
+        if (!gameid) throw new Error("Puuttuva ottelun tunniste");
+        if (!season) throw new Error("Puuttuva kausi");
         const url = `${baseurl}/gamestats/?season=${season}&gameid=${gameid}`;
-        console.log('OtteluView API url:', url);
+        console.log("OtteluView API url:", url);
         const response = await axios.get(url);
-        console.log('API response', response.data);
+        console.log("API response", response.data);
         const data = response.data;
-        if (!data || (Array.isArray(data) && data.length === 0) || (typeof data === 'object' && Object.keys(data).length === 0)) {
-          this.error = 'Ei dataa löytynyt.';
+        if (
+          !data ||
+          (Array.isArray(data) && data.length === 0) ||
+          (typeof data === "object" && Object.keys(data).length === 0)
+        ) {
+          this.error = "Ei dataa löytynyt.";
           return;
         }
         // --- VANHA MUOTO: pelkkä array (ennen 2023-2024) ---
         if (Array.isArray(data)) {
           // Yritetään päätellä kotijoukkue ja vierasjoukkue reitistä tai datasta
-          let homeName = this.$route.query.home || 'Koti';
-          let awayName = this.$route.query.away || 'Vieras';
-          let date = this.$route.query.date || '';
-          const allEvents = data.map(ev => ({
+          let homeName = this.$route.query.home || "Koti";
+          let awayName = this.$route.query.away || "Vieras";
+          let date = this.$route.query.date || "";
+          const allEvents = data.map((ev) => ({
             ...ev,
             type: ev.event || null,
-            event_time: ev.time || '',
-            team: ev.team || null
+            event_time: ev.time || "",
+            team: ev.team || null,
           }));
           this.gameReport = {
             date,
@@ -175,125 +282,148 @@ export default {
             awayLineup: [],
             homeName,
             awayName,
-            allEvents
+            allEvents,
           };
           this.loading = false;
           return;
         }
         // --- UUSI MUOTO ---
         const root = data.match ? data.match : data;
-        const homeId = root.team_A_id || (root.goals && root.goals[0] && root.goals[0].team_id);
-        const awayId = root.team_B_id || (root.goals && root.goals.find(g => g.team_id !== homeId)?.team_id);
+        const homeId =
+          root.team_A_id ||
+          (root.goals && root.goals[0] && root.goals[0].team_id);
+        const awayId =
+          root.team_B_id ||
+          (root.goals && root.goals.find((g) => g.team_id !== homeId)?.team_id);
         let homeLineup = [];
         let awayLineup = [];
         if (Array.isArray(root.lineups)) {
-          homeLineup = root.lineups.filter(p => p.team_id == homeId);
-          awayLineup = root.lineups.filter(p => p.team_id == awayId);
-        } else if (root.lineups && typeof root.lineups === 'object') {
+          homeLineup = root.lineups.filter((p) => p.team_id == homeId);
+          awayLineup = root.lineups.filter((p) => p.team_id == awayId);
+        } else if (root.lineups && typeof root.lineups === "object") {
           homeLineup = root.lineups[homeId] || [];
           awayLineup = root.lineups[awayId] || [];
         }
         const allEvents = [
-          ...((root.goals || []).map(g => ({
+          ...(root.goals || []).map((g) => ({
             ...g,
-            type: 'goal',
+            type: "goal",
             event_time: g.time,
-            team: g.team_id
-          }))),
-          ...((root.events || [])
-            .filter(e =>
-              e.code && (
-                e.code.toLowerCase().includes('pen') ||
-                e.code.toLowerCase().includes('jäähy') ||
-                e.code.toLowerCase().includes('rangaistus') ||
-                e.code.toLowerCase().includes('pun') ||
-                e.code.toLowerCase().includes('2min') ||
-                e.code.toLowerCase().includes('5min')
-              )
+            team: g.team_id,
+          })),
+          ...(root.events || [])
+            .filter(
+              (e) =>
+                e.code &&
+                (e.code.toLowerCase().includes("pen") ||
+                  e.code.toLowerCase().includes("jäähy") ||
+                  e.code.toLowerCase().includes("rangaistus") ||
+                  e.code.toLowerCase().includes("pun") ||
+                  e.code.toLowerCase().includes("2min") ||
+                  e.code.toLowerCase().includes("5min"))
             )
-            .map(e => ({
+            .map((e) => ({
               ...e,
-              type: 'penalty',
+              type: "penalty",
               event_time: e.time,
-              team: e.team_id
-            }))
-          )
+              team: e.team_id,
+            })),
         ];
         allEvents.sort((a, b) => {
-          const toSeconds = t => {
+          const toSeconds = (t) => {
             if (!t) return 0;
-            const parts = t.split(':');
+            const parts = t.split(":");
             return parseInt(parts[0] || 0) * 60 + parseInt(parts[1] || 0);
           };
           return toSeconds(a.event_time) - toSeconds(b.event_time);
         });
         this.gameReport = {
-          date: root.date || '',
+          date: root.date || "",
           homeId,
           awayId,
-          homeGoals: (root.goals || []).filter(g => g.team_id == homeId),
-          awayGoals: (root.goals || []).filter(g => g.team_id == awayId),
-          homePenalties: (root.events || []).filter(e =>
-            e.code && (
-              e.code.toLowerCase().includes('pen') ||
-              e.code.toLowerCase().includes('jäähy') ||
-              e.code.toLowerCase().includes('rangaistus') ||
-              e.code.toLowerCase().includes('pun') ||
-              e.code.toLowerCase().includes('2min') ||
-              e.code.toLowerCase().includes('5min')
-            ) && e.team_id == homeId
+          homeGoals: (root.goals || []).filter((g) => g.team_id == homeId),
+          awayGoals: (root.goals || []).filter((g) => g.team_id == awayId),
+          homePenalties: (root.events || []).filter(
+            (e) =>
+              e.code &&
+              (e.code.toLowerCase().includes("pen") ||
+                e.code.toLowerCase().includes("jäähy") ||
+                e.code.toLowerCase().includes("rangaistus") ||
+                e.code.toLowerCase().includes("pun") ||
+                e.code.toLowerCase().includes("2min") ||
+                e.code.toLowerCase().includes("5min")) &&
+              e.team_id == homeId
           ),
-          awayPenalties: (root.events || []).filter(e =>
-            e.code && (
-              e.code.toLowerCase().includes('pen') ||
-              e.code.toLowerCase().includes('jäähy') ||
-              e.code.toLowerCase().includes('rangaistus') ||
-              e.code.toLowerCase().includes('pun') ||
-              e.code.toLowerCase().includes('2min') ||
-              e.code.toLowerCase().includes('5min')
-            ) && e.team_id == awayId
+          awayPenalties: (root.events || []).filter(
+            (e) =>
+              e.code &&
+              (e.code.toLowerCase().includes("pen") ||
+                e.code.toLowerCase().includes("jäähy") ||
+                e.code.toLowerCase().includes("rangaistus") ||
+                e.code.toLowerCase().includes("pun") ||
+                e.code.toLowerCase().includes("2min") ||
+                e.code.toLowerCase().includes("5min")) &&
+              e.team_id == awayId
           ),
           homeLineup,
           awayLineup,
-          homeName: root.team_A_name || root.team_A_description_en || 'Koti',
-          awayName: root.team_B_name || root.team_B_description_en || 'Vieras',
-          allEvents
+          homeName: root.team_A_name || root.team_A_description_en || "Koti",
+          awayName: root.team_B_name || root.team_B_description_en || "Vieras",
+          allEvents,
         };
       } catch (e) {
-        this.error = 'Otteluraportin haku epäonnistui.';
+        this.error = "Otteluraportin haku epäonnistui.";
       } finally {
         this.loading = false;
       }
     },
     goToPlayer(playerId) {
-      this.$router.push({ name: 'PelaajaView', params: { player_id: playerId } });
+      this.$router.push({
+        name: "PelaajaView",
+        params: { player_id: playerId },
+      });
     },
     isHomeEvent(event) {
       if (!event.team || !this.gameReport.homeId) return false;
-      return event.team.toLowerCase().includes(this.gameReport.homeId.toLowerCase());
+      return event.team
+        .toLowerCase()
+        .includes(this.gameReport.homeId.toLowerCase());
     },
     isAwayEvent(event) {
       if (!event.team || !this.gameReport.awayId) return false;
-      return event.team.toLowerCase().includes(this.gameReport.awayId.toLowerCase());
+      return event.team
+        .toLowerCase()
+        .includes(this.gameReport.awayId.toLowerCase());
     },
     goToOttelutView() {
       // Navigoi takaisin otteluiden listaan ja säilytä kausi query-parametrissa
-      this.$router.push({ name: 'OttelutView', query: { season: this.$route.query.season || this.gameReport?.date?.slice(0, 4) } });
-      
-    }
+      this.$router.push({
+        name: "OttelutView",
+        query: {
+          season:
+            this.$route.query.season || this.gameReport?.date?.slice(0, 4),
+        },
+      });
+    },
   },
   computed: {
     formattedGameReportTitle() {
-      if (!this.gameReport || !this.gameReport.date || !this.gameReport.homeName || !this.gameReport.awayName) return '';
+      if (
+        !this.gameReport ||
+        !this.gameReport.date ||
+        !this.gameReport.homeName ||
+        !this.gameReport.awayName
+      )
+        return "";
       let dateStr = this.gameReport.date;
-      let timeStr = '';
-      if (dateStr.includes(' ')) {
-        const parts = dateStr.split(' ');
+      let timeStr = "";
+      if (dateStr.includes(" ")) {
+        const parts = dateStr.split(" ");
         dateStr = parts[0];
-        timeStr = parts[1] ? parts[1].slice(0,5) : '';
+        timeStr = parts[1] ? parts[1].slice(0, 5) : "";
       }
-      const [yyyy, mm, dd] = dateStr.split('-');
-      const formatted = `${dd}.${mm}.${yyyy}` + (timeStr ? ` ${timeStr}` : '');
+      const [yyyy, mm, dd] = dateStr.split("-");
+      const formatted = `${dd}.${mm}.${yyyy}` + (timeStr ? ` ${timeStr}` : "");
       return `${formatted} ${this.gameReport.homeName} vs ${this.gameReport.awayName}`;
     },
   },
@@ -301,7 +431,7 @@ export default {
 </script>
 
 <style scoped>
-@import '../assets/_shared-sections.scss';
+@import "../assets/_shared-sections.scss";
 .ottelu-view {
   min-height: 60vh;
 }
@@ -381,7 +511,11 @@ export default {
   text-decoration: underline;
 }
 .card-header {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-light) 100%
+  ) !important;
   color: white !important;
 }
 @media (max-width: 768px) {

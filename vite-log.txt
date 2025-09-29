@@ -1,0 +1,512 @@
+The CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.
+2025-09-29T06:44:08.366Z vite:config bundled config file loaded in 100.90ms
+2025-09-29T06:44:08.379Z vite:config using resolved config: {
+  plugins: [
+    'vite:optimized-deps',
+    'vite:watch-package-data',
+    'vite:pre-alias',
+    'alias',
+    'vite:modulepreload-polyfill',
+    'vite:resolve',
+    'vite:html-inline-proxy',
+    'vite:css',
+    'vite:esbuild',
+    'vite:json',
+    'vite:wasm-helper',
+    'vite:worker',
+    'vite:asset',
+    'vite:vue',
+    'vite:wasm-fallback',
+    'vite:define',
+    'vite:css-post',
+    'vite:worker-import-meta-url',
+    'vite:asset-import-meta-url',
+    'vite:dynamic-import-vars',
+    'vite:import-glob',
+    'vite:client-inject',
+    'vite:css-analysis',
+    'vite:import-analysis'
+  ],
+  server: {
+    preTransformRequests: true,
+    port: 8080,
+    open: true,
+    sourcemapIgnoreList: [Function: isInNodeModules$1],
+    middlewareMode: false,
+    fs: {
+      strict: true,
+      allow: [Array],
+      deny: [Array],
+      cachedChecks: undefined
+    }
+  },
+  resolve: {
+    mainFields: [ 'browser', 'module', 'jsnext:main', 'jsnext' ],
+    conditions: [],
+    extensions: [
+      '.mjs',  '.js',
+      '.mts',  '.ts',
+      '.jsx',  '.tsx',
+      '.json'
+    ],
+    dedupe: [ 'vue' ],
+    preserveSymlinks: false,
+    alias: [ [Object], [Object], [Object] ]
+  },
+  optimizeDeps: {
+    holdUntilCrawlEnd: true,
+    force: undefined,
+    esbuildOptions: { preserveSymlinks: false }
+  },
+  define: {
+    __VUE_OPTIONS_API__: true,
+    __VUE_PROD_DEVTOOLS__: false,
+    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
+  },
+  ssr: {
+    target: 'node',
+    external: [],
+    optimizeDeps: { noDiscovery: true, esbuildOptions: [Object] }
+  },
+  configFile: 'C:/Users/ilkka.kivela/Development/fball_ui/vite.config.js',
+  configFileDependencies: [ 'C:/Users/ilkka.kivela/Development/fball_ui/vite.config.js' ],
+  inlineConfig: {
+    root: undefined,
+    base: undefined,
+    mode: undefined,
+    configFile: undefined,
+    logLevel: undefined,
+    clearScreen: undefined,
+    optimizeDeps: { force: undefined },
+    server: { host: undefined }
+  },
+  root: 'C:/Users/ilkka.kivela/Development/fball_ui',
+  base: '/',
+  decodedBase: '/',
+  rawBase: '/',
+  publicDir: 'C:/Users/ilkka.kivela/Development/fball_ui/public',
+  cacheDir: 'C:/Users/ilkka.kivela/Development/fball_ui/node_modules/.vite',
+  command: 'serve',
+  mode: 'development',
+  isWorker: false,
+  mainConfig: null,
+  bundleChain: [],
+  isProduction: false,
+  css: { lightningcss: undefined },
+  esbuild: { jsxDev: true },
+  build: {
+    target: [ 'es2020', 'edge88', 'firefox78', 'chrome87', 'safari14' ],
+    cssTarget: [ 'es2020', 'edge88', 'firefox78', 'chrome87', 'safari14' ],
+    outDir: 'dist',
+    assetsDir: 'assets',
+    assetsInlineLimit: 4096,
+    cssCodeSplit: true,
+    sourcemap: false,
+    rollupOptions: {},
+    minify: 'esbuild',
+    terserOptions: {},
+    write: true,
+    emptyOutDir: null,
+    copyPublicDir: true,
+    manifest: false,
+    lib: false,
+    ssr: false,
+    ssrManifest: false,
+    ssrEmitAssets: false,
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 500,
+    watch: null,
+    commonjsOptions: { include: [Array], extensions: [Array] },
+    dynamicImportVarsOptions: { warnOnError: true, exclude: [Array] },
+    modulePreload: { polyfill: true },
+    cssMinify: true
+  },
+  preview: {
+    port: undefined,
+    strictPort: undefined,
+    host: undefined,
+    allowedHosts: undefined,
+    https: undefined,
+    open: true,
+    proxy: undefined,
+    cors: undefined,
+    headers: undefined
+  },
+  envDir: 'C:/Users/ilkka.kivela/Development/fball_ui',
+  env: { BASE_URL: '/', MODE: 'development', DEV: true, PROD: false },
+  assetsInclude: [Function: assetsInclude],
+  logger: {
+    hasWarned: false,
+    info: [Function: info],
+    warn: [Function (anonymous)],
+    warnOnce: [Function: warnOnce],
+    error: [Function: error],
+    clearScreen: [Function: clearScreen],
+    hasErrorLogged: [Function: hasErrorLogged]
+  },
+  packageCache: Map(1) {
+    'fnpd_C:/Users/ilkka.kivela/Development/fball_ui' => {
+      dir: 'C:/Users/ilkka.kivela/Development/fball_ui',
+      data: [Object],
+      hasSideEffects: [Function: hasSideEffects],
+      webResolvedImports: {},
+      nodeResolvedImports: {},
+      setResolvedCache: [Function: setResolvedCache],
+      getResolvedCache: [Function: getResolvedCache]
+    },
+    set: [Function (anonymous)]
+  },
+  createResolver: [Function: createResolver],
+  worker: { format: 'iife', plugins: '() => plugins', rollupOptions: {} },
+  appType: 'spa',
+  experimental: { importGlobRestoreExtension: false, hmrPartialAccept: false },
+  webSocketToken: 'vsAJCNQtBOEL',
+  additionalAllowedHosts: [],
+  getSortedPlugins: [Function: getSortedPlugins],
+  getSortedPluginHooks: [Function: getSortedPluginHooks]
+}
+2025-09-29T06:44:08.452Z vite:deps removing old cache dir C:/Users/ilkka.kivela/Development/fball_ui/node_modules/.vite/deps
+2025-09-29T06:44:08.460Z vite:deps scanning for dependencies...
+
+  [32m[1mVITE[22m v5.4.20[39m  [2mready in [0m[1m380[22m[2m[0m ms[22m
+
+  [32mΓ₧£[39m  [1mLocal[22m:   [36mhttp://localhost:[1m8080[22m/[39m
+[2m  [32mΓ₧£[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m[32m  Γ₧£[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+2025-09-29T06:44:08.496Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:44:08.496Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:44:08.505Z vite:html-fallback Rewriting GET / to /index.html
+2025-09-29T06:44:08.506Z vite:time 2.69ms /index.html
+2025-09-29T06:44:08.511Z vite:deps Crawling dependencies using entries: 
+  C:/Users/ilkka.kivela/Development/fball_ui/public/index.html
+2025-09-29T06:44:08.542Z vite:deps Scan completed in 81.99ms: no dependencies found
+2025-09-29T06:44:08.543Z vite:deps creating package.json in C:/Users/ilkka.kivela/Development/fball_ui/node_modules/.vite/deps_temp_988c806c
+2025-09-29T06:44:09.026Z vite:html-fallback Rewriting GET / to /index.html
+2025-09-29T06:44:09.027Z vite:time 0.63ms /index.html
+2025-09-29T06:44:13.933Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:44:13.934Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:29.408Z vite:hmr [config change] vite.config.js
+[2m9.45.29[22m [36m[1m[vite][22m[39m [32mvite.config.js changed, restarting server...[39m
+2025-09-29T06:45:29.442Z vite:config bundled config file loaded in 14.09ms
+2025-09-29T06:45:29.445Z vite:config using resolved config: {
+  plugins: [
+    'vite:optimized-deps',
+    'vite:watch-package-data',
+    'vite:pre-alias',
+    'alias',
+    'vite:modulepreload-polyfill',
+    'vite:resolve',
+    'vite:html-inline-proxy',
+    'vite:css',
+    'vite:esbuild',
+    'vite:json',
+    'vite:wasm-helper',
+    'vite:worker',
+    'vite:asset',
+    'vite:vue',
+    'vite:wasm-fallback',
+    'vite:define',
+    'vite:css-post',
+    'vite:worker-import-meta-url',
+    'vite:asset-import-meta-url',
+    'vite:dynamic-import-vars',
+    'vite:import-glob',
+    'vite:client-inject',
+    'vite:css-analysis',
+    'vite:import-analysis'
+  ],
+  server: {
+    preTransformRequests: true,
+    port: 5173,
+    open: true,
+    sourcemapIgnoreList: [Function: isInNodeModules$1],
+    middlewareMode: false,
+    fs: {
+      strict: true,
+      allow: [Array],
+      deny: [Array],
+      cachedChecks: undefined
+    }
+  },
+  resolve: {
+    mainFields: [ 'browser', 'module', 'jsnext:main', 'jsnext' ],
+    conditions: [],
+    extensions: [
+      '.mjs',  '.js',
+      '.mts',  '.ts',
+      '.jsx',  '.tsx',
+      '.json'
+    ],
+    dedupe: [ 'vue' ],
+    preserveSymlinks: false,
+    alias: [ [Object], [Object], [Object] ]
+  },
+  optimizeDeps: {
+    holdUntilCrawlEnd: true,
+    force: undefined,
+    esbuildOptions: { preserveSymlinks: false }
+  },
+  define: {
+    __VUE_OPTIONS_API__: true,
+    __VUE_PROD_DEVTOOLS__: false,
+    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
+  },
+  ssr: {
+    target: 'node',
+    external: [],
+    optimizeDeps: { noDiscovery: true, esbuildOptions: [Object] }
+  },
+  configFile: 'C:/Users/ilkka.kivela/Development/fball_ui/vite.config.js',
+  configFileDependencies: [ 'C:/Users/ilkka.kivela/Development/fball_ui/vite.config.js' ],
+  inlineConfig: {
+    root: undefined,
+    base: undefined,
+    mode: undefined,
+    configFile: undefined,
+    logLevel: undefined,
+    clearScreen: undefined,
+    optimizeDeps: { force: undefined },
+    server: { host: undefined }
+  },
+  root: 'C:/Users/ilkka.kivela/Development/fball_ui',
+  base: '/',
+  decodedBase: '/',
+  rawBase: '/',
+  publicDir: 'C:/Users/ilkka.kivela/Development/fball_ui/public',
+  cacheDir: 'C:/Users/ilkka.kivela/Development/fball_ui/node_modules/.vite',
+  command: 'serve',
+  mode: 'development',
+  isWorker: false,
+  mainConfig: null,
+  bundleChain: [],
+  isProduction: false,
+  css: { lightningcss: undefined },
+  esbuild: { jsxDev: true },
+  build: {
+    target: [ 'es2020', 'edge88', 'firefox78', 'chrome87', 'safari14' ],
+    cssTarget: [ 'es2020', 'edge88', 'firefox78', 'chrome87', 'safari14' ],
+    outDir: 'dist',
+    assetsDir: 'assets',
+    assetsInlineLimit: 4096,
+    cssCodeSplit: true,
+    sourcemap: false,
+    rollupOptions: {},
+    minify: 'esbuild',
+    terserOptions: {},
+    write: true,
+    emptyOutDir: null,
+    copyPublicDir: true,
+    manifest: false,
+    lib: false,
+    ssr: false,
+    ssrManifest: false,
+    ssrEmitAssets: false,
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 500,
+    watch: null,
+    commonjsOptions: { include: [Array], extensions: [Array] },
+    dynamicImportVarsOptions: { warnOnError: true, exclude: [Array] },
+    modulePreload: { polyfill: true },
+    cssMinify: true
+  },
+  preview: {
+    port: undefined,
+    strictPort: undefined,
+    host: undefined,
+    allowedHosts: undefined,
+    https: undefined,
+    open: true,
+    proxy: undefined,
+    cors: undefined,
+    headers: undefined
+  },
+  envDir: 'C:/Users/ilkka.kivela/Development/fball_ui',
+  env: { BASE_URL: '/', MODE: 'development', DEV: true, PROD: false },
+  assetsInclude: [Function: assetsInclude],
+  logger: {
+    hasWarned: false,
+    info: [Function: info],
+    warn: [Function (anonymous)],
+    warnOnce: [Function: warnOnce],
+    error: [Function: error],
+    clearScreen: [Function: clearScreen],
+    hasErrorLogged: [Function: hasErrorLogged]
+  },
+  packageCache: Map(1) {
+    'fnpd_C:/Users/ilkka.kivela/Development/fball_ui' => {
+      dir: 'C:/Users/ilkka.kivela/Development/fball_ui',
+      data: [Object],
+      hasSideEffects: [Function: hasSideEffects],
+      webResolvedImports: {},
+      nodeResolvedImports: {},
+      setResolvedCache: [Function: setResolvedCache],
+      getResolvedCache: [Function: getResolvedCache]
+    },
+    set: [Function (anonymous)]
+  },
+  createResolver: [Function: createResolver],
+  worker: { format: 'iife', plugins: '() => plugins', rollupOptions: {} },
+  appType: 'spa',
+  experimental: { importGlobRestoreExtension: false, hmrPartialAccept: false },
+  webSocketToken: 'OgBReaVM_H83',
+  additionalAllowedHosts: [],
+  getSortedPlugins: [Function: getSortedPlugins],
+  getSortedPluginHooks: [Function: getSortedPluginHooks]
+}
+2025-09-29T06:45:29.450Z vite:deps removing cache dir C:/Users/ilkka.kivela/Development/fball_ui/node_modules/.vite/deps_temp_988c806c
+2025-09-29T06:45:29.455Z vite:deps removing old cache dir C:/Users/ilkka.kivela/Development/fball_ui/node_modules/.vite/deps
+2025-09-29T06:45:29.459Z vite:deps scanning for dependencies...
+[2m9.45.29[22m [36m[1m[vite][22m[39m server restarted.
+
+  [32mΓ₧£[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[2m  [32mΓ₧£[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+2025-09-29T06:45:29.474Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:29.474Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:29.483Z vite:deps Crawling dependencies using entries: 
+  C:/Users/ilkka.kivela/Development/fball_ui/public/index.html
+2025-09-29T06:45:29.506Z vite:deps Scan completed in 47.47ms: no dependencies found
+2025-09-29T06:45:29.507Z vite:deps creating package.json in C:/Users/ilkka.kivela/Development/fball_ui/node_modules/.vite/deps_temp_073b2f07
+2025-09-29T06:45:29.653Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:29.654Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:29.802Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:29.803Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:29.947Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:29.947Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:30.098Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:30.098Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:30.247Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:30.247Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:30.403Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:30.403Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:30.550Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:30.550Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:30.700Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:30.701Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:30.856Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:30.856Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:30.991Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:30.991Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:31.136Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:31.136Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:31.282Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:31.282Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:31.430Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:31.430Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:31.583Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:31.583Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:31.728Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:31.728Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:31.883Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:31.883Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:32.023Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:32.023Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:32.167Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:32.167Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:32.318Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:32.319Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:32.467Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:32.467Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:32.615Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:32.615Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:32.765Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:32.765Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:32.898Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:32.899Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:33.045Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:33.045Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:33.198Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:33.199Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:33.347Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:33.347Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:33.488Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:33.488Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:33.619Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:33.619Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:33.756Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:33.756Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:33.905Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:33.906Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:34.053Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:34.053Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:34.212Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:34.213Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:34.350Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:34.350Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:34.513Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:34.513Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:34.660Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:34.660Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:34.811Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:34.811Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:34.958Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:34.958Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:35.099Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:35.100Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:35.243Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:35.243Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:35.395Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:35.395Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:35.543Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:35.543Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:35.689Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:35.690Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:35.838Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:35.838Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:35.982Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:35.982Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:36.128Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:36.128Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:36.276Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:36.276Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:36.430Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:36.430Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:36.575Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:36.575Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:36.714Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:36.714Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:36.852Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:36.852Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:36.986Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:36.986Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:37.128Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:37.128Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:37.276Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:37.276Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:37.429Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:37.429Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:37.577Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:37.578Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:37.730Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:37.730Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:37.881Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:37.881Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:38.023Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:38.023Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:38.167Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:38.167Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:38.309Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:38.309Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:38.460Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:38.460Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:38.639Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:38.639Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:38.777Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:38.778Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:38.923Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:38.923Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:39.057Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:39.057Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:39.196Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:39.196Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:39.345Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:39.345Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:39.496Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:39.496Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:39.650Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:39.650Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:39.802Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:39.802Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:39.941Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:39.941Z vite:hmr [no modules matched] vite-log.txt
+2025-09-29T06:45:40.099Z vite:hmr [file change] vite-log.txt
+2025-09-29T06:45:40.100Z vite:hmr [no modules matched] vite-log.txt

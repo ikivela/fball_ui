@@ -1,5 +1,3 @@
-import "@babel/polyfill";
-import "mutationobserver-shim";
 import { createApp } from "vue";
 import bootstrapVue from "./plugins/bootstrap-vue";
 import "bootstrap/dist/css/bootstrap.css";

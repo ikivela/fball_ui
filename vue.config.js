@@ -13,12 +13,12 @@ module.exports = {
     },
     sourceMap: false
   },
-  
-  publicPath: process.env.NODE_ENV === "production" ? "/nibacos" : "/",
+
+  publicPath: import.meta.env.NODE_ENV === "production" ? "/nibacos" : "/",
   chainWebpack: (config) => {
     config.plugin("html").tap((args) => {
-      args[0].title = process.env.VUE_APP_SITE_TITLE
-        ? process.env.VUE_APP_SITE_TITLE
+      args[0].title = import.meta.env.VITE_APP_SITE_TITLE
+        ? import.meta.env.VITE_APP_SITE_TITLE
         : "fball_ui";
       return args;
     });
@@ -31,7 +31,7 @@ module.exports = {
       },
       plugins: []
     };
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.NODE_ENV === 'production') {
       baseConfig.plugins.push(
         new WebpackObfuscator({
           rotateStringArray: true

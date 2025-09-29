@@ -478,8 +478,8 @@ export default {
         "http://tilastopalvelu.fi/fb/index.php/component/content/index.php?option=com_content&view=article&id=14&stgid=",
       standings_url: "https://tulospalvelu.salibandy.fi/category/",
       result_url: "https://tulospalvelu.salibandy.fi/match/",
-      baseurl: process.env.VUE_APP_BACKEND_URL
-        ? process.env.VUE_APP_BACKEND_URL
+      baseurl: import.meta.env.VITE_APP_BACKEND_URL
+        ? import.meta.env.VITE_APP_BACKEND_URL
         : "http://localhost:3000",
       show: false,
       updated: "",
