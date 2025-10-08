@@ -1,7 +1,7 @@
-FROM node:18.14.0-alpine AS builder
+FROM node:22.20.0-alpine AS builder
 
 ARG TAG
-ENV CONT_IMG_VER ${TAG:-latest}
+ENV CONT_IMG_VER=${TAG:-latest}
 
 WORKDIR /app/
 
@@ -10,7 +10,7 @@ COPY package*.json ./
 RUN npm install
 
 ADD . /app/
-RUN echo "VUE_APP_VERSION=$CONT_IMG_VER" >> .env
+RUN echo "VUE_APP_VERSION $CONT_IMG_VER" >> .env
 RUN npm run build
 
 FROM nginx:alpine
