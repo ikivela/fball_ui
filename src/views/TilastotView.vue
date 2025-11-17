@@ -203,6 +203,7 @@ export default {
 
   async mounted() {
     try {
+      console.log("baseurl", this.baseurl);
       this.allStats = await this.getStats();
     } catch (error) {
       console.error("Error fetching stats:", error);
