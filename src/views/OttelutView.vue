@@ -555,18 +555,18 @@ export default {
     await this.getSelectedSeason(
       this.seasons.find((s) => s.value === this.selectedSeasonValue)
     );
-    this.$nextTick(() => {
-      this.scrollToUpcomingGame();
-      // Initialize Bootstrap tooltips
-      const tooltipTriggerList = [].slice.call(
-        document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      );
-      tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-        if (window.bootstrap && window.bootstrap.Tooltip) {
-          new window.bootstrap.Tooltip(tooltipTriggerEl);
-        }
+      this.$nextTick(() => {
+        // this.scrollToUpcomingGame(); // Disabled auto-scroll on page enter
+        // Initialize Bootstrap tooltips
+        const tooltipTriggerList = [].slice.call(
+          document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        );
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+          if (window.bootstrap && window.bootstrap.Tooltip) {
+            new window.bootstrap.Tooltip(tooltipTriggerEl);
+          }
+        });
       });
-    });
   },
 
   computed: {
