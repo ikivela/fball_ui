@@ -15,7 +15,7 @@
             <p class="brand-subtitle">Ottelut & Tilastot</p>
           </div>
         </router-link>
-        
+
         <button
           class="navbar-toggler"
           type="button"
@@ -27,7 +27,7 @@
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-        
+
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
@@ -89,34 +89,42 @@ export default {
   async mounted() {
     // Initialize Bootstrap components
     this.initializeBootstrap();
+    // Tarkista apitoken
+    if (!localStorage.getItem("apitoken") && this.$route.name !== "LoginView") {
+      this.$router.replace("/login");
+    }
   },
 
   methods: {
     initializeBootstrap() {
       // Import Bootstrap JavaScript dynamically
-      import('bootstrap/dist/js/bootstrap.bundle.min.js').then(() => {
-        // Bootstrap is now available globally
-        console.log('Bootstrap initialized');
-      }).catch(error => {
-        console.error('Failed to load Bootstrap:', error);
-      });
+      import("bootstrap/dist/js/bootstrap.bundle.min.js")
+        .then(() => {
+          // Bootstrap is now available globally
+          console.log("Bootstrap initialized");
+        })
+        .catch((error) => {
+          console.error("Failed to load Bootstrap:", error);
+        });
     },
     closeNavbar() {
-      const nav = document.getElementById('navbarNav');
-      if (nav && nav.classList.contains('show')) {
+      const nav = document.getElementById("navbarNav");
+      if (nav && nav.classList.contains("show")) {
         // Bootstrap 5 collapse
-        const collapse = window.bootstrap ? window.bootstrap.Collapse.getOrCreateInstance(nav) : null;
+        const collapse = window.bootstrap
+          ? window.bootstrap.Collapse.getOrCreateInstance(nav)
+          : null;
         if (collapse) collapse.hide();
-        else nav.classList.remove('show');
+        else nav.classList.remove("show");
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style lang="scss">
 // Import Font Awesome for icons
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
 
 // Custom CSS Variables
 :root {
@@ -131,7 +139,8 @@ export default {
   --border-color: #e5e7eb;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
   --border-radius: 8px;
   --border-radius-lg: 12px;
 }
@@ -143,7 +152,8 @@ export default {
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-light);
@@ -159,7 +169,11 @@ body {
 
 // Navigation Styles
 .navbar {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-light) 100%
+  );
   box-shadow: var(--shadow-md);
   padding: 1rem 0;
   position: sticky;
@@ -169,7 +183,7 @@ body {
   .navbar-brand {
     text-decoration: none;
     color: white;
-    
+
     .brand-text {
       .brand-title {
         font-size: 1.5rem;
@@ -177,7 +191,7 @@ body {
         margin: 0;
         color: white;
       }
-      
+
       .brand-subtitle {
         font-size: 0.875rem;
         margin: 0;
@@ -213,7 +227,7 @@ body {
   .navbar-toggler {
     border: none;
     padding: 0.25rem 0.5rem;
-    
+
     &:focus {
       box-shadow: none;
     }
@@ -233,7 +247,7 @@ body {
   color: white;
   padding: 2rem 0;
   margin-top: auto;
-  
+
   p {
     margin: 0;
     font-size: 0.875rem;
@@ -248,7 +262,7 @@ body {
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
   transition: all 0.2s ease;
-  
+
   &:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
@@ -256,13 +270,17 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-light) 100%
+  );
   border: none;
   border-radius: var(--border-radius);
   font-weight: 500;
   padding: 0.75rem 1.5rem;
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
@@ -274,7 +292,7 @@ body {
   color: var(--primary-color);
   border-radius: var(--border-radius);
   font-weight: 500;
-  
+
   &:hover {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
@@ -289,14 +307,14 @@ body {
         .brand-title {
           font-size: 1.25rem;
         }
-        
+
         .brand-subtitle {
           font-size: 0.75rem;
         }
       }
     }
   }
-  
+
   .main-content {
     padding: 1rem 0;
   }
@@ -308,7 +326,7 @@ body {
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  
+
   thead th {
     background-color: var(--primary-color);
     color: white;
@@ -316,15 +334,15 @@ body {
     font-weight: 600;
     padding: 1rem;
   }
-  
+
   tbody tr {
     transition: background-color 0.2s ease;
-    
+
     &:hover {
       background-color: rgba(59, 130, 246, 0.05);
     }
   }
-  
+
   td {
     padding: 1rem;
     border-color: var(--border-color);
@@ -348,7 +366,7 @@ body {
   border: 1px solid var(--border-color);
   padding: 0.75rem 1rem;
   transition: all 0.2s ease;
-  
+
   &:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -363,18 +381,24 @@ body {
 }
 
 .modal-header {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-light) 100%
+  );
   color: white;
   border-bottom: none;
   border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
 }
 
 // Animation Classes
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 

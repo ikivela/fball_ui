@@ -3,6 +3,11 @@ import PelaajaView from '../views/PelaajaView.vue';
 
 const routes = [
   {
+    path: '/login',
+    name: 'LoginView',
+    component: () => import('../views/LoginView.vue')
+  },
+  {
     path: "/",
     name: "OttelutView",
     component: () =>

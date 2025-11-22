@@ -56,8 +56,6 @@ export default createStore({
     },
     async fetchSeasons({ commit }) {
 
-      console.log(" env var", import.meta.env.VITE_APP_BACKEND_URL);
-
       let res = await axios.get(`${import.meta.env.VITE_APP_BACKEND_URL}/seasons`);
       let seasons = res.data.data;
       if (seasons.length === 0) return [];
