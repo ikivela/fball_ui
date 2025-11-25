@@ -242,7 +242,8 @@
                                     text-decoration: underline;
                                   "
                                 >
-                                  {{ game.Result }}
+                                  {{ game.Result == '0-0' ? '' : game.Result }}
+                             
                                 </router-link>
                               </div>
                               <div v-else class="no-result">
@@ -961,7 +962,8 @@ export default {
           (game.HomeTeamName.includes(team_name) ||
             game.AwayTeamName.includes(team_name)) &&
           typeof game.Result === "string" &&
-          /^\d+\s*-\s*\d+$/.test(game.Result.trim())
+          /^\d+\s*-\s*\d+$/.test(game.Result.trim()) &&
+            game.Result !== "0-0"
         ) {
           const isHomeTeam = game.HomeTeamName.includes(team_name);
           let [home, away] = game.Result.split("-").map((s) =>
@@ -976,6 +978,7 @@ export default {
           } else if (teamScore < opponentScore) {
             losses++;
           } else {
+            
             ties++;
           }
 
