@@ -110,19 +110,17 @@
                                   .includes('nibacos')))
                           "
                           :to="{
-                            name: 'OtteluViewQuery',
-                            query: {
+                            name: 'OtteluView',
+                            params: {
                               season:
-                                (match.season_id || match.season || '').split(
-                                  '-'
-                                )[1] ||
+                                (match.season_id || match.season || '').split('-')[1] ||
                                 match.season_id ||
                                 match.season,
-                              gameid:
+                              game_id:
                                 match.match_id ||
                                 match.UniqueID ||
-                                match.gameid,
-                            },
+                                match.gameid
+                            }
                           }"
                           class="text-primary"
                           style="cursor: pointer; text-decoration: underline"

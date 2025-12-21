@@ -42,13 +42,7 @@ const routes = [
     component: () => import('../views/ClassMatrixView.vue')
   },
   {
-    path: '/ottelu',
-    name: 'OtteluViewQuery',
-    component: () => import('../views/OtteluView.vue'),
-    props: false
-  },
-  {
-    path: '/ottelu/:game_id',
+    path: '/ottelu/:season/:game_id',
     name: 'OtteluView',
     component: () => import('../views/OtteluView.vue'),
     props: true

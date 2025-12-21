@@ -37,6 +37,13 @@
                     ></span>
                   </div>
                 </div>
+                <div class="class-dropdown ms-3">
+                  <select v-model="selectedClass" class="form-select form-select-sm clickable">
+                    <option value="">Kaikki ikäluokat</option>
+                    <option v-for="group in ageGroups" :key="group" :value="group">{{ group }}</option>
+                  </select>
+                </div>
+
                 <div class="filter-form ms-3">
                   <input
                     type="text"
@@ -53,59 +60,23 @@
                       >, kausi {{ selectedSeason.text }}</span
                     >
                     <span
-                      v-if="
-                        filteredStats() &&
-                        (filteredStats().wins > 0 ||
-                          filteredStats().losses > 0 ||
-                          filteredStats().ties > 0)
-                      "
+                      v-if="filteredStats() && (filteredStats().wins > 0 || filteredStats().losses > 0 || filteredStats().ties > 0)"
                       class="stats-badges ms-2"
                     >
-                      <span
-                        class="badge me-1"
-                        data-bs-toggle="tooltip"
-                        title="Voitot: Ottelut, joissa Nibacos on tehnyt enemmän maaleja kuin vastustaja."
-                        :style="'background: var(--primary-color); color: #fff;'"
-                      >
-                        <span class="me-1">voitot</span
-                        >{{ filteredStats().wins }}
+                      <span class="badge me-1" data-bs-toggle="tooltip" title="Voitot: Ottelut, joissa Nibacos on tehnyt enemmän maaleja kuin vastustaja." :style="'background: var(--primary-color); color: #fff;'">
+                        <span class="me-1">voitot</span>{{ filteredStats().wins }}
                       </span>
-                      <span
-                        class="badge me-1"
-                        data-bs-toggle="tooltip"
-                        title="Tappiot: Ottelut, joissa Nibacos on tehnyt vähemmän maaleja kuin vastustaja."
-                        :style="'background: var(--secondary-color); color: #fff;'"
-                      >
-                        <span class="me-1">tappiot</span
-                        >{{ filteredStats().losses }}
+                      <span class="badge me-1" data-bs-toggle="tooltip" title="Tappiot: Ottelut, joissa Nibacos on tehnyt vähemmän maaleja kuin vastustaja." :style="'background: var(--secondary-color); color: #fff;'">
+                        <span class="me-1">tappiot</span>{{ filteredStats().losses }}
                       </span>
-                      <span
-                        class="badge me-1"
-                        data-bs-toggle="tooltip"
-                        title="Tasapelit: Ottelut, joissa maalit ovat tasan."
-                        :style="'background: var(--accent-color); color: var(--primary-color);'"
-                      >
-                        <span class="me-1">tasurit</span
-                        >{{ filteredStats().ties }}
+                      <span class="badge me-1" data-bs-toggle="tooltip" title="Tasapelit: Ottelut, joissa maalit ovat tasan." :style="'background: var(--accent-color); color: var(--primary-color);'">
+                        <span class="me-1">tasurit</span>{{ filteredStats().ties }}
                       </span>
-                      <span
-                        class="badge"
-                        data-bs-toggle="tooltip"
-                        title="Maaliero: Nibacoksen tekemät maalit miinus päästetyt maalit."
-                        :style="'background: var(--info-color, #0dcaf0); color: var(--text-dark);'"
-                      >
-                        <span class="me-1">maaliero</span
-                        >{{ filteredStats().goalDifference > 0 ? "+" : ""
-                        }}{{ filteredStats().goalDifference }}
+                      <span class="badge" data-bs-toggle="tooltip" title="Maaliero: Nibacoksen tekemät maalit miinus päästetyt maalit." :style="'background: var(--info-color, #0dcaf0); color: var(--text-dark);'">
+                        <span class="me-1">maaliero</span>{{ filteredStats().goalDifference > 0 ? "+" : "" }}{{ filteredStats().goalDifference }}
                       </span>
-                      <span
-                        class="badge"
-                        data-bs-toggle="tooltip"
-                        title="Ka. maaleja/ottelu: Nibacoksen tekemien maalien keskiarvo per ottelu."
-                        :style="'background: var(--secondary-color); color: #fff;'"
-                      >
-                        <span class="me-1">maalikeskiarvo</span
-                        >{{ filteredStats().averageGoalsPerGame.toFixed(2) }}
+                      <span class="badge" data-bs-toggle="tooltip" title="Ka. maaleja/ottelu: Nibacoksen tekemien maalien keskiarvo per ottelu." :style="'background: var(--secondary-color); color: #fff;'">
+                        <span class="me-1">maalikeskiarvo</span>{{ filteredStats().averageGoalsPerGame.toFixed(2) }}
                       </span>
                     </span>
                   </span>
@@ -222,13 +193,15 @@
                               <div v-if="game.Result != '-'">
                                 <router-link
                                   :to="{
-                                    name: 'OtteluViewQuery',
-                                    query: {
+                                    name: 'OtteluView',
+                                    params: {
                                       season: selectedSeasonValue,
-                                      gameid:
+                                      game_id:
                                         game.match_id ||
                                         game.UniqueID ||
                                         game.gameid,
+                                    },
+                                    state: {
                                       home: game.HomeTeamName,
                                       away: game.AwayTeamName,
                                       date: game.GameDate,
@@ -610,9 +583,25 @@ export default {
       ];
       return uniqueClasses.sort();
     },
-
+     ageGroups() {
+      // Etsi uniikit ikäluokat games-listasta
+      const classes = this.currentGames
+        .map(g => g.class)
+        .filter(c => !!c)
+        .map(c => {
+          // Poimi vain ikäluokka, esim. T18, P16 jne.
+          const match = c.match(/([TP]\d{2})/);
+          return match ? match[1] : c;
+        });
+      // Palauta uniikit ja järjestä
+      return [...new Set(classes)].sort();
+    },
     filteredGames() {
       let games = this.currentGames;
+      // Suodata ikäluokan mukaan
+      if (this.selectedClass) {
+        games = games.filter(g => g.class && g.class.includes(this.selectedClass));
+      }
       if (!this.filter) {
         games = [...games];
       } else {
@@ -756,6 +745,8 @@ export default {
         this.selectedSeason && this.games[this.selectedSeason.value]
           ? this.games[this.selectedSeason.value]
           : [];
+      // Nollaa ikäluokkavalinta, jotta ageGroups päivittyy oikein
+      this.selectedClass = "";
       //console.log('currentGames set to:', this.currentGames);
     },
 
@@ -1031,14 +1022,10 @@ export default {
 
   watch: {
     filteredGames() {
-      this.$nextTick(() => {
-        this.scrollToUpcomingGame();
-      });
+      // Scrollaus nykyhetkeen poistettu
     },
     selectedSeason() {
-      this.$nextTick(() => {
-        this.scrollToUpcomingGame();
-      });
+      // Scrollaus nykyhetkeen poistettu
     },
   },
 };

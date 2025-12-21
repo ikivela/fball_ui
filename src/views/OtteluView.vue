@@ -31,10 +31,9 @@
                                 .includes('nibacos')
                             "
                           >
-                            <a
-                              href="#"
+                            <router-link
+                              :to="{ name: 'PelaajaView', params: { player_id: event.player_id } }"
                               class="player-link"
-                              @click.prevent="goToPlayer(event.player_id)"
                             >
                               {{
                                 event.player_name ||
@@ -45,7 +44,7 @@
                                   ? event.player
                                   : "")
                               }}
-                            </a>
+                            </router-link>
                           </template>
                           <template v-else>
                             {{
@@ -145,15 +144,14 @@
                         gameReport.homeName.toLowerCase().includes('nibacos')
                       "
                     >
-                      <a
-                        href="#"
+                      <router-link
+                        :to="{ name: 'PelaajaView', params: { player_id: p.player_id } }"
                         class="player-link"
-                        @click.prevent="goToPlayer(p.player_id)"
                       >
                         {{
                           p.name || p.player_name || p.id || JSON.stringify(p)
                         }}
-                      </a>
+                      </router-link>
                     </template>
                     <template v-else>
                       {{ p.name || p.player_name || p.id || JSON.stringify(p) }}
@@ -226,7 +224,7 @@ export default {
     };
   },
   watch: {
-    "$route.query.gameid": {
+    "$route.params": {
       immediate: true,
       handler() {
         this.fetchGameReport();
@@ -238,9 +236,16 @@ export default {
       this.loading = true;
       this.error = "";
       this.gameReport = null;
-      const gameid = this.$route.query.gameid;
-      const season = this.$route.query.season;
-      console.log("fetchGameReport", { season, gameid });
+      // Read params from route (season, game_id)
+      const gameid = this.$route.params.game_id;
+      const season = this.$route.params.season;
+      // Read extra data from route state (if available)
+      const state = this.$router && this.$router.options.history.state ? this.$router.options.history.state : {};
+      const homeName = state.home || "Koti";
+      const awayName = state.away || "Vieras";
+      const date = state.date || "";
+      const className = state.class || "";
+      console.log("fetchGameReport", { season, gameid, homeName, awayName, date, className });
       try {
         const baseurl = import.meta.env.VITE_APP_BACKEND_URL;
         if (!gameid) throw new Error("Puuttuva ottelun tunniste");
@@ -248,7 +253,7 @@ export default {
         const url = `${baseurl}/gamestats/?season=${season}&gameid=${gameid}`;
         console.log("OtteluView API url:", url);
         const response = await axios.get(url);
-        console.log("API response", response.data);
+        console.log("fetchGameReport API response", response.data);
         const data = response.data;
         if (
           !data ||
@@ -261,9 +266,6 @@ export default {
         // --- VANHA MUOTO: pelkkä array (ennen 2023-2024) ---
         if (Array.isArray(data)) {
           // Yritetään päätellä kotijoukkue ja vierasjoukkue reitistä tai datasta
-          let homeName = this.$route.query.home || "Koti";
-          let awayName = this.$route.query.away || "Vieras";
-          let date = this.$route.query.date || "";
           const allEvents = data.map((ev) => ({
             ...ev,
             type: ev.event || null,
@@ -282,6 +284,7 @@ export default {
             awayLineup: [],
             homeName,
             awayName,
+            class: className,
             allEvents,
           };
           this.loading = false;
@@ -338,7 +341,7 @@ export default {
           return toSeconds(a.event_time) - toSeconds(b.event_time);
         });
         this.gameReport = {
-          date: root.date || "",
+          date: root.date || date || "",
           homeId,
           awayId,
           homeGoals: (root.goals || []).filter((g) => g.team_id == homeId),
@@ -367,11 +370,13 @@ export default {
           ),
           homeLineup,
           awayLineup,
-          homeName: root.team_A_name || root.team_A_description_en || "Koti",
-          awayName: root.team_B_name || root.team_B_description_en || "Vieras",
+          homeName: root.team_A_name || root.team_A_description_en || homeName,
+          awayName: root.team_B_name || root.team_B_description_en || awayName,
+          class: className,
           allEvents,
         };
       } catch (e) {
+        console.error("fetchGameReport error:", e);
         this.error = "Otteluraportin haku epäonnistui.";
       } finally {
         this.loading = false;
@@ -401,7 +406,7 @@ export default {
         name: "OttelutView",
         query: {
           season:
-            this.$route.query.season || this.gameReport?.date?.slice(0, 4),
+            this.$route.params.season || this.gameReport?.date?.slice(0, 4),
         },
       });
     },
