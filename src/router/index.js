@@ -53,6 +53,11 @@ const routes = [
     component: PelaajaView,
     props: true
   },
+  {
+    path: '/sarjataulukot',
+    name: 'SarjataulukotView',
+    component: () => import('../views/SarjataulukotView.vue')
+  },
   /* {
      path: '/pelaajat',
      name: 'PelaajatView',

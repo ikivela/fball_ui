@@ -35,6 +35,11 @@
                 <i class="fas fa-home me-2"></i>Koti
               </router-link>
             </li>
+              <li class="nav-item">
+              <router-link class="nav-link" to="/sarjataulukot" @click="closeNavbar">
+                <i class="fas fa-chart-bar me-2"></i>Sarjataulukot
+              </router-link>
+            </li>
             <li class="nav-item">
               <router-link class="nav-link" to="/tilastot" @click="closeNavbar">
                 <i class="fas fa-chart-bar me-2"></i>Tilastot

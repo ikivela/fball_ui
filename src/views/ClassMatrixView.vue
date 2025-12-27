@@ -1,6 +1,7 @@
 <template>
   <div class="class-matrix-view container py-4">
     <h2 class="mb-3">Vertaile sarjoja</h2>
+    <h5>Tällä sivulle voit katsoa pelipäivien päällekkäisyyksiä eri sarjojen välillä</h5>
     <div v-if="loading" class="text-center my-5">
       <span class="spinner-border" role="status"></span>
       <span class="ms-2">Ladataan otteluita...</span>
@@ -8,10 +9,9 @@
     <div v-else>
       <div class="mb-3">
         <label class="form-label">Valitse sarjat:</label>
-        <div class="d-flex flex-wrap gap-2">
-          <div v-for="className in allClasses" :key="className" class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" :id="className" :value="className" v-model="selectedClasses">
-            <label class="form-check-label" :for="className">{{ className }}</label>
+        <div v-if="selectedClasses && selectedClasses.length > 0" class="d-flex flex-wrap gap-2">
+          <div v-for="className in allClasses" :key="className" class="filter-options-grid">
+            <button class="filter-option-btn" :id="className" :value="className" :class="{ active: selectedClasses.includes(className) }" @click="toggleClassSelection(className)">{{ className }}</button>
           </div>
         </div>
       </div>
@@ -71,6 +71,15 @@ const uniqueDates = computed(() => {
 function gameByDateAndClass(date, className) {
   return games.value.filter(g => g.GameDate === date && g.class === className);
 }
+function toggleClassSelection(className) {
+  const index = selectedClasses.value.indexOf(className);
+  if (index === -1) {
+    selectedClasses.value.push(className);
+  } else {
+    selectedClasses.value.splice(index, 1);
+  }
+  console.log('Selected classes:', selectedClasses.value);
+}
 
 function formatDate(date) {
   return DateTime.fromISO(date).toFormat('dd.MM.yyyy');
@@ -93,6 +102,7 @@ onMounted(async () => {
   // By default, select only the main classes if they exist
   const preferred = ['Inssi-Divari miehet', 'Naisten Suomisarja', 'T18 SM-SARJA', 'P19 SM-SARJA', 'P16 VALTAKUNNALLINEN', 'T16 VALTAKUNNALLINEN'];
   selectedClasses.value = allClasses.value.filter(c => preferred.includes(c));
+  console.log('Initially selected classes:', selectedClasses);
   loading.value = false;
 });
 
@@ -115,4 +125,32 @@ watch(allClasses, (newVal) => {
   vertical-align: middle;
   min-width: 160px;
 }
+ .filter-options-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.375rem;
+
+          .filter-option-btn {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-white);
+            color: var(--text-dark);
+            border-radius: var(--border-radius);
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+
+            &:hover {
+              background-color: var(--bg-light);
+              border-color: var(--primary-color);
+            }
+
+            &.active {
+              background-color: var(--primary-color);
+              border-color: var(--primary-color);
+              color: white;
+            }
+          }
+        }
 </style> 
