@@ -74,6 +74,20 @@
                       {{ season }}
                     </option>
                   </select>
+                  Pisteitä/peli:
+                  {{
+                    filteredMatches.length > 0
+                      ? (
+                          filteredMatches.reduce((sum, match) => {
+                            return (
+                              sum +
+                              Number(match.player_goals || 0) +
+                              Number(match.player_assists || 0)
+                            );
+                          }, 0) / filteredMatches.length
+                        ).toFixed(2)
+                      : "0.00"
+                  }}
                 </div>
                 <table class="table table-sm table-bordered">
                   <thead>
@@ -82,6 +96,7 @@
                       <th>Sarja</th>
                       <th>Ottelu</th>
                       <th>Tulos</th>
+                      <th>Tehot</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -113,26 +128,31 @@
                             name: 'OtteluView',
                             params: {
                               season:
-                                (match.season_id || match.season || '').split('-')[1] ||
+                                (match.season_id || match.season || '').split(
+                                  '-',
+                                )[1] ||
                                 match.season_id ||
                                 match.season,
                               game_id:
                                 match.match_id ||
                                 match.UniqueID ||
-                                match.gameid
-                            }
+                                match.gameid,
+                            },
                           }"
                           class="text-primary"
                           style="cursor: pointer; text-decoration: underline"
                         >
                           {{ match.fs_A + " - " + match.fs_B }}
                         </router-link>
+                        <span v-else></span>
+                      </td>
+                      <td>
                         <span
-                          v-else
-                          class="text-primary"
-                          style="text-decoration: underline"
-                          >-</span
+                          v-if="match.player_goals + match.player_assists > 0"
                         >
+                          {{ match.player_goals || 0 }} +
+                          {{ match.player_assists || 0 }}
+                        </span>
                       </td>
                     </tr>
                   </tbody>
@@ -459,4 +479,4 @@ export default {
 .games-card {
   padding: 2rem 2rem 1.5rem 2rem;
 }
-</style> 
+</style>
