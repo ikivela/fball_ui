@@ -118,6 +118,10 @@ export default {
       console.log("baseurl", this.baseurl);
       this.allStandings = await this.getStandings();
       this.standings = this.allStandings;
+      // set default season
+      if (this.seasonbuttons.length > 0) {
+        this.setSeason(this.seasonbuttons[0]);
+      }
     } catch (error) {
       console.error("Error fetching stats:", error);
       this.allStandings = [];

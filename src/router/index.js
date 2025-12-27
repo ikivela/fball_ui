@@ -39,7 +39,7 @@ const routes = [
   {
     path: '/vertaile',
     name: 'ClassMatrix',
-    component: () => import('../views/ClassMatrixView.vue')
+    component: () => import('../views/VertailuView.vue')
   },
   {
     path: '/ottelu/:season/:game_id',
