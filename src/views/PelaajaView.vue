@@ -53,7 +53,9 @@
               <div v-else>
                 <em>Ei kausia tai joukkueita löytynyt.</em>
               </div>
-              <div v-if="Object.keys(matchesBySeason).length">
+             
+              <div v-if="Object.keys(matchesBySeason).length > 0">
+                
                 <h4 class="mt-4">Pelit</h4>
                 <div class="mb-2">
                   <label for="season-select"
@@ -72,6 +74,22 @@
                       :value="season"
                     >
                       {{ season }}
+                    </option>
+                  </select>
+                  <select
+                    id="category-select"
+                    v-model="selectedCategory"
+                    class="form-select form-select-sm w-auto d-inline-block ml-2"
+                  >
+                    <option :value="''" key="empty-category">-</option>
+                    <option
+                      v-for="category_name in matchesBySeason[selectedSeason]
+                        .map(m => m.category_name)
+                        .filter((value, index, self) => self.indexOf(value) === index)"  
+                      :key="category_name"
+                      :value="category_name"
+                    >
+                      {{ category_name }}
                     </option>
                   </select>
                   Pisteitä/peli:
@@ -169,6 +187,7 @@
 <script>
 import axios from "axios";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import { select } from "underscore";
 
 export default {
   name: "PelaajaView",
@@ -184,6 +203,7 @@ export default {
       rinnakkaisedustukset: [],
       allMatchSeasons: [],
       selectedSeason: "",
+      selectedCategory: "",
       matchesBySeason: [],
       gameReport: null,
       reportLoading: false,
@@ -321,10 +341,20 @@ export default {
     filteredMatches() {
       if (!this.selectedSeason || !this.matchesBySeason[this.selectedSeason])
         return [];
-      // Lajittele pelit uusimmat ensin
+
+      if ( !this.selectedCategory || this.selectedCategory === "" ) {
+        // Palauta kaikki pelit valitulta kaudelta
+        return this.matchesBySeason[this.selectedSeason]
+          .slice()
+          .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      }
       return this.matchesBySeason[this.selectedSeason]
+        .filter(
+          (match) => match.category_name === this.selectedCategory
+        )
         .slice()
         .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+     
     },
     allTeamRows() {
       // Palauttaa kaikki (season, team) rivit taulukkoon
