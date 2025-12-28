@@ -30,9 +30,7 @@ const routes = [
   {
     path: "/tilastot",
     name: "TilastotView",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
+   
     component: () =>
       import(/* webpackChunkName: "About" */ "../views/TilastotView.vue"),
   },
@@ -75,3 +73,13 @@ const router = createRouter({
 });
 
 export default router;
+
+// Autentikointitarkistus kaikille reiteille
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('apitoken');
+  if (to.path !== '/login' && !token) {
+    next('/login');
+  } else {
+    next();
+  }
+});
