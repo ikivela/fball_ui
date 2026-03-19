@@ -13,6 +13,12 @@
           <div class="brand-text">
             <h1 class="brand-title">{{ clubName }}</h1>
             <p class="brand-subtitle">Ottelut & Tilastot</p>
+            <span
+              v-if="currentPageLabel && $route.name !== 'LoginView'"
+              class="current-page-indicator"
+            >
+              {{ currentPageLabel }}
+            </span>
           </div>
         </router-link>
 
@@ -97,6 +103,24 @@ export default {
       clubName: import.meta.env.VITE_APP_CLUB_NAME || "Club Name",
       clubLogoUrl: import.meta.env.VITE_APP_LOGO_URL || "",
     };
+  },
+  computed: {
+    currentPageLabel() {
+      const routeName = this.$route?.name;
+      const labels = {
+        AjankohtaisetView: "Ajankohtaiset",
+        OttelutView: "Ottelut",
+        SarjataulukotView: "Sarjataulukot",
+        TilastotView: "Tilastot",
+        PelaajatView: "Pelaajat",
+        PelaajaView: "Pelaajakortti",
+        OtteluView: "Otteluraportti",
+        ClassMatrix: "Vertailu",
+        LoginView: "",
+      };
+
+      return labels[routeName] || "";
+    },
   },
 
   async mounted() {
@@ -197,22 +221,40 @@ body {
     text-decoration: none;
     color: white;
 
-    .brand-text {
-      .brand-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 0;
-        color: white;
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+
+        .brand-title {
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin: 0;
+          color: white;
       }
 
-      .brand-subtitle {
-        font-size: 0.875rem;
-        margin: 0;
-        color: rgba(255, 255, 255, 0.8);
-        font-weight: 400;
+        .brand-subtitle {
+          font-size: 0.875rem;
+          margin: 0;
+          color: rgba(255, 255, 255, 0.8);
+          font-weight: 400;
+        }
+
+        .current-page-indicator {
+          display: inline-flex;
+          align-items: center;
+          align-self: flex-start;
+          margin-top: 0.35rem;
+          padding: 0.18rem 0.55rem;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.16);
+          color: white;
+          font-size: 0.74rem;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        }
       }
     }
-  }
 
   .navbar-nav {
     .nav-link {
@@ -323,6 +365,12 @@ body {
 
         .brand-subtitle {
           font-size: 0.75rem;
+        }
+
+        .current-page-indicator {
+          font-size: 0.68rem;
+          margin-top: 0.25rem;
+          padding: 0.16rem 0.48rem;
         }
       }
     }

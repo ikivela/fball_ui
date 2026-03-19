@@ -24,7 +24,112 @@
               </div>
               <div class="games-content">
                 <div v-if="this.selectedSeason && this.seasons.length > 0">
-                  <div class="table-responsive">
+                  <div v-if="isSmallScreen" class="mobile-games-list">
+                    <article
+                      v-for="(game, idx) in filteredGames"
+                      :key="game.UniqueID"
+                      class="mobile-game-card"
+                      :ref="setGameRowRef(idx)"
+                    >
+                      <div class="mobile-game-top">
+                        <div class="mobile-game-top-row">
+                          <div class="mobile-game-date">
+                            {{ parseDate(game.GameDate + "T" + game.GameTime) }}
+                          </div>
+                          <div class="mobile-game-tags">
+                            <span v-if="game.class" class="mobile-class-chip">
+                              {{ shorten_classname(game.class || "") }}
+                            </span>
+                          </div>
+                        </div>
+                        <a
+                          v-if="getMobileLeagueDetail(game)"
+                          class="mobile-league-detail"
+                          :href="`http://maps.google.com/?q=${game.RinkName}`"
+                        >
+                          <i class="fas fa-map-marker-alt"></i>
+                          {{ getMobileLeagueDetail(game) }}
+                        </a>
+                      </div>
+
+                      <div class="mobile-game-main">
+                        <a
+                          v-if="selectedSeason.value == seasons[0].value"
+                          :href="liveMatchUrl(game)"
+                          class="mobile-teams-link"
+                        >
+                          <div class="mobile-teams-inline">
+                            <span class="mobile-team-name mobile-home-team">
+                              {{ game.HomeTeamName }}
+                            </span>
+                            <router-link
+                              v-if="game.GameDate < today && game.Result != '-'"
+                              :to="gameDetailRoute(game)"
+                              class="mobile-score-pill"
+                              :class="getResultColor(game)"
+                            >
+                              {{ game.Result }}
+                            </router-link>
+                            <a
+                              v-else-if="game.GameDate >= today"
+                              :href="liveMatchUrl(game)"
+                              class="mobile-score-pill live"
+                            >
+                              Live
+                            </a>
+                            <span v-else class="mobile-score-pill neutral">
+                              -
+                            </span>
+                            <span class="mobile-team-name mobile-away-team">
+                              {{ game.AwayTeamName }}
+                            </span>
+                          </div>
+                        </a>
+                        <a
+                          v-else
+                          class="mobile-teams-link resultStyle"
+                          @click="getRoster(game, selectedSeason)"
+                        >
+                          <div class="mobile-teams-inline">
+                            <span class="mobile-team-name mobile-home-team">
+                              {{ game.HomeTeamName }}
+                            </span>
+                            <router-link
+                              v-if="game.GameDate < today && game.Result != '-'"
+                              :to="gameDetailRoute(game)"
+                              class="mobile-score-pill"
+                              :class="getResultColor(game)"
+                            >
+                              {{ game.Result }}
+                            </router-link>
+                            <a
+                              v-else-if="game.GameDate >= today"
+                              :href="liveMatchUrl(game)"
+                              class="mobile-score-pill live"
+                            >
+                              Live
+                            </a>
+                            <span v-else class="mobile-score-pill neutral">
+                              -
+                            </span>
+                            <span class="mobile-team-name mobile-away-team">
+                              {{ game.AwayTeamName }}
+                            </span>
+                          </div>
+                        </a>
+                      </div>
+
+                    </article>
+
+                    <div v-if="filteredGames.length === 0" class="no-games">
+                      <div class="no-games-content">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>Ei otteluita</h3>
+                        <p>Ei löytynyt otteluita valitulla hakuehdolla.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="table-responsive">
                     <table class="table table-hover">
                       <thead>
                         <tr>
@@ -84,7 +189,7 @@
                               v-if="selectedSeason.value == seasons[0].value"
                             >
                               <a
-                                :href="`${result_url}${game.UniqueID}`"
+                                :href="liveMatchUrl(game)"
                                 class="team-link"
                               >
                                 <div class="team-names">
@@ -143,24 +248,25 @@
                            </template>
 
                            <template v-else-if="field.key === 'group'">
-                            <a
-                              :href="standings_link(game.groupID)"
+                            <router-link
+                              :to="standings_link(game)"
                               class="group-link"
                             >
                               {{ game.group }}
-                            </a>
+                            </router-link>
                            </template>
 
                            <template v-else-if="field.key === 'class'">
-                            <span class="class-badge">{{
+                            <span>{{
                               shorten_classname(game.class || "")
                             }}</span>
                            </template>
 
                            <template v-else-if="field.key === 'Result'">
-                            <div v-if="game.GameDate < today">
+                           <div v-if="game.GameDate < today">
                               <div v-if="game.Result != '-'">
-                                <a
+                                <router-link
+                                  :to="gameDetailRoute(game)"
                                   class="result-link"
                                 >
                                   <span
@@ -168,13 +274,13 @@
                                     :class="getResultColor(game)"
                                     >{{ game.Result }}</span
                                   >
-                                </a>
+                                </router-link>
                               </div>
                               <div v-else class="no-result">-</div>
                             </div>
                             <div v-else>
                               <a
-                                :href="`${result_url}${game.UniqueID}`"
+                                :href="liveMatchUrl(game)"
                                 class="live-link"
                               >
                                 <i class="fas fa-external-link-alt"></i>
@@ -299,6 +405,10 @@ export default {
     this.updateScreenWidth();
   },
 
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateScreenWidth);
+  },
+
   computed: {
     ...mapState(["games", "seasons"]),
     fields() {
@@ -376,13 +486,37 @@ export default {
       if (!classname) return "";
       return classname.replace("Salibandy", "SB");
     },
-    standings_link(groupID) {
-      if (!groupID || !/^\d+$/.test(groupID)) return "";
-      if (this.selectedSeason && this.selectedSeason.text) {
-        const year = String(this.selectedSeason.text).split("-")[0];
-        return `${this.standings_url}${groupID}!sb${year}`;
-      }
-      return this.standings_url;
+    getMobileLeagueDetail(game) {
+      if (!game) return "";
+      return game.RinkName || "";
+    },
+    standings_link(game) {
+      return {
+        name: "SarjataulukotView",
+        query: {
+          season: this.selectedSeasonValue || "",
+          class: game.class || "",
+          group: game.groupID || "",
+        },
+      };
+    },
+    liveMatchUrl(game) {
+      return `${this.result_url}${game.match_id || game.UniqueID || game.gameid || ""}/lineups`;
+    },
+    gameDetailRoute(game) {
+      return {
+        name: "OtteluView",
+        params: {
+          season: this.selectedSeasonValue,
+          game_id: game.match_id || game.UniqueID || game.gameid,
+        },
+        state: {
+          home: game.HomeTeamName,
+          away: game.AwayTeamName,
+          date: game.GameDate,
+          class: game.class || "",
+        },
+      };
     },
     async getRoster(game, season) {
       // TODO: Implement roster functionality
@@ -683,5 +817,221 @@ export default {
 }
 .filter-form {
   min-width: 220px;
+}
+
+.mobile-games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mobile-game-card {
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.7rem 0.15rem;
+  background: transparent;
+}
+
+.mobile-game-top {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.35rem;
+}
+
+.mobile-game-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.mobile-game-date {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+.mobile-game-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: flex-end;
+}
+
+.mobile-game-tags .mobile-class-chip {
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-dark);
+  text-transform: none;
+}
+
+.mobile-league-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: var(--primary-color);
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.mobile-league-detail i {
+  flex: 0 0 auto;
+  font-size: 0.82rem;
+}
+
+.mobile-game-main {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.mobile-teams-link {
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.mobile-teams-inline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.45rem;
+  min-width: 0;
+}
+
+.mobile-team-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text-dark);
+}
+
+.mobile-home-team,
+.mobile-away-team {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mobile-home-team {
+  text-align: right;
+}
+
+.mobile-away-team {
+  text-align: left;
+}
+
+.mobile-away-team {
+  color: var(--primary-color);
+}
+
+.mobile-vs-pill {
+  display: none;
+}
+
+.mobile-score-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.2rem;
+  min-height: 2rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.18rem 0.48rem;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.mobile-score-pill.win {
+  background: #10b981;
+  color: white;
+}
+
+.mobile-score-pill.loss {
+  background: #ef4444;
+  color: white;
+}
+
+.mobile-score-pill.tie {
+  background: #f59e0b;
+  color: white;
+}
+
+.mobile-score-pill.neutral {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.mobile-score-pill.live {
+  background: rgba(245, 158, 11, 0.14);
+  color: var(--accent-color);
+}
+
+@media (min-width: 481px) {
+  .mobile-games-list {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .games-section .container {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .games-section .row {
+    --bs-gutter-x: 0;
+  }
+
+  .games-card {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    box-shadow: none;
+    padding: 0.35rem 0.35rem 0.5rem;
+  }
+
+  .games-header {
+    padding-left: 0.15rem;
+    padding-right: 0.15rem;
+  }
+
+  .games-content > .table-responsive {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .mobile-game-top {
+    gap: 0.2rem;
+  }
+
+  .mobile-game-top-row {
+    align-items: center;
+    flex-direction: row;
+    gap: 0.4rem;
+  }
+
+  .mobile-game-tags {
+    justify-content: flex-end;
+  }
+
+  .mobile-game-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .mobile-teams-inline {
+    column-gap: 0.35rem;
+  }
 }
 </style>

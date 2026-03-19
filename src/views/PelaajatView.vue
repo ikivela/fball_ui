@@ -84,7 +84,39 @@
                 Pelaajia yhteensä: <strong>{{ filteredPlayers.length }}</strong>
               </span>
             </div>
-            <div class="table-responsive">
+            <div v-if="isSmallScreen" class="players-mobile-list">
+              <router-link
+                v-for="player in filteredPlayers"
+                :key="player.player_id"
+                :to="{
+                  name: 'PelaajaView',
+                  params: { player_id: player.player_id },
+                }"
+                class="player-mobile-card"
+              >
+                <div class="player-mobile-main">
+                  <div class="player-mobile-name">
+                    {{ player.firstname }} {{ player.lastname }}
+                  </div>
+                  <div class="player-mobile-meta">
+                    <span v-if="player.birth_year || player.birth_day">
+                      s. {{ player.birth_year || player.birth_day }}
+                    </span>
+                    <span v-if="player.gender">
+                      {{ player.gender === "M" ? "Mies/poika" : "Nainen/tyttö" }}
+                    </span>
+                  </div>
+                </div>
+                <div class="player-mobile-stats">
+                  <span class="player-mobile-games">{{ totalGames(player) }}</span>
+                  <span class="player-mobile-label">ottelua</span>
+                </div>
+              </router-link>
+              <div v-if="filteredPlayers.length === 0" class="no-mobile-results">
+                Ei pelaajia löytynyt.
+              </div>
+            </div>
+            <div v-else class="table-responsive">
               <b-table
                 hover
                 small
@@ -119,14 +151,12 @@
 </template>
 
 <script>
-import axios from "axios";
+import { mapActions, mapState } from "vuex";
 
 export default {
   name: "PelaajatView",
   data() {
     return {
-      baseurl: import.meta.env.VITE_APP_BACKEND_URL,
-      players: [],
       searchTerm: "",
       genderFilterM: "M",
       genderFilterF: "F",
@@ -140,9 +170,13 @@ export default {
       emptyText: "Ei pelaajia löytynyt.",
       sortBy: "player",
       sortDesc: false,
+      isSmallScreen: false,
     };
   },
   computed: {
+    ...mapState({
+      players: (state) => state.players,
+    }),
     currentSeason() {
       // Palauttaa nykyisen kauden muodossa "2025-2026"
       const now = new Date();
@@ -245,32 +279,7 @@ export default {
     },
   },
   methods: {
-    async fetchPlayers() {
-      try {
-        let url = this.baseurl + "/players";
-        const response = await axios.get(url);
-        // Oletetaan että data on lista pelaajia muodossa { firstname, lastname }
-        // Lisätään debug-tulostus
-        console.log("Players fetched:", response.data);
-        // Tarkistetaan, onko data lista vai objektin kenttä
-        if (Array.isArray(response.data)) {
-          this.players = response.data;
-        } else if (
-          response.data.players &&
-          Array.isArray(response.data.players)
-        ) {
-          this.players = response.data.players;
-        } else {
-          this.players = [];
-        }
-        if (this.players.length > 0) {
-          console.log("Esimerkkipelaaja:", this.players[0]);
-        }
-        console.log("Players count:", this.players.length);
-      } catch (error) {
-        this.players = [];
-      }
-    },
+    ...mapActions(["fetchPlayers"]),
     toggleSort(field) {
       if (this.sortBy === field) {
         this.sortDesc = !this.sortDesc;
@@ -289,9 +298,17 @@ export default {
         .map(([season, count]) => `${season}: ${count}`)
         .join("\n");
     },
+    updateScreenWidth() {
+      this.isSmallScreen = window.matchMedia("(max-width: 480px)").matches;
+    },
   },
-  mounted() {
-    this.fetchPlayers();
+  async mounted() {
+    await this.fetchPlayers();
+    this.updateScreenWidth();
+    window.addEventListener("resize", this.updateScreenWidth);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateScreenWidth);
   },
   watch: {},
 };
@@ -340,6 +357,87 @@ export default {
 }
 .games-card .table-responsive {
   padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+}
+
+.players-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.player-mobile-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  text-decoration: none;
+  color: inherit;
+}
+
+.player-mobile-main {
+  min-width: 0;
+}
+
+.player-mobile-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+.player-mobile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.6rem;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: #666;
+}
+
+.player-mobile-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 0 0 auto;
+}
+
+.player-mobile-games {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  line-height: 1;
+}
+
+.player-mobile-label {
+  font-size: 0.72rem;
+  color: #666;
+}
+
+.no-mobile-results {
+  padding: 1rem 0.5rem;
+  color: #666;
+}
+
+@media (max-width: 480px) {
+  .games-card {
+    padding: 0.85rem;
+  }
+
+  .games-header .ms-3 {
+    margin-left: 0 !important;
+  }
+
+  .games-header .form-group,
+  .games-header .form-control,
+  .games-header .gender-checkbox-group,
+  .games-header .junior-checkbox-group {
+    width: 100%;
+    min-width: 0;
+  }
 }
 </style>
 

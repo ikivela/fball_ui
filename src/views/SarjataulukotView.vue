@@ -52,6 +52,20 @@
         </div>
       </div>
     </div>
+    <div v-if="currentClass && selectedStandingsInfo" class="container mb-3">
+      <div class="standings-selection-card">
+        <div class="standings-selection-label">Sarjataulukko</div>
+        <div class="standings-selection-title">
+          {{ selectedStandingsInfo.primary }}
+        </div>
+        <div
+          v-if="selectedStandingsInfo.secondary"
+          class="standings-selection-subtitle"
+        >
+          {{ selectedStandingsInfo.secondary }}
+        </div>
+      </div>
+    </div>
       <!-- create table from standings array, each group side by side -->
     <div class="container">
       <div class="row">
@@ -118,10 +132,7 @@ export default {
       console.log("baseurl", this.baseurl);
       this.allStandings = await this.getStandings();
       this.standings = this.allStandings;
-      // set default season
-      if (this.seasonbuttons.length > 0) {
-        this.setSeason(this.seasonbuttons[0]);
-      }
+      this.applyRouteFilters();
     } catch (error) {
       console.error("Error fetching stats:", error);
       this.allStandings = [];
@@ -151,8 +162,47 @@ export default {
       }
       return [];
     },
+    selectedStandingsInfo() {
+      if (!this.currentClass || !this.standings.length) return null;
+
+      const firstStanding = this.standings[0] || {};
+      const competition =
+        firstStanding.competition ||
+        firstStanding.competition_name ||
+        firstStanding.tournament_name ||
+        "";
+
+      return {
+        primary: `${this.currentClass}${this.currentSeason ? `, kausi ${this.currentSeason}` : ""}`,
+        secondary: competition && competition !== this.currentClass ? competition : "",
+      };
+    },
   },
   methods: {
+    applyRouteFilters() {
+      const seasonFromRoute = this.$route.query.season
+        ? String(this.$route.query.season)
+        : "";
+      const classFromRoute = this.$route.query.class
+        ? String(this.$route.query.class)
+        : "";
+
+      const seasonToUse =
+        seasonFromRoute && this.seasonbuttons.includes(seasonFromRoute)
+          ? seasonFromRoute
+          : this.seasonbuttons[0] || "";
+
+      if (!seasonToUse) return;
+
+      this.setSeason(seasonToUse);
+
+      if (
+        classFromRoute &&
+        this.classbuttons.includes(classFromRoute)
+      ) {
+        this.setClass(classFromRoute);
+      }
+    },
     setSeason(season) {
       this.currentSeason = season;
       this.currentClass = "";
@@ -171,12 +221,52 @@ export default {
       return response.data;
     },
   },
+  watch: {
+    "$route.query": {
+      deep: true,
+      handler() {
+        if (this.allStandings.length > 0) {
+          this.applyRouteFilters();
+        }
+      },
+    },
+  },
 };
 </script>
 
 <style lang="scss" scoped>
 .standings-view {
   min-height: 100vh;
+}
+
+.standings-selection-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1rem 1.25rem;
+}
+
+.standings-selection-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 0.25rem;
+}
+
+.standings-selection-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+.standings-selection-subtitle {
+  margin-top: 0.2rem;
+  font-size: 0.9rem;
+  color: var(--primary-color);
 }
 
 // Filters Section
