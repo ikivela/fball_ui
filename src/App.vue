@@ -6,7 +6,7 @@
         <router-link class="navbar-brand d-flex align-items-center" to="/">
           <img
             height="40"
-            src="https://static.jopox.fi/nibacos/imagebank/40875_huge.png"
+            :src="clubLogoUrl"
             :alt="clubName + ' Logo'"
             class="me-3"
           />
@@ -95,6 +95,7 @@ export default {
   data() {
     return {
       clubName: import.meta.env.VITE_APP_CLUB_NAME || "Club Name",
+      clubLogoUrl: import.meta.env.VITE_APP_LOGO_URL || "",
     };
   },
 

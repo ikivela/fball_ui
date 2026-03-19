@@ -5,6 +5,7 @@ import path from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const basePath = env.VITE_BASE_PATH || '/';
 
   return {
     plugins: [
@@ -19,7 +20,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     ],
-    base: mode === 'production' ? `/${env.VITE_APP_CLUB_NAME}/` : '/',
+    base: mode === 'production' ? basePath : '/',
     server: {
       port: 3000,
       host: '127.0.0.1',

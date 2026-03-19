@@ -1,5 +1,9 @@
 const WebpackObfuscator = require('webpack-obfuscator');
 
+const isProduction = process.env.NODE_ENV === 'production';
+const siteTitle = process.env.VITE_APP_SITE_TITLE || 'fball_ui';
+const publicPath = process.env.VITE_BASE_PATH || '/';
+
 module.exports = {
   css: {
     extract: true,
@@ -14,12 +18,10 @@ module.exports = {
     sourceMap: false
   },
 
-  publicPath: import.meta.env.NODE_ENV === "production" ? "/nibacos" : "/",
+  publicPath: isProduction ? publicPath : '/',
   chainWebpack: (config) => {
     config.plugin("html").tap((args) => {
-      args[0].title = import.meta.env.VITE_APP_SITE_TITLE
-        ? import.meta.env.VITE_APP_SITE_TITLE
-        : "fball_ui";
+      args[0].title = siteTitle;
       return args;
     });
   },
@@ -31,7 +33,7 @@ module.exports = {
       },
       plugins: []
     };
-    if (import.meta.env.NODE_ENV === 'production') {
+    if (isProduction) {
       baseConfig.plugins.push(
         new WebpackObfuscator({
           rotateStringArray: true
