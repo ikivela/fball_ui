@@ -28,7 +28,7 @@
                               gameReport.homeName &&
                               gameReport.homeName
                                 .toLowerCase()
-                                .includes('nibacos')
+                                .includes(clubName.toLowerCase())
                             "
                           >
                             <router-link
@@ -81,7 +81,7 @@
                               gameReport.awayName &&
                               gameReport.awayName
                                 .toLowerCase()
-                                .includes('nibacos')
+                                .includes(clubName.toLowerCase())
                             "
                           >
                             <a
@@ -141,7 +141,7 @@
                       v-if="
                         p.player_id &&
                         gameReport.homeName &&
-                        gameReport.homeName.toLowerCase().includes('nibacos')
+                        gameReport.homeName.toLowerCase().includes(clubName.toLowerCase())
                       "
                     >
                       <router-link
@@ -176,7 +176,7 @@
                       v-if="
                         p.player_id &&
                         gameReport.awayName &&
-                        gameReport.awayName.toLowerCase().includes('nibacos')
+                        gameReport.awayName.toLowerCase().includes(clubName.toLowerCase())
                       "
                     >
                       <a
@@ -221,6 +221,7 @@ export default {
       gameReport: null,
       loading: true,
       error: "",
+      clubName: import.meta.env.VITE_APP_CLUB_NAME || "",
     };
   },
   watch: {

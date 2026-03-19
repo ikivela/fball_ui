@@ -1,39 +1,17 @@
 <template>
   <div class="ajankohtaiset-view">
     <!-- Games Section -->
+    <!-- Games Section -->
     <div class="games-section">
       <div class="container">
         <div class="row">
           <div class="col-12">
-            <div class="card games-card">
+            <div class="games-card">
               <div
-                class="card-header d-flex align-items-center justify-content-between"
+                class="games-header d-flex align-items-center justify-content-between"
               >
-                <h2 class="card-title mb-0">
-                  <i class="fas fa-list me-2"></i>
-                  Ottelut
-                </h2>
-                <div class="season-dropdown ms-3">
-                  <select
-                    v-model="selectedSeasonValue"
-                    @change="onSeasonChange"
-                    :disabled="seasonLoading"
-                    class="form-select form-select-sm clickable"
-                  >
-                    <option
-                      v-for="season in seasons"
-                      :key="season.value"
-                      :value="season.value"
-                    >
-                      {{ season.text }}
-                    </option>
-                  </select>
-                  <span
-                    v-if="seasonLoading"
-                    class="spinner-border spinner-border-sm ms-2"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
+                <div class="games-info">
+                  <h2 class="games-title mb-0">Ajankohtaiset ottelut</h2>
                 </div>
                 <div class="filter-form ms-3">
                   <input
@@ -44,44 +22,64 @@
                   />
                 </div>
               </div>
-              <div class="card-body p-0">
+              <div class="games-content">
                 <div v-if="this.selectedSeason && this.seasons.length > 0">
                   <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover">
                       <thead>
                         <tr>
-                          <th v-for="field in fields" :key="field.key">
-                            <i class="fas fa-sort me-1"></i>
+                          <th
+                            v-for="field in fields"
+                            :key="field.key"
+                          >
+                            <i
+                             class="fas fa-sort me-1"
+                             v-if="false" 
+                            ></i>
                             {{ field.label }}
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr
-                          v-for="game in filteredGames"
+                          v-for="(game, idx) in filteredGames"
                           :key="game.UniqueID"
                           class="game-row"
+                          :ref="setGameRowRef(idx)"
                         >
-                          <td class="game-date">
+                          <td
+                           v-for="field in fields"
+                           :key="field.key"
+                           :class="getFieldClass(field.key)"
+                          >
+                           <template v-if="field.key === 'Date'">
                             <div class="date-info">
                               <div class="date-main">
                                 {{
                                   parseDate(game.GameDate + "T" + game.GameTime)
                                 }}
                               </div>
-                              <div v-if="isSmallScreen" class="date-location">
+                              <div
+                                v-if="
+                                  isSmallScreen &&
+                                  game.RinkName
+                                "
+                                class="date-location-mobile"
+                              >
                                 <a
                                   :href="`http://maps.google.com/?q=${game.RinkName}`"
-                                  class="location-link"
+                                  class="location-link-mobile"
                                 >
                                   <i class="fas fa-map-marker-alt me-1"></i>
-                                  {{ game.RinkName }}
+                                  <span class="rink-mobile">{{
+                                    game.RinkName
+                                  }}</span>
                                 </a>
                               </div>
                             </div>
-                          </td>
+                           </template>
 
-                          <td class="game-teams">
+                           <template v-else-if="field.key === 'Game'">
                             <div
                               v-if="selectedSeason.value == seasons[0].value"
                             >
@@ -97,6 +95,14 @@
                                   <span class="away-team">{{
                                     game.AwayTeamName
                                   }}</span>
+                                </div>
+                                <div
+                                  v-if="isSmallScreen && game.class"
+                                  class="mobile-meta"
+                                >
+                                  <span class="mobile-class-chip">
+                                    {{ shorten_classname(game.class || "") }}
+                                  </span>
                                 </div>
                               </a>
                             </div>
@@ -114,11 +120,19 @@
                                     game.AwayTeamName
                                   }}</span>
                                 </div>
+                                <div
+                                  v-if="isSmallScreen && game.class"
+                                  class="mobile-meta"
+                                >
+                                  <span class="mobile-class-chip">
+                                    {{ shorten_classname(game.class || "") }}
+                                  </span>
+                                </div>
                               </a>
                             </div>
-                          </td>
+                           </template>
 
-                          <td v-if="!isSmallScreen" class="game-rink">
+                           <template v-else-if="field.key === 'RinkName'">
                             <a
                               :href="`http://maps.google.com/?q=${game.RinkName}`"
                               class="rink-link"
@@ -126,37 +140,28 @@
                               <i class="fas fa-map-marker-alt me-1"></i>
                               {{ game.RinkName }}
                             </a>
-                          </td>
+                           </template>
 
-                          <td v-if="!isSmallScreen" class="game-group">
+                           <template v-else-if="field.key === 'group'">
                             <a
                               :href="standings_link(game.groupID)"
                               class="group-link"
                             >
                               {{ game.group }}
                             </a>
-                          </td>
+                           </template>
 
-                          <td class="game-class">
+                           <template v-else-if="field.key === 'class'">
                             <span class="class-badge">{{
                               shorten_classname(game.class || "")
                             }}</span>
-                          </td>
+                           </template>
 
-                          <td class="game-result">
+                           <template v-else-if="field.key === 'Result'">
                             <div v-if="game.GameDate < today">
                               <div v-if="game.Result != '-'">
                                 <a
                                   class="result-link"
-                                  @click="
-                                    getGameStats(
-                                      game.UniqueID,
-                                      selectedSeason,
-                                      game.HomeTeamName +
-                                        ' - ' +
-                                        game.AwayTeamName
-                                    )
-                                  "
                                 >
                                   <span
                                     class="result-score"
@@ -176,6 +181,7 @@
                                 <span>Live</span>
                               </a>
                             </div>
+                           </template>
                           </td>
                         </tr>
                       </tbody>
@@ -195,89 +201,6 @@
                   <div class="loading-content">
                     <i class="fas fa-spinner fa-spin"></i>
                     <p>Ladataan otteluita...</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Game Stats Modal -->
-    <div
-      class="modal fade"
-      id="gameStatsModal"
-      tabindex="-1"
-      :class="{ show: showGameStat }"
-      v-if="showGameStat"
-    >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              <i class="fas fa-chart-line me-2"></i>
-              {{ currentGame }}
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              @click="showGameStat = false"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div v-if="loading" class="loading-modal">
-              <i class="fas fa-spinner fa-spin"></i>
-              <p>Ladataan tilastoja...</p>
-            </div>
-
-            <div v-else-if="gameStats.length === 0" class="no-stats">
-              <i class="fas fa-chart-bar"></i>
-              <p>Ei tilastoja saatavilla</p>
-            </div>
-
-            <div v-else class="game-stats">
-              <div class="stats-timeline">
-                <div
-                  v-for="stat in gameStats"
-                  :key="stat.time"
-                  class="stat-item"
-                >
-                  <div class="stat-time">{{ stat.time }}</div>
-                  <div class="stat-content">
-                    <div class="stat-event">
-                      <span class="event-type" :class="stat.event">
-                        {{
-                          stat.event === "goal" ? "⚽ Maali" : "🟨 Rangaistus"
-                        }}
-                      </span>
-                      <span class="event-result">{{
-                        stat.event === "goal" ? stat.result : stat.penalty_time
-                      }}</span>
-                    </div>
-                    <div class="stat-details">
-                      <span class="team-name">{{ stat.team }}</span>
-                      <span v-if="stat.yv_av" class="special-play">
-                        {{
-                          stat.yv_av === "RL0"
-                            ? "Rangaistusl. (epäonnistunut)"
-                            : stat.yv_av
-                        }}
-                      </span>
-                    </div>
-                    <div v-if="stat.event === 'goal'" class="goal-details">
-                      <span class="scorer">{{ stat.scorer }}</span>
-                      <span v-if="stat.assist" class="assist"
-                        >({{ stat.assist }})</span
-                      >
-                    </div>
-                    <div
-                      v-if="stat.event === 'penalty'"
-                      class="penalty-details"
-                    >
-                      <span class="player">{{ stat.player }}</span>
-                      <span class="reason">{{ stat.reason }}</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -309,7 +232,6 @@ export default {
       isSmallScreen: false,
       updated: "",
       options: [],
-      gameStats: "",
       games_table: [],
       loading: false,
       statsData: "",
@@ -320,7 +242,11 @@ export default {
       currentGame: "",
       sortBy: "",
       sortDesc: "",
-      scFields: ["Date", "Game", "class", "Result"],
+      scFields: [
+        { key: "Date", label: "Aika", sortable: false },
+        { key: "Game", label: "Ottelu", sortable: false },
+        { key: "Result", label: "Tulos", sortable: false },
+      ],
       filter: "",
       filterOn: [],
 
@@ -342,18 +268,19 @@ export default {
       ],
       selectedSeasonValue: null,
       seasonLoading: false,
+      gameRowRefs: [],
     };
   },
   async created() {
     this.currentUrl = window.location.href;
-    document.title = "Nibacos ottelut";
+    document.title = import.meta.env.VITE_APP_SITE_TITLE;
     console.log("created() currentUrl:", this.currentUrl);
   },
 
   async mounted() {
     this.pageReady = true;
 
-    this.screenWidth = window.matchMedia("(max-width: 600px)").matches;
+    this.screenWidth = window.matchMedia("(max-width: 480px)").matches;
     window.addEventListener("resize", this.updateScreenWidth);
 
     console.log("ajankohtaiset games length", this.games.length);
@@ -381,8 +308,33 @@ export default {
       return DateTime.now().toFormat("yyyy-MM-dd");
     },
     filteredGames() {
-      if (!this.filter) return this.games_table;
-      return this.games_table.filter((item) => {
+      // Date filter: Last weekend (Friday of previous week) + next 10 days
+      const now = DateTime.now();
+      // startOf('week') returns Monday. Minus 3 days = Friday of previous week.
+      const startDate = now.startOf("week").minus({ days: 2 });
+      const endDate = now.endOf("week").plus({ days: 1 });
+
+      const dateFiltered = this.games_table.filter((game) => {
+        if (!game.GameDate) return false;
+        const gameDate = DateTime.fromISO(game.GameDate);
+        // Compare dates (ignoring time component of GameDate if it's just YYYY-MM-DD, 
+        // but Luxon comparison handles it well if we are consistent. 
+        // GameDate is YYYY-MM-DD. startDate/endDate have times.
+        // Let's use startOf('day') for comparison to be safe/inclusive.
+        const isSabakipina =
+          (game.class && game.class.toLowerCase().includes("säbäkipinä")) ||
+          (game.group && game.group.toLowerCase().includes("säbäkipinä"));
+
+        return (
+          !isSabakipina &&
+          gameDate >= startDate.startOf("day") &&
+          gameDate <= endDate.endOf("day")
+        );
+      });
+
+      if (!this.filter) return dateFiltered;
+
+      return dateFiltered.filter((item) => {
         return (
           (item.HomeTeamName &&
             item.HomeTeamName.toLowerCase().includes(
@@ -415,7 +367,7 @@ export default {
   methods: {
     ...mapActions(["fetchGames", "fetchSeasons"]),
     updateScreenWidth() {
-      this.isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
+      this.isSmallScreen = window.matchMedia("(max-width: 480px)").matches;
     },
     parseDate(dateString) {
       return DateTime.fromISO(dateString).toFormat("dd.MM.yyyy HH:mm");
@@ -436,32 +388,14 @@ export default {
       // TODO: Implement roster functionality
       console.log("Roster requested for game:", game, "season:", season);
     },
-    async getGameStats(uniqueID, season, gameName) {
-      this.loading = true;
-      this.currentGame = gameName;
-      this.showGameStat = true;
-
-      try {
-        const response = await axios.get(
-          `${this.baseurl}/api/game-stats/${uniqueID}/${season.value}`
-        );
-        this.gameStats = response.data;
-      } catch (error) {
-        console.error("Error fetching game stats:", error);
-        this.gameStats = [];
-      } finally {
-        this.loading = false;
-      }
-    },
-
     getResultColor(game) {
       if (!game.Result || game.Result === "-") return "neutral";
 
-      const teamName = "Nibacos";
+      const teamName = import.meta.env.VITE_APP_CLUB_NAME;
       const isHomeTeam = game.HomeTeamName.includes(teamName);
 
       if (!isHomeTeam && !game.AwayTeamName.includes(teamName)) {
-        return "neutral"; // Nibacos not in this game
+        return "neutral"; // Club not in this game
       }
 
       const scores = game.Result.split("-");
@@ -486,23 +420,41 @@ export default {
           : "tie";
       }
     },
-    async onSeasonChange() {
+    onSeasonChange() {
+      // Stub for season change if needed, or remove if not used in this view context
+      // actually it is used in the template
       this.seasonLoading = true;
       const seasonObj = this.seasons.find(
         (s) => s.value === this.selectedSeasonValue
       );
       this.selectedSeason = seasonObj;
       if (!this.games[seasonObj.value]) {
-        await this.fetchGames(seasonObj.value);
+        this.fetchGames(seasonObj.value);
       }
       this.games_table = this.games[seasonObj.value] || [];
       this.seasonLoading = false;
+    },
+    getFieldClass(key) {
+      if (key === "Date") return "game-date";
+      if (key === "Game") return "game-teams";
+      if (key === "class")
+        return this.isSmallScreen ? "game-class-mobile" : "game-class";
+      if (key === "Result") return "game-result";
+      if (key === "RinkName") return "game-rink";
+      if (key === "group") return "game-group";
+      return "";
+    },
+    setGameRowRef(idx) {
+      return (el) => {
+        this.gameRowRefs[idx] = el;
+      };
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+@use "@/assets/table-styles";
 .ajankohtaiset-view {
   min-height: 100vh;
 }
@@ -537,216 +489,6 @@ export default {
   }
 }
 
-// Table Styles
-.table {
-  margin: 0;
-
-  thead th {
-    background: var(--primary-color);
-    color: white;
-    font-weight: 600;
-    padding: 1rem;
-    border: none;
-
-    i {
-      opacity: 0.7;
-    }
-  }
-
-  tbody tr {
-    transition: all 0.2s ease;
-
-    &:hover {
-      background-color: rgba(59, 130, 246, 0.05);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-sm);
-    }
-  }
-
-  td {
-    padding: 1rem;
-    vertical-align: middle;
-    border-color: var(--border-color);
-  }
-}
-
-// Game Row Styles
-.game-row {
-  .game-date {
-    .date-info {
-      .date-main {
-        font-weight: 600;
-        color: var(--text-dark);
-      }
-
-      .date-location {
-        margin-top: 0.25rem;
-
-        .location-link {
-          color: var(--primary-color);
-          text-decoration: none;
-          font-size: 0.875rem;
-
-          &:hover {
-            text-decoration: underline;
-          }
-        }
-      }
-    }
-  }
-
-  .game-teams {
-    .team-link {
-      text-decoration: none;
-      color: inherit;
-
-      .team-names {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-
-        .home-team,
-        .away-team {
-          font-weight: 600;
-          color: var(--text-dark);
-        }
-
-        .vs-separator {
-          color: var(--text-light);
-          font-size: 0.875rem;
-          font-weight: 500;
-        }
-      }
-
-      &:hover {
-        .team-names {
-          .home-team,
-          .away-team {
-            color: var(--primary-color);
-          }
-        }
-      }
-    }
-  }
-
-  .game-rink {
-    .rink-link {
-      color: var(--primary-color);
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
-  .game-group {
-    .group-link {
-      color: var(--primary-color);
-      text-decoration: none;
-      font-weight: 500;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
-  .game-class {
-    .class-badge {
-      background: linear-gradient(135deg, var(--accent-color) 0%, #fbbf24 100%);
-      color: white;
-      padding: 0.25rem 0.75rem;
-      border-radius: var(--border-radius);
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-  }
-
-  .game-result {
-    .result-link {
-      text-decoration: none;
-
-      .result-score {
-        padding: 0.25rem 0.75rem;
-        border-radius: var(--border-radius);
-        font-weight: 600;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
-
-        &.win {
-          background: #10b981;
-          color: white;
-        }
-
-        &.loss {
-          background: #ef4444;
-          color: white;
-        }
-
-        &.tie {
-          background: #f59e0b;
-          color: white;
-        }
-
-        &.neutral {
-          background: var(--secondary-color);
-          color: white;
-        }
-
-        &:hover {
-          transform: scale(1.05);
-          box-shadow: var(--shadow-sm);
-        }
-      }
-    }
-
-    .no-result {
-      color: var(--text-light);
-      font-style: italic;
-    }
-
-    .live-link {
-      color: var(--accent-color);
-      text-decoration: none;
-      font-weight: 600;
-
-      i {
-        margin-right: 0.25rem;
-      }
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-}
-
-// No Games State
-.no-games {
-  padding: 3rem 1rem;
-  text-align: center;
-
-  .no-games-content {
-    i {
-      font-size: 3rem;
-      color: var(--text-light);
-      margin-bottom: 1rem;
-    }
-
-    h3 {
-      color: var(--text-dark);
-      margin-bottom: 0.5rem;
-    }
-
-    p {
-      color: var(--text-light);
-      margin: 0;
-    }
-  }
-}
 
 // Loading State
 .loading-section {
@@ -927,29 +669,7 @@ export default {
     }
   }
 
-  .table {
-    font-size: 0.875rem;
 
-    td {
-      padding: 0.75rem 0.5rem;
-    }
-  }
-
-  .game-row {
-    .game-teams {
-      .team-link {
-        .team-names {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 0.25rem;
-
-          .vs-separator {
-            display: none;
-          }
-        }
-      }
-    }
-  }
 }
 
 .season-dropdown {

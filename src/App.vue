@@ -7,11 +7,11 @@
           <img
             height="40"
             src="https://static.jopox.fi/nibacos/imagebank/40875_huge.png"
-            alt="Nibacos Logo"
+            :alt="clubName + ' Logo'"
             class="me-3"
           />
           <div class="brand-text">
-            <h1 class="brand-title">Nibacos</h1>
+            <h1 class="brand-title">{{ clubName }}</h1>
             <p class="brand-subtitle">Ottelut & Tilastot</p>
           </div>
         </router-link>
@@ -33,6 +33,11 @@
             <li class="nav-item">
               <router-link class="nav-link" to="/" @click="closeNavbar">
                 <i class="fas fa-home me-2"></i>Koti
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link class="nav-link" to="/ottelut" @click="closeNavbar">
+                <i class="fas fa-calendar-alt me-2"></i>Ottelut
               </router-link>
             </li>
               <li class="nav-item">
@@ -88,7 +93,9 @@
 export default {
   name: "App",
   data() {
-    return {};
+    return {
+      clubName: import.meta.env.VITE_APP_CLUB_NAME || "Club Name",
+    };
   },
 
   async mounted() {
@@ -322,6 +329,29 @@ body {
 
   .main-content {
     padding: 1rem 0;
+  }
+}
+
+@media (max-width: 992px) {
+  .navbar .container,
+  .main-content .container,
+  .footer .container {
+    max-width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar .container,
+  .main-content .container,
+  .footer .container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .main-content {
+    padding: 0.5rem 0;
   }
 }
 

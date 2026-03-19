@@ -136,11 +136,11 @@
                             ((match.team_A_name &&
                               match.team_A_name
                                 .toLowerCase()
-                                .includes('nibacos')) ||
+                                .includes(clubName.toLowerCase())) ||
                               (match.team_B_name &&
                                 match.team_B_name
                                   .toLowerCase()
-                                  .includes('nibacos')))
+                                  .includes(clubName.toLowerCase())))
                           "
                           :to="{
                             name: 'OtteluView',
@@ -209,6 +209,7 @@ export default {
       reportLoading: false,
       reportError: "",
       showGameReport: false,
+      clubName: import.meta.env.VITE_APP_CLUB_NAME || "",
     };
   },
   mounted() {
@@ -276,7 +277,7 @@ export default {
             (t) =>
               t.parallel_representation === "1" &&
               t.club_name &&
-              t.club_name.toLowerCase() !== "nibacos kokkola"
+              t.club_name.toLowerCase() !== `${clubName.toLowerCase()} kokkola`
           )
           .map((t) => ({
             club_name: t.club_name,

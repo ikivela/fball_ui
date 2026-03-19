@@ -4,6 +4,17 @@
       <h2 class="mb-4 text-center">Kirjaudu sisään</h2>
       <form @submit.prevent="login">
         <div class="mb-3">
+          <label for="username" class="form-label">Käyttäjätunnus</label>
+          <input
+            type="text"
+            v-model="username"
+            class="form-control"
+            id="username"
+            required
+            autocomplete="username"
+          />
+        </div>
+        <div class="mb-3">
           <label for="password" class="form-label">Salasana</label>
           <input
             type="password"
@@ -11,6 +22,7 @@
             class="form-control"
             id="password"
             required
+            autocomplete="current-password"
           />
         </div>
         <button type="submit" class="btn btn-primary w-100">Kirjaudu</button>
@@ -25,6 +37,7 @@ export default {
   name: "LoginView",
   data() {
     return {
+      username: "",
       password: "",
       error: "",
     };
@@ -39,7 +52,7 @@ export default {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              username: "nibacos",
+              username: this.username,
               password: this.password,
             }),
           }

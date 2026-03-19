@@ -9,15 +9,15 @@ const routes = [
   },
   {
     path: "/",
-    name: "OttelutView",
+    name: "AjankohtaisetView",
     component: () =>
       import(
-        /* webpackChunkName: "Ottelut" */ "../views/OttelutView.vue"
+        /* webpackChunkName: "Ajankohtaiset" */ "../views/AjankohtaisetView.vue"
       ),
   },
   {
     path: "/ottelut",
-    name: "OttelutViewAlias",
+    name: "OttelutView",
     component: () =>
       import(/* webpackChunkName: "Ottelut" */ "../views/OttelutView.vue"),
   },
@@ -30,7 +30,7 @@ const routes = [
   {
     path: "/tilastot",
     name: "TilastotView",
-   
+
     component: () =>
       import(/* webpackChunkName: "About" */ "../views/TilastotView.vue"),
   },
