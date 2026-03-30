@@ -294,7 +294,10 @@ export default {
   computed: {
     finalScore() {
       if (!this.gameReport) return "-";
-      return `${this.gameReport.homeGoals.length}-${this.gameReport.awayGoals.length}`;
+      const home = this.gameReport.homeGoals?.length;
+      const away = this.gameReport.awayGoals?.length;
+      if (home == null || away == null) return "-";
+      return `${home}-${away}`;
     },
     competitionName() {
       return this.gameReport?.competitionName || "";

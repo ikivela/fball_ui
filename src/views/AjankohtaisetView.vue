@@ -63,7 +63,7 @@
                               {{ game.HomeTeamName }}
                             </span>
                             <router-link
-                              v-if="game.GameDate < today && game.Result != '-'"
+                              v-if="game.GameDate < today && isValidResult(game.Result)"
                               :to="gameDetailRoute(game)"
                               class="mobile-score-pill"
                               :class="getResultColor(game)"
@@ -78,7 +78,6 @@
                               Live
                             </a>
                             <span v-else class="mobile-score-pill neutral">
-                              -
                             </span>
                             <span class="mobile-team-name mobile-away-team">
                               {{ game.AwayTeamName }}
@@ -95,7 +94,7 @@
                               {{ game.HomeTeamName }}
                             </span>
                             <router-link
-                              v-if="game.GameDate < today && game.Result != '-'"
+                              v-if="game.GameDate < today && isValidResult(game.Result)"
                               :to="gameDetailRoute(game)"
                               class="mobile-score-pill"
                               :class="getResultColor(game)"
@@ -110,7 +109,6 @@
                               Live
                             </a>
                             <span v-else class="mobile-score-pill neutral">
-                              -
                             </span>
                             <span class="mobile-team-name mobile-away-team">
                               {{ game.AwayTeamName }}
@@ -264,7 +262,7 @@
 
                            <template v-else-if="field.key === 'Result'">
                            <div v-if="game.GameDate < today">
-                              <div v-if="game.Result != '-'">
+                              <div v-if="isValidResult(game.Result)">
                                 <router-link
                                   :to="gameDetailRoute(game)"
                                   class="result-link"
@@ -276,7 +274,7 @@
                                   >
                                 </router-link>
                               </div>
-                              <div v-else class="no-result">-</div>
+                              
                             </div>
                             <div v-else>
                               <a
@@ -499,6 +497,9 @@ export default {
           group: game.groupID || "",
         },
       };
+    },
+    isValidResult(result) {
+      return result && result !== '-' && result !== 'null-null';
     },
     liveMatchUrl(game) {
       return `${this.result_url}${game.match_id || game.UniqueID || game.gameid || ""}/lineups`;
