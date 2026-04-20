@@ -15,6 +15,7 @@
                     {{ player.birth_year || player.birth_day || "-" }}
                   </span>
                   <span><strong>Kotiseura:</strong> {{ kotiseura }}</span>
+                  <span v-if="totalGames > 0"><strong>Otteluita:</strong> {{ totalGames }}</span>
                 </div>
               </div>
 
@@ -418,6 +419,9 @@ export default {
         });
       });
       return rows;
+    },
+    totalGames() {
+      return this.allTeamRows.reduce((sum, row) => sum + (row.games || 0), 0);
     },
     formattedGameReportTitle() {
       if (

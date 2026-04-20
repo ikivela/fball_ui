@@ -35,7 +35,7 @@
 
         <div class="report-sections">
           <section
-            v-if="competitionName || venueName || attendance || periodScores.length"
+            v-if="competitionName || venueName || attendance || periodScores.length || savesDisplay || gameReport.streamUrl"
             class="report-card match-info-card"
           >
             <div class="section-header">
@@ -55,6 +55,14 @@
                 <span class="info-label">Katsojat</span>
                 <span class="info-value">{{ attendance }}</span>
               </div>
+              <div v-if="gameReport.streamUrl" class="info-item">
+                <span class="info-label">Striimi</span>
+                <span class="info-value">
+                  <a :href="gameReport.streamUrl" target="_blank" rel="noopener noreferrer" class="stream-link">
+                    <i class="fas fa-play-circle"></i> Katso SalibandyTV
+                  </a>
+                </span>
+              </div>
             </div>
 
             <div v-if="periodScores.length" class="period-scoreboard">
@@ -65,6 +73,46 @@
               >
                 <span class="period-label">{{ period.label }}</span>
                 <span class="period-value">{{ period.score }}</span>
+              </div>
+            </div>
+
+            <div v-if="savesDisplay" class="saves-section">
+              <h3 class="saves-title"><i class="fas fa-hand-paper"></i> Torjunnat</h3>
+              <div class="saves-grid">
+                <div class="saves-team">
+                  <span class="saves-team-name">{{ gameReport.homeName }}</span>
+                  <div class="saves-periods">
+                    <span
+                      v-for="s in savesDisplay.home.periods"
+                      :key="s.label"
+                      class="saves-chip"
+                    >
+                      <span class="saves-period-label">{{ s.label }}</span>
+                      <span class="saves-period-value">{{ s.value }}</span>
+                    </span>
+                    <span class="saves-chip saves-total">
+                      <span class="saves-period-label">Yht.</span>
+                      <span class="saves-period-value">{{ savesDisplay.home.total }}</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="saves-team">
+                  <span class="saves-team-name">{{ gameReport.awayName }}</span>
+                  <div class="saves-periods">
+                    <span
+                      v-for="s in savesDisplay.away.periods"
+                      :key="s.label"
+                      class="saves-chip"
+                    >
+                      <span class="saves-period-label">{{ s.label }}</span>
+                      <span class="saves-period-value">{{ s.value }}</span>
+                    </span>
+                    <span class="saves-chip saves-total">
+                      <span class="saves-period-label">Yht.</span>
+                      <span class="saves-period-value">{{ savesDisplay.away.total }}</span>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -80,11 +128,14 @@
                 v-for="event in gameReport.allEvents"
                 :key="event.event_id || event.time + event.type + event.player_id"
                 class="timeline-entry"
-                :class="{
-                  home: isHomeEvent(event),
-                  away: isAwayEvent(event),
-                  neutral: !isHomeEvent(event) && !isAwayEvent(event),
-                }"
+                :class="[
+                  {
+                    club: isClubEvent(event),
+                    opponent: isOpponentEvent(event),
+                    neutral: !isClubEvent(event) && !isOpponentEvent(event),
+                  },
+                  event.type ? `event-${event.type}` : '',
+                ]"
               >
                 <div class="timeline-time-box">{{ event.event_time }}</div>
                 <div class="timeline-entry-body">
@@ -93,6 +144,7 @@
                       {{ getEventSideLabel(event) }}
                     </span>
                     <span class="timeline-event-tag" :class="event.type">
+                      <i :class="getEventTypeIcon(event)"></i>
                       {{ getEventTypeLabel(event) }}
                     </span>
                   </div>
@@ -312,6 +364,29 @@ export default {
       if (!this.gameReport) return [];
       return this.gameReport.periodScores || [];
     },
+    savesDisplay() {
+      if (!this.gameReport) return null;
+      const homeSaves = this.gameReport.homeSaves;
+      const awaySaves = this.gameReport.awaySaves;
+      if (!homeSaves && !awaySaves) return null;
+      const buildSide = (savesByPeriod) => {
+        if (!savesByPeriod || typeof savesByPeriod !== 'object') {
+          return { periods: [], total: 0 };
+        }
+        const keys = Object.keys(savesByPeriod).sort((a, b) => Number(a) - Number(b));
+        let total = 0;
+        const periods = keys.map((k) => {
+          const val = Number(savesByPeriod[k]) || 0;
+          total += val;
+          return { label: `${k}. erä`, value: val };
+        });
+        return { periods, total };
+      };
+      return {
+        home: buildSide(homeSaves),
+        away: buildSide(awaySaves),
+      };
+    },
     referees() {
       return this.extractReferees(this.gameReport);
     },
@@ -418,6 +493,9 @@ export default {
             competitionName: "",
             attendance: "",
             periodScores: [],
+            homeSaves: null,
+            awaySaves: null,
+            streamUrl: "",
             class: className,
             allEvents,
           };
@@ -512,6 +590,9 @@ export default {
           competitionName: root.competition_name || root.category_name || "",
           attendance: root.attendance || "",
           periodScores: this.getPeriodScores(root),
+          homeSaves: this.getTeamSaves(homeLineup),
+          awaySaves: this.getTeamSaves(awayLineup),
+          streamUrl: root.stream || "",
           class: className,
           allEvents,
         };
@@ -539,6 +620,19 @@ export default {
       return event.team
         .toLowerCase()
         .includes(this.gameReport.awayId.toLowerCase());
+    },
+    isClubEvent(event) {
+      if (!this.clubName) return false;
+      const teamName = this.isHomeEvent(event)
+        ? this.gameReport.homeName
+        : this.isAwayEvent(event)
+        ? this.gameReport.awayName
+        : null;
+      return !!teamName && teamName.toLowerCase().includes(this.clubName.toLowerCase());
+    },
+    isOpponentEvent(event) {
+      if (!this.isHomeEvent(event) && !this.isAwayEvent(event)) return false;
+      return !this.isClubEvent(event);
     },
     isHomeClubEvent(event) {
       return (
@@ -578,6 +672,11 @@ export default {
       if (event.type === "goal") return "Maali";
       if (event.type === "penalty") return "Jäähy";
       return "Tapahtuma";
+    },
+    getEventTypeIcon(event) {
+      if (event.type === "goal") return "fas fa-futbol";
+      if (event.type === "penalty") return "fas fa-clock";
+      return "fas fa-flag";
     },
     getEventSideLabel(event) {
       if (this.isHomeEvent(event)) return this.gameReport.homeName;
@@ -727,6 +826,17 @@ export default {
           label: period.label,
           score: `${period.home}-${period.away}`,
         }));
+    },
+    getTeamSaves(lineup) {
+      if (!Array.isArray(lineup)) return null;
+      const gk = lineup.find(
+        (p) =>
+          p.saves_by_period &&
+          !Array.isArray(p.saves_by_period) &&
+          typeof p.saves_by_period === 'object' &&
+          Object.keys(p.saves_by_period).length > 0
+      );
+      return gk ? gk.saves_by_period : null;
     },
     goToOttelutView() {
       this.$router.push({
@@ -890,6 +1000,19 @@ export default {
   overflow-wrap: anywhere;
 }
 
+.stream-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--primary-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.stream-link:hover {
+  text-decoration: underline;
+}
+
 .period-scoreboard {
   display: flex;
   flex-wrap: wrap;
@@ -916,6 +1039,87 @@ export default {
   font-size: 0.92rem;
   font-weight: 800;
   color: var(--primary-color);
+}
+
+/* ── Saves / Torjunnat ────────────────────────────── */
+.saves-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+.saves-title {
+  margin: 0 0 0.7rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.saves-title i {
+  color: var(--primary-color);
+}
+
+.saves-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.saves-team {
+  min-width: 0;
+}
+
+.saves-team-name {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.saves-periods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.saves-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(30, 58, 138, 0.06);
+}
+
+.saves-chip.saves-total {
+  background: rgba(30, 58, 138, 0.12);
+}
+
+.saves-period-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.saves-period-value {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+.saves-chip.saves-total .saves-period-value {
+  color: var(--primary-color);
+  font-size: 0.94rem;
+}
+
+@media (max-width: 480px) {
+  .saves-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .officials-grid {
@@ -991,6 +1195,7 @@ export default {
   gap: 0.8rem;
 }
 
+/* ── Timeline entry base ─────────────────────────── */
 .timeline-entry {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -1000,25 +1205,53 @@ export default {
   border-radius: 14px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   border: 1px solid rgba(226, 232, 240, 0.92);
+  transition: transform 0.12s ease;
 }
 
-.timeline-entry.home {
-  background: linear-gradient(180deg, rgba(239, 246, 255, 0.95) 0%, #ffffff 100%);
-  border-color: rgba(59, 130, 246, 0.18);
-  box-shadow: inset 4px 0 0 var(--primary-color);
+.timeline-entry:hover {
+  transform: translateX(2px);
 }
 
-.timeline-entry.away {
-  background: linear-gradient(180deg, rgba(254, 242, 242, 0.95) 0%, #ffffff 100%);
-  border-color: rgba(239, 68, 68, 0.18);
-  box-shadow: inset 4px 0 0 var(--secondary-color);
+/* ── Club (Nibacos) – blue theme ──────────────────── */
+.timeline-entry.club {
+  background: linear-gradient(135deg, rgba(219, 234, 254, 0.7) 0%, rgba(239, 246, 255, 0.5) 50%, #ffffff 100%);
+  border-color: rgba(59, 130, 246, 0.22);
+  box-shadow: inset 5px 0 0 var(--primary-color);
 }
 
+.timeline-entry.club.event-goal {
+  background: linear-gradient(135deg, rgba(191, 219, 254, 0.75) 0%, rgba(219, 234, 254, 0.5) 50%, #ffffff 100%);
+  border-color: rgba(37, 99, 235, 0.3);
+  box-shadow: inset 5px 0 0 #2563eb, 0 4px 16px rgba(37, 99, 235, 0.1);
+}
+
+/* ── Opponent – red theme ─────────────────────────── */
+.timeline-entry.opponent {
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.7) 0%, rgba(254, 242, 242, 0.5) 50%, #ffffff 100%);
+  border-color: rgba(239, 68, 68, 0.22);
+  box-shadow: inset 5px 0 0 #dc2626;
+}
+
+.timeline-entry.opponent.event-goal {
+  background: linear-gradient(135deg, rgba(254, 202, 202, 0.75) 0%, rgba(254, 226, 226, 0.5) 50%, #ffffff 100%);
+  border-color: rgba(220, 38, 38, 0.3);
+  box-shadow: inset 5px 0 0 #dc2626, 0 4px 16px rgba(220, 38, 38, 0.1);
+}
+
+/* ── Penalty – amber/yellow theme ─────────────────── */
+.timeline-entry.event-penalty {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.75) 0%, rgba(254, 249, 195, 0.4) 50%, #ffffff 100%);
+  border-color: rgba(217, 119, 6, 0.25);
+  box-shadow: inset 5px 0 0 #d97706, 0 4px 12px rgba(217, 119, 6, 0.08);
+}
+
+/* ── Neutral ──────────────────────────────────────── */
 .timeline-entry.neutral {
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, #ffffff 100%);
   border-color: rgba(148, 163, 184, 0.2);
 }
 
+/* ── Time box ─────────────────────────────────────── */
 .timeline-time-box {
   min-width: 3.8rem;
   padding: 0.42rem 0.6rem;
@@ -1027,11 +1260,27 @@ export default {
   color: var(--primary-color);
   font-weight: 800;
   text-align: center;
+  font-size: 0.88rem;
 }
 
-.timeline-entry.away .timeline-time-box {
+.timeline-entry.club.event-goal .timeline-time-box {
+  background: rgba(37, 99, 235, 0.15);
+  color: #1d4ed8;
+}
+
+.timeline-entry.opponent .timeline-time-box {
   background: rgba(254, 226, 226, 0.9);
   color: #b91c1c;
+}
+
+.timeline-entry.opponent.event-goal .timeline-time-box {
+  background: rgba(220, 38, 38, 0.15);
+  color: #991b1b;
+}
+
+.timeline-entry.event-penalty .timeline-time-box {
+  background: rgba(254, 243, 199, 0.9);
+  color: #92400e;
 }
 
 .timeline-entry.neutral .timeline-time-box {
@@ -1050,11 +1299,13 @@ export default {
   margin-bottom: 0.4rem;
 }
 
+/* ── Tags ─────────────────────────────────────────── */
 .timeline-team-tag,
 .timeline-event-tag {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.55rem;
+  gap: 0.35rem;
+  padding: 0.22rem 0.6rem;
   border-radius: 999px;
   font-size: 0.74rem;
   font-weight: 700;
@@ -1065,14 +1316,19 @@ export default {
   color: var(--primary-color);
 }
 
-.timeline-entry.home .timeline-team-tag {
-  background: rgba(30, 58, 138, 0.12);
+.timeline-entry.club .timeline-team-tag {
+  background: rgba(30, 58, 138, 0.14);
   color: var(--primary-color);
 }
 
-.timeline-entry.away .timeline-team-tag {
-  background: rgba(239, 68, 68, 0.12);
+.timeline-entry.opponent .timeline-team-tag {
+  background: rgba(239, 68, 68, 0.14);
   color: #b91c1c;
+}
+
+.timeline-entry.event-penalty .timeline-team-tag {
+  background: rgba(217, 119, 6, 0.12);
+  color: #92400e;
 }
 
 .timeline-entry.neutral .timeline-team-tag {
@@ -1085,16 +1341,29 @@ export default {
   color: var(--text-dark);
 }
 
+/* Goal tag: blue for club, red for opponent */
+.timeline-entry.club .timeline-event-tag.goal {
+  background: rgba(37, 99, 235, 0.16);
+  color: #1d4ed8;
+}
+
+.timeline-entry.opponent .timeline-event-tag.goal {
+  background: rgba(220, 38, 38, 0.16);
+  color: #991b1b;
+}
+
 .timeline-event-tag.goal {
   background: rgba(16, 185, 129, 0.14);
   color: #047857;
 }
 
+/* Penalty tag: always amber */
 .timeline-event-tag.penalty {
-  background: rgba(239, 68, 68, 0.14);
-  color: #b91c1c;
+  background: rgba(217, 119, 6, 0.16);
+  color: #92400e;
 }
 
+/* ── Player name ──────────────────────────────────── */
 .timeline-player {
   font-size: 1rem;
   font-weight: 700;
@@ -1102,14 +1371,32 @@ export default {
   overflow-wrap: anywhere;
 }
 
-.timeline-entry.away .timeline-player {
+.timeline-entry.club.event-goal .timeline-player {
+  color: #1e3a8a;
+  font-size: 1.05rem;
+}
+
+.timeline-entry.opponent.event-goal .timeline-player {
   color: #7f1d1d;
+  font-size: 1.05rem;
+}
+
+.timeline-entry.opponent .timeline-player {
+  color: #7f1d1d;
+}
+
+.timeline-entry.event-penalty .timeline-player {
+  color: #78350f;
 }
 
 .timeline-description {
   margin-top: 0.3rem;
   color: var(--text-light);
   line-height: 1.35;
+}
+
+.timeline-entry.event-penalty .timeline-description {
+  color: #92400e;
 }
 
 .player-link {
