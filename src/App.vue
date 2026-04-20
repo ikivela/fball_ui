@@ -66,6 +66,11 @@
                 <i class="fas fa-table me-2"></i>Vertaile sarjoja
               </router-link>
             </li>
+            <li class="nav-item">
+              <router-link class="nav-link" to="/tietoja" @click="closeNavbar">
+                <i class="fas fa-info-circle me-2"></i>Tietoja
+              </router-link>
+            </li>
           </ul>
         </div>
       </div>
@@ -116,6 +121,7 @@ export default {
         PelaajaView: "Pelaajakortti",
         OtteluView: "Otteluraportti",
         ClassMatrix: "Vertailu",
+        TietojaView: "Tietoja",
         LoginView: "",
       };
 
