@@ -54,7 +54,7 @@
 
                       <div class="mobile-game-main">
                         <a
-                          v-if="selectedSeason.value == seasons[0].value"
+                          v-if="selectedSeason.value == seasons[0].value && (game.GameDate >= today || !isValidResult(game.Result))"
                           :href="liveMatchUrl(game)"
                           class="mobile-teams-link"
                         >
@@ -84,6 +84,26 @@
                             </span>
                           </div>
                         </a>
+                        <div
+                          v-else-if="selectedSeason.value == seasons[0].value"
+                          class="mobile-teams-link"
+                        >
+                          <div class="mobile-teams-inline">
+                            <span class="mobile-team-name mobile-home-team">
+                              {{ game.HomeTeamName }}
+                            </span>
+                            <router-link
+                              :to="gameDetailRoute(game)"
+                              class="mobile-score-pill"
+                              :class="getResultColor(game)"
+                            >
+                              {{ game.Result }}
+                            </router-link>
+                            <span class="mobile-team-name mobile-away-team">
+                              {{ game.AwayTeamName }}
+                            </span>
+                          </div>
+                        </div>
                         <a
                           v-else
                           class="mobile-teams-link resultStyle"
@@ -187,6 +207,7 @@
                               v-if="selectedSeason.value == seasons[0].value"
                             >
                               <a
+                                v-if="game.GameDate >= today || !isValidResult(game.Result)"
                                 :href="liveMatchUrl(game)"
                                 class="team-link"
                               >
@@ -208,6 +229,25 @@
                                   </span>
                                 </div>
                               </a>
+                              <div v-else class="team-link">
+                                <div class="team-names">
+                                  <span class="home-team">{{
+                                    game.HomeTeamName
+                                  }}</span>
+                                  <span class="vs-separator">vs</span>
+                                  <span class="away-team">{{
+                                    game.AwayTeamName
+                                  }}</span>
+                                </div>
+                                <div
+                                  v-if="isSmallScreen && game.class"
+                                  class="mobile-meta"
+                                >
+                                  <span class="mobile-class-chip">
+                                    {{ shorten_classname(game.class || "") }}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                             <div v-else>
                               <a
@@ -247,11 +287,13 @@
 
                            <template v-else-if="field.key === 'group'">
                             <router-link
+                              v-if="game.GameDate >= today || !isValidResult(game.Result)"
                               :to="standings_link(game)"
                               class="group-link"
                             >
                               {{ game.group }}
                             </router-link>
+                            <span v-else>{{ game.group }}</span>
                            </template>
 
                            <template v-else-if="field.key === 'class'">
