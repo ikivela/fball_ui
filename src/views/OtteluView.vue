@@ -454,7 +454,7 @@ export default {
         const baseurl = import.meta.env.VITE_APP_BACKEND_URL;
         if (!gameid) throw new Error("Puuttuva ottelun tunniste");
         if (!season) throw new Error("Puuttuva kausi");
-        const url = `${baseurl}/gamestats/?season=${season}&gameid=${gameid}`;
+        const url = `${baseurl}/gamestats/?season=${encodeURIComponent(season)}&gameid=${encodeURIComponent(gameid)}`;
         console.log("OtteluView API url:", url);
         const response = await axios.get(url);
         console.log("fetchGameReport API response", response.data);

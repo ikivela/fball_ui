@@ -55,7 +55,7 @@ export default createStore({
     async fetchGames({ commit }, year) {
       console.log("fetching year % from api", year);
       let response = await axios.get(
-        `${import.meta.env.VITE_APP_BACKEND_URL}/games/?year=${year}`,
+        `${import.meta.env.VITE_APP_BACKEND_URL}/games/?year=${encodeURIComponent(year)}`,
       );
       commit("SET_games", { games: response.data, season: year });
     },
@@ -98,7 +98,7 @@ export default createStore({
       }
 
       const res = await axios.get(
-        `${import.meta.env.VITE_APP_BACKEND_URL}/players?player_id=${playerId}`
+        `${import.meta.env.VITE_APP_BACKEND_URL}/players?player_id=${encodeURIComponent(playerId)}`
       );
       commit("SET_player_detail", { playerId, player: res.data });
       return res.data;
