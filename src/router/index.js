@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import PelaajaView from '../views/PelaajaView.vue';
 
 const routes = [
   {
@@ -48,7 +47,7 @@ const routes = [
   {
     path: '/pelaaja/:player_id',
     name: 'PelaajaView',
-    component: PelaajaView,
+    component: () => import('../views/PelaajaView.vue'),
     props: true
   },
   {

@@ -15,7 +15,44 @@
           </div>
         </div>
       </div>
-      <div class="table-responsive">
+
+      <!-- Mobile: card list per date -->
+      <div v-if="isSmallScreen" class="mobile-matrix-list">
+        <article
+          v-for="date in uniqueDates"
+          :key="date"
+          class="mobile-matrix-card"
+        >
+          <div class="mobile-matrix-date">{{ formatDate(date) }}</div>
+          <div class="mobile-matrix-games">
+            <template v-for="className in selectedClasses" :key="className">
+              <div
+                v-if="gameByDateAndClass(date, className).length"
+                class="mobile-matrix-class"
+              >
+                <span class="mobile-matrix-class-name">{{ className }}</span>
+                <div
+                  v-for="game in gameByDateAndClass(date, className)"
+                  :key="game.UniqueID"
+                  class="mobile-matrix-game"
+                >
+                  <span>{{ game.HomeTeamName }} - {{ game.AwayTeamName }}</span>
+                  <span class="mobile-matrix-rink">{{ game.RinkName }}</span>
+                </div>
+              </div>
+            </template>
+          </div>
+          <div
+            v-if="selectedClasses.every(c => gameByDateAndClass(date, c).length === 0)"
+            class="mobile-matrix-empty"
+          >
+            Ei otteluita
+          </div>
+        </article>
+      </div>
+
+      <!-- Desktop: table -->
+      <div v-else class="table-responsive">
         <table class="table table-bordered align-middle wide-matrix-table">
           <thead>
             <tr>
@@ -44,12 +81,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useStore } from 'vuex';
 import { DateTime } from 'luxon';
 
 const store = useStore();
 const loading = ref(true);
+const isSmallScreen = ref(false);
+
+function updateScreenWidth() {
+  isSmallScreen.value = window.matchMedia("(max-width: 480px)").matches;
+}
 
 const selectedSeason = computed(() => store.state.seasons && store.state.seasons.length > 0 ? store.state.seasons[0] : null);
 const games = computed(() => selectedSeason.value && store.state.games[selectedSeason.value.value] ? store.state.games[selectedSeason.value.value] : []);
@@ -98,12 +140,18 @@ async function ensureDataLoaded() {
 }
 
 onMounted(async () => {
+  updateScreenWidth();
+  window.addEventListener("resize", updateScreenWidth);
   await ensureDataLoaded();
   // By default, select only the main classes if they exist
   const preferred = ['Inssi-Divari miehet', 'Naisten Suomisarja', 'T18 SM-SARJA', 'P19 SM-SARJA', 'P16 VALTAKUNNALLINEN', 'T16 VALTAKUNNALLINEN'];
   selectedClasses.value = allClasses.value.filter(c => preferred.includes(c));
   console.log('Initially selected classes:', selectedClasses);
   loading.value = false;
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateScreenWidth);
 });
 
 // If allClasses changes (e.g. after data loads), select preferred if none selected
@@ -153,4 +201,73 @@ watch(allClasses, (newVal) => {
             }
           }
         }
+
+/* Mobile matrix cards */
+.mobile-matrix-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mobile-matrix-card {
+  padding: 0.7rem 0.15rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-matrix-card:last-child {
+  border-bottom: none;
+}
+
+.mobile-matrix-date {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  margin-bottom: 0.35rem;
+}
+
+.mobile-matrix-games {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-left: 0.5rem;
+}
+
+.mobile-matrix-class {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.mobile-matrix-class-name {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--primary-color);
+}
+
+.mobile-matrix-game {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  padding-left: 0.5rem;
+}
+
+.mobile-matrix-rink {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+.mobile-matrix-empty {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  font-style: italic;
+  padding-left: 0.5rem;
+}
+
+@media (max-width: 480px) {
+  .class-matrix-view.container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
 </style> 

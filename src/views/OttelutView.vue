@@ -479,7 +479,21 @@
                 </h6>
               </div>
 
-              <div class="table-responsive">
+              <!-- Mobile: card list -->
+              <div v-if="isSmallScreen" class="mobile-roster-list">
+                <article
+                  v-for="player in currentRoster"
+                  :key="player.PlayerJerseyNr"
+                  class="mobile-roster-card"
+                >
+                  <span class="mobile-roster-nr">{{ player.PlayerJerseyNr }}</span>
+                  <span class="mobile-roster-name">{{ player.PlayerFirstName }} {{ player.PlayerLastName }}</span>
+                  <span class="mobile-roster-role">{{ player.RoleAbbrv }}</span>
+                </article>
+              </div>
+
+              <!-- Desktop: table -->
+              <div v-else class="table-responsive">
                 <table class="table table-hover">
                   <thead>
                     <tr>
@@ -1316,6 +1330,49 @@ export default {
       font-weight: 600;
     }
   }
+}
+
+// Mobile roster cards
+.mobile-roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mobile-roster-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid var(--border-color);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.mobile-roster-nr {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--primary-color);
+  min-width: 2rem;
+  text-align: center;
+}
+
+.mobile-roster-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.mobile-roster-role {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-light);
+  background: var(--bg-light);
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
 }
 
 // Loading State

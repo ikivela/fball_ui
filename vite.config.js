@@ -31,5 +31,16 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, 'src'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-vue': ['vue', 'vue-router', 'vuex'],
+            'vendor-bootstrap': ['bootstrap', 'bootstrap-vue-next'],
+            'vendor-utils': ['axios', 'luxon'],
+          },
+        },
+      },
+    },
   };
 });

@@ -72,6 +72,32 @@
         <div v-if="currentClass" v-for="group in standings[0].groups" :key="group.group_id" class="col-12 col-md-6 px-md-3">
           <h5 class="mb-2">{{ group.group_name }}</h5>
 
+          <!-- Mobile: card list -->
+          <div v-if="isSmallScreen" class="mobile-standings-list">
+            <article
+              v-for="(team, idx) in group.teams"
+              :key="team.team_id"
+              class="mobile-standing-card"
+            >
+              <div class="mobile-standing-top">
+                <span class="mobile-standing-rank">{{ idx + 1 }}.</span>
+                <span class="mobile-standing-team">{{ team.team_name }}</span>
+                <span class="mobile-standing-points">{{ team.points }} p</span>
+              </div>
+              <div class="mobile-standing-stats">
+                <span class="mobile-stat"><span class="mobile-stat-label">O</span>{{ team.matches_played }}</span>
+                <span class="mobile-stat"><span class="mobile-stat-label">V</span>{{ team.matches_won }}</span>
+                <span class="mobile-stat"><span class="mobile-stat-label">T</span>{{ team.matches_tied }}</span>
+                <span class="mobile-stat"><span class="mobile-stat-label">H</span>{{ team.matches_lost }}</span>
+                <span class="mobile-stat"><span class="mobile-stat-label">TM</span>{{ team.goals_for }}</span>
+                <span class="mobile-stat"><span class="mobile-stat-label">PM</span>{{ team.goals_against }}</span>
+                <span class="mobile-stat"><span class="mobile-stat-label">ME</span>{{ team.goals_diff }}</span>
+              </div>
+            </article>
+          </div>
+
+          <!-- Desktop: table -->
+          <div v-else class="table-responsive">
               <table class="table table-hover table-sm">
                 <thead>
                   <tr>
@@ -94,6 +120,7 @@
                   </tr>
                 </tbody>
               </table>
+          </div>
         </div>
       </div>
     </div>
@@ -108,6 +135,7 @@ export default {
   components: {},
   data() {
     return {
+      isSmallScreen: false,
       allStandings: [],
       standings: [],
       standing_fields: [
@@ -128,6 +156,8 @@ export default {
   },
 
   async mounted() {
+    this.updateScreenWidth();
+    window.addEventListener("resize", this.updateScreenWidth);
     try {
       console.log("baseurl", this.baseurl);
       this.allStandings = await this.getStandings();
@@ -138,6 +168,10 @@ export default {
       this.allStandings = [];
       this.standings = [];
     }
+  },
+
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateScreenWidth);
   },
 
   computed: {
@@ -179,6 +213,10 @@ export default {
     },
   },
   methods: {
+    updateScreenWidth() {
+      this.isSmallScreen = window.matchMedia("(max-width: 480px)").matches;
+    },
+
     applyRouteFilters() {
       const seasonFromRoute = this.$route.query.season
         ? String(this.$route.query.season)
@@ -582,5 +620,79 @@ export default {
 
 .games-card {
   padding: 2rem 2rem 1.5rem 2rem;
+}
+
+// Mobile standings cards
+.mobile-standings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mobile-standing-card {
+  padding: 0.6rem 0.15rem;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.mobile-standing-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.mobile-standing-rank {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  min-width: 1.5rem;
+}
+
+.mobile-standing-team {
+  flex: 1;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+}
+
+.mobile-standing-points {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary-color);
+  background: rgba(30, 58, 138, 0.08);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.mobile-standing-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.7rem;
+  padding-left: 2rem;
+}
+
+.mobile-stat {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.mobile-stat-label {
+  font-weight: 500;
+  color: var(--text-light);
+  margin-right: 0.2rem;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .sarjataulukot-view .container {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
 }
 </style>
