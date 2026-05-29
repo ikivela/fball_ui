@@ -21,14 +21,29 @@
               <div class="filters-content">
                 <!-- All-time Stats -->
                 <div class="filter-section">
+                  <h4 class="filter-section-title">Kaikkien aikojen pistepörssi</h4>
                   <div class="filter-options-grid">
                     <button
                       class="filter-option-btn alltime-btn"
-                      :class="{ active: showAlltime }"
-                      @click="loadAlltimeStats"
+                      :class="{ active: showAlltime && !alltimeGender }"
+                      @click="loadAlltimeStats('')"
                     >
                       <i class="fas fa-star me-1"></i>
-                      Kaikkien aikojen pistepörssi
+                      Kaikki
+                    </button>
+                    <button
+                      class="filter-option-btn alltime-btn"
+                      :class="{ active: showAlltime && alltimeGender === 'miesten' }"
+                      @click="loadAlltimeStats('miesten')"
+                    >
+                      Miesten
+                    </button>
+                    <button
+                      class="filter-option-btn alltime-btn"
+                      :class="{ active: showAlltime && alltimeGender === 'naisten' }"
+                      @click="loadAlltimeStats('naisten')"
+                    >
+                      Naisten
                     </button>
                   </div>
                 </div>
@@ -208,6 +223,7 @@ export default {
       seasonStats: [],
       allStats: [],
       showAlltime: false,
+      alltimeGender: "",
       currentSeason: "",
       currentClass: "",
       fields: [
@@ -305,13 +321,16 @@ export default {
       this.isSmallScreen = window.matchMedia("(max-width: 480px)").matches;
     },
 
-    async loadAlltimeStats() {
+    async loadAlltimeStats(gender) {
       this.showAlltime = true;
+      this.alltimeGender = gender;
       this.currentSeason = "";
       this.currentClass = "";
       try {
-        const response = await axios.get(`${this.baseurl}/alltime-stats`);
-        this.seasonStats = [{ season: "Kaikki kaudet", class: "", stats: response.data }];
+        const params = gender ? { gender } : {};
+        const response = await axios.get(`${this.baseurl}/alltime-stats`, { params });
+        const title = gender ? `Kaikki kaudet (${gender})` : "Kaikki kaudet";
+        this.seasonStats = [{ season: title, class: "", stats: response.data }];
       } catch (error) {
         console.error("Error fetching alltime stats:", error);
         this.seasonStats = [];
