@@ -19,6 +19,20 @@
               </div>
 
               <div class="filters-content">
+                <!-- All-time Stats -->
+                <div class="filter-section">
+                  <div class="filter-options-grid">
+                    <button
+                      class="filter-option-btn alltime-btn"
+                      :class="{ active: showAlltime }"
+                      @click="loadAlltimeStats"
+                    >
+                      <i class="fas fa-star me-1"></i>
+                      Kaikkien aikojen pistepörssi
+                    </button>
+                  </div>
+                </div>
+
                 <!-- Season Filter -->
                 <div class="filter-section">
                   <h4 class="filter-section-title">Valitse kausi</h4>
@@ -62,7 +76,7 @@
       <div class="container">
         <div class="row">
           <div class="col-12">
-            <div v-if="!currentSeason" class="no-selection">
+            <div v-if="!currentSeason && !showAlltime" class="no-selection">
               <div class="no-selection-content">
                 <i class="fas fa-chart-line"></i>
                 <h3>Valitse kausi</h3>
@@ -193,6 +207,7 @@ export default {
       isSmallScreen: false,
       seasonStats: [],
       allStats: [],
+      showAlltime: false,
       currentSeason: "",
       currentClass: "",
       fields: [
@@ -290,7 +305,21 @@ export default {
       this.isSmallScreen = window.matchMedia("(max-width: 480px)").matches;
     },
 
+    async loadAlltimeStats() {
+      this.showAlltime = true;
+      this.currentSeason = "";
+      this.currentClass = "";
+      try {
+        const response = await axios.get(`${this.baseurl}/alltime-stats`);
+        this.seasonStats = [{ season: "Kaikki kaudet", class: "", stats: response.data }];
+      } catch (error) {
+        console.error("Error fetching alltime stats:", error);
+        this.seasonStats = [];
+      }
+    },
+
     setSeason(season) {
+      this.showAlltime = false;
       this.currentSeason = season;
       this.currentClass = "";
       this.seasonStats = this.allStats.filter((x) => x.season === season);
@@ -390,6 +419,10 @@ export default {
               background-color: var(--primary-color);
               border-color: var(--primary-color);
               color: white;
+            }
+
+            &.alltime-btn {
+              font-weight: 600;
             }
           }
         }
