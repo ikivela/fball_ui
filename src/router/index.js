@@ -68,7 +68,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory((import.meta.env.VITE_BASE_PATH) || '/'),
+  history: createWebHistory(import.meta.env.VITE_APP_BASE_URL || '/'),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
