@@ -125,7 +125,7 @@
 
             <div v-if="gameReport.allEvents.length" class="timeline">
               <article
-                v-for="event in gameReport.allEvents"
+                v-for="event in timelineEvents"
                 :key="event.event_id || event.time + event.type + event.player_id"
                 class="timeline-entry"
                 :class="[
@@ -145,11 +145,35 @@
                     </span>
                     <span class="timeline-event-tag" :class="event.type">
                       <i :class="getEventTypeIcon(event)"></i>
-                      {{ getEventTypeLabel(event) }}
+                      <template v-if="event.type === 'goal'">
+                        <strong class="goal-score">{{ event.goalScore }}</strong>
+                        <span class="goal-separator">·</span>
+                        <span>{{ event.event_time || "-" }}</span>
+                        <span class="goal-separator">·</span>
+                        <template v-if="canLinkEventPlayer(event)">
+                          <router-link
+                            v-if="isHomeClubEvent(event)"
+                            :to="{ name: 'PelaajaView', params: { player_id: event.player_id } }"
+                            class="player-link"
+                          >
+                            {{ getEventPlayerName(event) }}
+                          </router-link>
+                          <a
+                            v-else
+                            href="#"
+                            class="player-link"
+                            @click.prevent="goToPlayer(event.player_id)"
+                          >
+                            {{ getEventPlayerName(event) }}
+                          </a>
+                        </template>
+                        <span v-else>{{ getEventPlayerName(event) }}</span>
+                      </template>
+                      <template v-else>{{ getEventTypeLabel(event) }}</template>
                     </span>
                   </div>
 
-                  <div class="timeline-player">
+                  <div v-if="event.type !== 'goal'" class="timeline-player">
                     <template v-if="canLinkEventPlayer(event)">
                       <router-link
                         v-if="isHomeClubEvent(event)"
@@ -350,6 +374,33 @@ export default {
       const away = this.gameReport.awayGoals?.length;
       if (home == null || away == null) return "-";
       return `${home}-${away}`;
+    },
+    timelineEvents() {
+      if (!this.gameReport) return [];
+
+      let homeScore = 0;
+      let awayScore = 0;
+      const toSeconds = (time) => {
+        if (!time) return 0;
+        const [minutes, seconds] = String(time).split(":");
+        return (parseInt(minutes, 10) || 0) * 60 + (parseInt(seconds, 10) || 0);
+      };
+      const events = [...(this.gameReport.allEvents || [])].sort(
+        (a, b) => toSeconds(a.event_time || a.time) - toSeconds(b.event_time || b.time)
+      );
+
+      return events.map((event) => {
+        if (event.type === "goal") {
+          if (this.isHomeEvent(event)) homeScore += 1;
+          else if (this.isAwayEvent(event)) awayScore += 1;
+        }
+
+        return {
+          ...event,
+          goalScore:
+            event.type === "goal" ? `${homeScore}–${awayScore}` : undefined,
+        };
+      });
     },
     competitionName() {
       return this.gameReport?.competitionName || "";
@@ -611,15 +662,15 @@ export default {
     },
     isHomeEvent(event) {
       if (!event.team || !this.gameReport.homeId) return false;
-      return event.team
+      return String(event.team)
         .toLowerCase()
-        .includes(this.gameReport.homeId.toLowerCase());
+        .includes(String(this.gameReport.homeId).toLowerCase());
     },
     isAwayEvent(event) {
       if (!event.team || !this.gameReport.awayId) return false;
-      return event.team
+      return String(event.team)
         .toLowerCase()
-        .includes(this.gameReport.awayId.toLowerCase());
+        .includes(String(this.gameReport.awayId).toLowerCase());
     },
     isClubEvent(event) {
       if (!this.clubName) return false;

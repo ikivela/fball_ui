@@ -79,69 +79,83 @@
                 />
               </b-form-group>
             </div>
-            <div class="mb-2">
-              <span class="player-count">
-                Pelaajia yhteensä: <strong>{{ filteredPlayers.length }}</strong>
-              </span>
-            </div>
-            <div v-if="isSmallScreen" class="players-mobile-list">
-              <router-link
-                v-for="player in filteredPlayers"
-                :key="player.player_id"
-                :to="{
-                  name: 'PelaajaView',
-                  params: { player_id: player.player_id },
-                }"
-                class="player-mobile-card"
-              >
-                <div class="player-mobile-main">
-                  <div class="player-mobile-name">
-                    {{ player.firstname }} {{ player.lastname }}
-                  </div>
-                  <div class="player-mobile-meta">
-                    <span v-if="player.birth_year || player.birth_day">
-                      s. {{ player.birth_year || player.birth_day }}
-                    </span>
-                    <span v-if="player.gender">
-                      {{ player.gender === "M" ? "Mies/poika" : "Nainen/tyttö" }}
-                    </span>
-                  </div>
-                </div>
-                <div class="player-mobile-stats">
-                  <span class="player-mobile-games">{{ totalGames(player) }}</span>
-                  <span class="player-mobile-label">ottelua</span>
-                </div>
-              </router-link>
-              <div v-if="filteredPlayers.length === 0" class="no-mobile-results">
-                Ei pelaajia löytynyt.
+            <div
+              v-if="loadingPlayers"
+              class="players-loading"
+              role="status"
+              aria-live="polite"
+            >
+              <div class="players-loading-spinner" aria-hidden="true"></div>
+              <span>Ladataan pelaajia...</span>
+              <div class="players-loading-progress" aria-hidden="true">
+                <div class="players-loading-progress-bar"></div>
               </div>
             </div>
-            <div v-else class="table-responsive">
-              <b-table
-                hover
-                small
-                :fields="fields"
-                :items="filteredPlayers"
-                :empty-text="emptyText"
-                class="table table-sm table-bordered table-responsive"
-                v-model:sortBy="sortBy"
-                v-model:sortDesc="sortDesc"
-              >
-                <template #cell(player)="data">
-                  <router-link
-                    :to="{
-                      name: 'PelaajaView',
-                      params: { player_id: data.item.player_id },
-                    }"
-                    class="player-link"
-                  >
-                    {{ data.item.firstname }} {{ data.item.lastname }}
-                  </router-link>
-                </template>
-                <template #cell(games)="data">
-                  {{ totalGames(data.item) }}
-                </template>
-              </b-table>
+            <div v-else>
+              <div class="mb-2">
+                <span class="player-count">
+                  Pelaajia yhteensä: <strong>{{ filteredPlayers.length }}</strong>
+                </span>
+              </div>
+              <div v-if="isSmallScreen" class="players-mobile-list">
+                <router-link
+                  v-for="player in filteredPlayers"
+                  :key="player.player_id"
+                  :to="{
+                    name: 'PelaajaView',
+                    params: { player_id: player.player_id },
+                  }"
+                  class="player-mobile-card"
+                >
+                  <div class="player-mobile-main">
+                    <div class="player-mobile-name">
+                      {{ player.firstname }} {{ player.lastname }}
+                    </div>
+                    <div class="player-mobile-meta">
+                      <span v-if="player.birth_year || player.birth_day">
+                        s. {{ player.birth_year || player.birth_day }}
+                      </span>
+                      <span v-if="player.gender">
+                        {{ player.gender === "M" ? "Mies/poika" : "Nainen/tyttö" }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="player-mobile-stats">
+                    <span class="player-mobile-games">{{ totalGames(player) }}</span>
+                    <span class="player-mobile-label">ottelua</span>
+                  </div>
+                </router-link>
+                <div v-if="filteredPlayers.length === 0" class="no-mobile-results">
+                  Ei pelaajia löytynyt.
+                </div>
+              </div>
+              <div v-else class="table-responsive">
+                <b-table
+                  hover
+                  small
+                  :fields="fields"
+                  :items="filteredPlayers"
+                  :empty-text="emptyText"
+                  class="table table-sm table-bordered table-responsive"
+                  v-model:sortBy="sortBy"
+                  v-model:sortDesc="sortDesc"
+                >
+                  <template #cell(player)="data">
+                    <router-link
+                      :to="{
+                        name: 'PelaajaView',
+                        params: { player_id: data.item.player_id },
+                      }"
+                      class="player-link"
+                    >
+                      {{ data.item.firstname }} {{ data.item.lastname }}
+                    </router-link>
+                  </template>
+                  <template #cell(games)="data">
+                    {{ totalGames(data.item) }}
+                  </template>
+                </b-table>
+              </div>
             </div>
           </div>
         </div>
@@ -171,6 +185,7 @@ export default {
       sortBy: "player",
       sortDesc: false,
       isSmallScreen: false,
+      loadingPlayers: false,
     };
   },
   computed: {
@@ -303,9 +318,16 @@ export default {
     },
   },
   async mounted() {
-    await this.fetchPlayers();
-    this.updateScreenWidth();
-    window.addEventListener("resize", this.updateScreenWidth);
+    this.loadingPlayers = true;
+    try {
+      await this.fetchPlayers();
+    } catch (error) {
+      console.error("Pelaajien lataaminen epäonnistui:", error);
+    } finally {
+      this.loadingPlayers = false;
+      this.updateScreenWidth();
+      window.addEventListener("resize", this.updateScreenWidth);
+    }
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.updateScreenWidth);
@@ -339,6 +361,57 @@ export default {
   color: #666;
   font-weight: 500;
 }
+
+.players-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: var(--text-light, #666);
+  font-weight: 600;
+}
+
+.players-loading-spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0.25rem solid rgba(13, 110, 253, 0.2);
+  border-top-color: var(--primary-color, #0d6efd);
+  border-radius: 50%;
+  animation: players-loading-spin 0.8s linear infinite;
+}
+
+.players-loading-progress {
+  width: min(100%, 20rem);
+  height: 0.35rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(13, 110, 253, 0.12);
+}
+
+.players-loading-progress-bar {
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary-color, #0d6efd);
+  animation: players-loading-progress 1.25s ease-in-out infinite;
+}
+
+@keyframes players-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes players-loading-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
 .player-link {
   color: #007bff;
   text-decoration: underline;
