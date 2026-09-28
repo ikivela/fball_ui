@@ -19,6 +19,35 @@
               </div>
 
               <div class="filters-content">
+                <!-- All-time Stats -->
+                <div class="filter-section">
+                  <h4 class="filter-section-title">Kaikkien aikojen pistepörssi</h4>
+                  <div class="filter-options-grid">
+                    <button
+                      class="filter-option-btn alltime-btn"
+                      :class="{ active: showAlltime && !alltimeGender }"
+                      @click="loadAlltimeStats('')"
+                    >
+                      <i class="fas fa-star me-1"></i>
+                      Kaikki
+                    </button>
+                    <button
+                      class="filter-option-btn alltime-btn"
+                      :class="{ active: showAlltime && alltimeGender === 'miesten' }"
+                      @click="loadAlltimeStats('miesten')"
+                    >
+                      Miesten
+                    </button>
+                    <button
+                      class="filter-option-btn alltime-btn"
+                      :class="{ active: showAlltime && alltimeGender === 'naisten' }"
+                      @click="loadAlltimeStats('naisten')"
+                    >
+                      Naisten
+                    </button>
+                  </div>
+                </div>
+
                 <!-- Season Filter -->
                 <div class="filter-section">
                   <h4 class="filter-section-title">Valitse kausi</h4>
@@ -62,7 +91,7 @@
       <div class="container">
         <div class="row">
           <div class="col-12">
-            <div v-if="!currentSeason" class="no-selection">
+            <div v-if="!currentSeason && !showAlltime" class="no-selection">
               <div class="no-selection-content">
                 <i class="fas fa-chart-line"></i>
                 <h3>Valitse kausi</h3>
@@ -100,7 +129,31 @@
                 </div>
 
                 <div class="stats-table">
-                  <div class="table-responsive">
+                  <!-- Mobile: card list -->
+                  <div v-if="isSmallScreen" class="mobile-stats-list">
+                    <article
+                      v-for="(player, index) in key.stats"
+                      :key="player.name"
+                      class="mobile-stat-card"
+                    >
+                      <div class="mobile-stat-top">
+                        <span
+                          class="rank-badge"
+                          :class="getRankClass(index + 1)"
+                        >{{ index + 1 }}</span>
+                        <span class="mobile-stat-name">{{ player.name }}</span>
+                        <span class="mobile-stat-total">{{ player.total || 0 }}</span>
+                      </div>
+                      <div class="mobile-stat-details">
+                        <span class="mobile-stat-item"><span class="mobile-stat-item-label">M</span>{{ player.goals || 0 }}</span>
+                        <span class="mobile-stat-item"><span class="mobile-stat-item-label">S</span>{{ player.assists || 0 }}</span>
+                        <span class="mobile-stat-item"><span class="mobile-stat-item-label">J</span>{{ player.penalties || 0 }}</span>
+                      </div>
+                    </article>
+                  </div>
+
+                  <!-- Desktop: table -->
+                  <div v-else class="table-responsive">
                     <table class="table table-hover">
                       <thead>
                         <tr>
@@ -166,8 +219,11 @@ export default {
   components: {},
   data() {
     return {
+      isSmallScreen: false,
       seasonStats: [],
       allStats: [],
+      showAlltime: false,
+      alltimeGender: "",
       currentSeason: "",
       currentClass: "",
       fields: [
@@ -202,6 +258,8 @@ export default {
   },
 
   async mounted() {
+    this.updateScreenWidth();
+    window.addEventListener("resize", this.updateScreenWidth);
     try {
       console.log("baseurl", this.baseurl);
       this.allStats = await this.getStats();
@@ -209,6 +267,10 @@ export default {
       console.error("Error fetching stats:", error);
       this.allStats = [];
     }
+  },
+
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateScreenWidth);
   },
 
   computed: {
@@ -255,7 +317,28 @@ export default {
   },
 
   methods: {
+    updateScreenWidth() {
+      this.isSmallScreen = window.matchMedia("(max-width: 480px)").matches;
+    },
+
+    async loadAlltimeStats(gender) {
+      this.showAlltime = true;
+      this.alltimeGender = gender;
+      this.currentSeason = "";
+      this.currentClass = "";
+      try {
+        const params = gender ? { gender } : {};
+        const response = await axios.get(`${this.baseurl}/alltime-stats`, { params });
+        const title = gender ? `Kaikki kaudet (${gender})` : "Kaikki kaudet";
+        this.seasonStats = [{ season: title, class: "", stats: response.data }];
+      } catch (error) {
+        console.error("Error fetching alltime stats:", error);
+        this.seasonStats = [];
+      }
+    },
+
     setSeason(season) {
+      this.showAlltime = false;
       this.currentSeason = season;
       this.currentClass = "";
       this.seasonStats = this.allStats.filter((x) => x.season === season);
@@ -355,6 +438,10 @@ export default {
               background-color: var(--primary-color);
               border-color: var(--primary-color);
               color: white;
+            }
+
+            &.alltime-btn {
+              font-weight: 600;
             }
           }
         }
@@ -492,19 +579,11 @@ export default {
       font-weight: 600;
       font-size: 0.875rem;
 
-      &.rank-gold {
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        color: white;
-      }
-
-      &.rank-silver {
-        background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
-        color: white;
-      }
-
+      &.rank-gold,
+      &.rank-silver,
       &.rank-bronze {
-        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-        color: white;
+        background: var(--bg-light);
+        color: var(--text-dark);
       }
 
       &.rank-normal {
@@ -526,18 +605,18 @@ export default {
     font-size: 0.875rem;
 
     &.goals {
-      background: #10b981;
-      color: white;
+      background: var(--bg-light);
+      color: var(--text-dark);
     }
 
     &.assists {
-      background: #3b82f6;
-      color: white;
+      background: var(--bg-light);
+      color: var(--text-dark);
     }
 
     &.penalties {
-      background: #ef4444;
-      color: white;
+      background: var(--bg-light);
+      color: var(--text-dark);
     }
 
     &.total {
@@ -597,6 +676,103 @@ export default {
 }
 .stats-table .table td {
   padding: 0.4rem 0.5rem;
+}
+
+// Mobile stats cards
+.mobile-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mobile-stat-card {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.mobile-stat-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+
+  .rank-badge {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+
+    &.rank-gold {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: white;
+    }
+    &.rank-silver {
+      background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+      color: white;
+    }
+    &.rank-bronze {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: white;
+    }
+    &.rank-normal {
+      background: var(--bg-light);
+      color: var(--text-dark);
+    }
+  }
+}
+
+.mobile-stat-name {
+  flex: 1;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-dark);
+}
+
+.mobile-stat-total {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  background: var(--primary-color);
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  min-width: 2rem;
+  text-align: center;
+}
+
+.mobile-stat-details {
+  display: flex;
+  gap: 0.8rem;
+  padding-left: 2.25rem;
+}
+
+.mobile-stat-item {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.mobile-stat-item-label {
+  font-weight: 500;
+  color: var(--text-light);
+  margin-right: 0.2rem;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .tilastot-view .container {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
 }
 
 .games-card {

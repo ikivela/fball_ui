@@ -11,6 +11,7 @@
             class="form-control"
             id="password"
             required
+            autocomplete="current-password"
           />
         </div>
         <button type="submit" class="btn btn-primary w-100">Kirjaudu</button>

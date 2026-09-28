@@ -6,13 +6,19 @@
         <router-link class="navbar-brand d-flex align-items-center" to="/">
           <img
             height="40"
-            src="https://static.jopox.fi/nibacos/imagebank/40875_huge.png"
-            alt="Nibacos Logo"
+            :src="clubLogoUrl"
+            :alt="clubName + ' Logo'"
             class="me-3"
           />
           <div class="brand-text">
-            <h1 class="brand-title">Nibacos</h1>
+            <h1 class="brand-title">{{ clubName }}</h1>
             <p class="brand-subtitle">Ottelut & Tilastot</p>
+            <span
+              v-if="currentPageLabel && $route.name !== 'LoginView'"
+              class="current-page-indicator"
+            >
+              {{ currentPageLabel }}
+            </span>
           </div>
         </router-link>
 
@@ -36,6 +42,16 @@
               </router-link>
             </li>
             <li class="nav-item">
+              <router-link class="nav-link" to="/ottelut" @click="closeNavbar">
+                <i class="fas fa-calendar-alt me-2"></i>Ottelut
+              </router-link>
+            </li>
+              <li class="nav-item">
+              <router-link class="nav-link" to="/sarjataulukot" @click="closeNavbar">
+                <i class="fas fa-chart-bar me-2"></i>Sarjataulukot
+              </router-link>
+            </li>
+            <li class="nav-item">
               <router-link class="nav-link" to="/tilastot" @click="closeNavbar">
                 <i class="fas fa-chart-bar me-2"></i>Tilastot
               </router-link>
@@ -48,6 +64,11 @@
             <li class="nav-item">
               <router-link class="nav-link" to="/vertaile" @click="closeNavbar">
                 <i class="fas fa-table me-2"></i>Vertaile sarjoja
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link class="nav-link" to="/tietoja" @click="closeNavbar">
+                <i class="fas fa-info-circle me-2"></i>Tietoja
               </router-link>
             </li>
           </ul>
@@ -83,7 +104,29 @@
 export default {
   name: "App",
   data() {
-    return {};
+    return {
+      clubName: import.meta.env.VITE_APP_CLUB_NAME || "Club Name",
+      clubLogoUrl: import.meta.env.VITE_APP_LOGO_URL || "",
+    };
+  },
+  computed: {
+    currentPageLabel() {
+      const routeName = this.$route?.name;
+      const labels = {
+        AjankohtaisetView: "Ajankohtaiset",
+        OttelutView: "Ottelut",
+        SarjataulukotView: "Sarjataulukot",
+        TilastotView: "Tilastot",
+        PelaajatView: "Pelaajat",
+        PelaajaView: "Pelaajakortti",
+        OtteluView: "Otteluraportti",
+        ClassMatrix: "Vertailu",
+        TietojaView: "Tietoja",
+        LoginView: "",
+      };
+
+      return labels[routeName] || "";
+    },
   },
 
   async mounted() {
@@ -184,22 +227,40 @@ body {
     text-decoration: none;
     color: white;
 
-    .brand-text {
-      .brand-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 0;
-        color: white;
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+
+        .brand-title {
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin: 0;
+          color: white;
       }
 
-      .brand-subtitle {
-        font-size: 0.875rem;
-        margin: 0;
-        color: rgba(255, 255, 255, 0.8);
-        font-weight: 400;
+        .brand-subtitle {
+          font-size: 0.875rem;
+          margin: 0;
+          color: rgba(255, 255, 255, 0.8);
+          font-weight: 400;
+        }
+
+        .current-page-indicator {
+          display: inline-flex;
+          align-items: center;
+          align-self: flex-start;
+          margin-top: 0.35rem;
+          padding: 0.18rem 0.55rem;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.16);
+          color: white;
+          font-size: 0.74rem;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        }
       }
     }
-  }
 
   .navbar-nav {
     .nav-link {
@@ -311,12 +372,41 @@ body {
         .brand-subtitle {
           font-size: 0.75rem;
         }
+
+        .current-page-indicator {
+          font-size: 0.68rem;
+          margin-top: 0.25rem;
+          padding: 0.16rem 0.48rem;
+        }
       }
     }
   }
 
   .main-content {
     padding: 1rem 0;
+  }
+}
+
+@media (max-width: 992px) {
+  .navbar .container,
+  .main-content .container,
+  .footer .container {
+    max-width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar .container,
+  .main-content .container,
+  .footer .container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .main-content {
+    padding: 0.5rem 0;
   }
 }
 

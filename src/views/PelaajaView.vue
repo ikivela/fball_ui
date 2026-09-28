@@ -7,18 +7,21 @@
             <div v-if="loading" class="loading">Ladataan...</div>
             <div v-else-if="error" class="error">{{ error }}</div>
             <div v-else-if="player">
-              <h2>{{ player.firstname }} {{ player.lastname }}</h2>
-              <div class="player-meta">
-                <span
-                  ><strong>Syntymävuosi:</strong>
-                  {{ player.birth_year || player.birth_day || "-" }}</span
-                >
-                <br />
-                <span><strong>Kotiseura:</strong> {{ kotiseura }}</span>
+              <div class="player-profile-card">
+                <h2>{{ player.firstname }} {{ player.lastname }}</h2>
+                <div class="player-meta">
+                  <span>
+                    <strong>Syntymävuosi:</strong>
+                    {{ player.birth_year || player.birth_day || "-" }}
+                  </span>
+                  <span><strong>Kotiseura:</strong> {{ kotiseura }}</span>
+                  <span v-if="totalGames > 0"><strong>Otteluita:</strong> {{ totalGames }}</span>
+                </div>
               </div>
-              <div v-if="rinnakkaisedustukset.length">
+
+              <div v-if="rinnakkaisedustukset.length" class="player-section">
                 <h5>Rinnakkaisedustukset</h5>
-                <ul>
+                <ul class="parallel-list">
                   <li
                     v-for="edustus in rinnakkaisedustukset"
                     :key="edustus.key"
@@ -29,9 +32,24 @@
                   </li>
                 </ul>
               </div>
-              <div v-if="seasons.length">
+
+              <div v-if="seasons.length" class="player-section">
                 <h4>Kaudet ja joukkueet</h4>
-                <table class="table table-sm table-bordered">
+                <div v-if="isSmallScreen" class="season-mobile-list">
+                  <article
+                    v-for="row in allTeamRows"
+                    :key="row.key"
+                    class="season-mobile-card"
+                  >
+                    <div class="season-mobile-top">
+                      <span class="season-mobile-year">{{ row.season }}</span>
+                      <span class="season-mobile-games">{{ row.games }} ott.</span>
+                    </div>
+                    <div class="season-mobile-team">{{ row.teamName }}</div>
+                    <div class="season-mobile-category">{{ row.categoryName }}</div>
+                  </article>
+                </div>
+                <table v-else class="table table-sm table-bordered">
                   <thead>
                     <tr>
                       <th>Kausi</th>
@@ -53,35 +71,102 @@
               <div v-else>
                 <em>Ei kausia tai joukkueita löytynyt.</em>
               </div>
-              <div v-if="Object.keys(matchesBySeason).length">
+
+              <div v-if="Object.keys(matchesBySeason).length > 0" class="player-section">
                 <h4 class="mt-4">Pelit</h4>
-                <div class="mb-2">
-                  <label for="season-select"
-                    ><strong>Valitse kausi:</strong></label
-                  >
+                <div class="matches-toolbar mb-2">
+                  <label for="season-select"><strong>Valitse kausi:</strong></label>
                   <select
                     id="season-select"
                     v-model="selectedSeason"
                     class="form-select form-select-sm w-auto d-inline-block ml-2"
                   >
                     <option
-                      v-for="season in Object.keys(matchesBySeason)
-                        .sort()
-                        .reverse()"
+                      v-for="season in Object.keys(matchesBySeason).sort().reverse()"
                       :key="season"
                       :value="season"
                     >
                       {{ season }}
                     </option>
                   </select>
+                  <select
+                    id="category-select"
+                    v-model="selectedCategory"
+                    class="form-select form-select-sm w-auto d-inline-block ml-2"
+                  >
+                    <option :value="''" key="empty-category">-</option>
+                    <option
+                      v-for="category_name in matchesBySeason[selectedSeason]
+                        .map((m) => m.category_name)
+                        .filter((value, index, self) => self.indexOf(value) === index)"
+                      :key="category_name"
+                      :value="category_name"
+                    >
+                      {{ category_name }}
+                    </option>
+                  </select>
+                  <span class="ppg-inline">
+                    Pisteitä/peli:
+                    {{
+                      filteredMatches.length > 0
+                        ? (
+                            filteredMatches.reduce((sum, match) => {
+                              return (
+                                sum +
+                                Number(match.player_goals || 0) +
+                                Number(match.player_assists || 0)
+                              );
+                            }, 0) / filteredMatches.length
+                          ).toFixed(2)
+                        : "0.00"
+                    }}
+                  </span>
                 </div>
-                <table class="table table-sm table-bordered">
+
+                <div v-if="isSmallScreen" class="match-mobile-list">
+                  <article
+                    v-for="match in filteredMatches"
+                    :key="match.match_id"
+                    class="match-mobile-card"
+                  >
+                    <div class="match-mobile-top">
+                      <span>{{ match.date || "-" }}</span>
+                      <span>{{ match.category_name || "-" }}</span>
+                    </div>
+                    <div class="match-mobile-game">
+                      {{
+                        match.team_A_name && match.team_B_name
+                          ? match.team_A_name + " vs " + match.team_B_name
+                          : match.team_name || "-"
+                      }}
+                    </div>
+                    <div class="match-mobile-bottom">
+                      <router-link
+                        v-if="hasClubMatchReport(match)"
+                        :to="matchReportRoute(match)"
+                        class="match-mobile-score"
+                      >
+                        {{ match.fs_A + " - " + match.fs_B }}
+                      </router-link>
+                      <span v-else class="match-mobile-score muted">-</span>
+                      <span
+                        v-if="match.player_goals + match.player_assists > 0"
+                        class="match-mobile-points"
+                      >
+                        {{ match.player_goals || 0 }} + {{ match.player_assists || 0 }}
+                      </span>
+                    </div>
+                  </article>
+                </div>
+
+                <table v-else class="table table-sm table-bordered">
                   <thead>
                     <tr>
                       <th>Päivä</th>
                       <th>Sarja</th>
                       <th>Ottelu</th>
                       <th>Tulos</th>
+                      <th>Tehot</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -97,44 +182,20 @@
                       </td>
                       <td>
                         <router-link
-                          v-if="
-                            match.fs_A &&
-                            match.fs_B &&
-                            ((match.team_A_name &&
-                              match.team_A_name
-                                .toLowerCase()
-                                .includes('nibacos')) ||
-                              (match.team_B_name &&
-                                match.team_B_name
-                                  .toLowerCase()
-                                  .includes('nibacos')))
-                          "
-                          :to="{
-                            name: 'OtteluViewQuery',
-                            query: {
-                              season:
-                                (match.season_id || match.season || '').split(
-                                  '-'
-                                )[1] ||
-                                match.season_id ||
-                                match.season,
-                              gameid:
-                                match.match_id ||
-                                match.UniqueID ||
-                                match.gameid,
-                            },
-                          }"
+                          v-if="hasClubMatchReport(match)"
+                          :to="matchReportRoute(match)"
                           class="text-primary"
                           style="cursor: pointer; text-decoration: underline"
                         >
                           {{ match.fs_A + " - " + match.fs_B }}
                         </router-link>
-                        <span
-                          v-else
-                          class="text-primary"
-                          style="text-decoration: underline"
-                          >-</span
-                        >
+                        <span v-else></span>
+                      </td>
+                      <td>
+                        <span v-if="match.player_goals + match.player_assists > 0">
+                          {{ match.player_goals || 0 }} +
+                          {{ match.player_assists || 0 }}
+                        </span>
                       </td>
                     </tr>
                   </tbody>
@@ -149,8 +210,8 @@
 </template>
 
 <script>
-import axios from "axios";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import { mapActions } from "vuex";
 
 export default {
   name: "PelaajaView",
@@ -166,15 +227,23 @@ export default {
       rinnakkaisedustukset: [],
       allMatchSeasons: [],
       selectedSeason: "",
+      selectedCategory: "",
       matchesBySeason: [],
       gameReport: null,
       reportLoading: false,
       reportError: "",
       showGameReport: false,
+      clubName: import.meta.env.VITE_APP_CLUB_NAME || "",
+      isSmallScreen: false,
     };
   },
   mounted() {
     this.fetchPlayer();
+    this.updateScreenWidth();
+    window.addEventListener("resize", this.updateScreenWidth);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateScreenWidth);
   },
   watch: {
     "$route.params.player_id": {
@@ -187,8 +256,8 @@ export default {
     },
   },
   methods: {
+    ...mapActions(["fetchPlayerById"]),
     processTeams() {
-      // Rakennetaan kaudet ja joukkueet pelimäärineen player_data:sta
       const pdata = this.player.player_data
         ? typeof this.player.player_data === "string"
           ? JSON.parse(this.player.player_data)
@@ -199,7 +268,7 @@ export default {
         this.seasons = [];
         return;
       }
-      // { season: { teamKey: { teamName, categoryName, games } } }
+
       const map = {};
       pdata.matches.forEach((match) => {
         const season = match.season_id || match.season || "-";
@@ -215,7 +284,7 @@ export default {
         }
         map[season][teamKey].games += 1;
       });
-      // Muodosta lista kausista ja joukkueista
+
       this.seasons = Object.keys(map).sort().reverse();
       this.teamsBySeason = {};
       this.seasons.forEach((season) => {
@@ -223,14 +292,12 @@ export default {
       });
     },
     processSeuraEdustukset() {
-      // Kotiseura juuritasolta
       const pdata = this.player.player_data
         ? typeof this.player.player_data === "string"
           ? JSON.parse(this.player.player_data)
           : this.player.player_data
         : null;
       this.kotiseura = pdata && pdata.club_name ? pdata.club_name : "-";
-      // Rinnakkaisedustukset teams-taulukosta
       this.rinnakkaisedustukset = [];
       if (pdata && Array.isArray(pdata.teams)) {
         this.rinnakkaisedustukset = pdata.teams
@@ -238,7 +305,7 @@ export default {
             (t) =>
               t.parallel_representation === "1" &&
               t.club_name &&
-              t.club_name.toLowerCase() !== "nibacos kokkola"
+              t.club_name.toLowerCase() !== `${this.clubName.toLowerCase()} kokkola`
           )
           .map((t) => ({
             club_name: t.club_name,
@@ -268,7 +335,6 @@ export default {
         this.selectedSeason = "";
         return;
       }
-      // Ryhmittele pelit kausittain
       const bySeason = {};
       pdata.matches.forEach((match) => {
         const season = match.season_id || match.season || "-";
@@ -284,11 +350,9 @@ export default {
       this.error = "";
       window.scrollTo({ top: 0, behavior: "smooth" });
       try {
-        const baseurl = import.meta.env.VITE_APP_BACKEND_URL;
-        const response = await axios.get(
-          `${baseurl}/players?player_id=${this.$route.params.player_id}`
-        );
-        this.player = response.data;
+        this.player = await this.fetchPlayerById({
+          playerId: this.$route.params.player_id,
+        });
         this.processTeams();
         this.processSeuraEdustukset();
         this.processMatches();
@@ -298,18 +362,50 @@ export default {
         this.loading = false;
       }
     },
+    updateScreenWidth() {
+      this.isSmallScreen = window.matchMedia("(max-width: 480px)").matches;
+    },
+    hasClubMatchReport(match) {
+      return !!(
+        match.fs_A &&
+        match.fs_B &&
+        ((match.team_A_name &&
+          match.team_A_name.toLowerCase().includes(this.clubName.toLowerCase())) ||
+          (match.team_B_name &&
+            match.team_B_name.toLowerCase().includes(this.clubName.toLowerCase())))
+      );
+    },
+    matchReportRoute(match) {
+      return {
+        name: "OtteluView",
+        params: {
+          season:
+            (match.season_id || match.season || "").split("-")[1] ||
+            match.season_id ||
+            match.season,
+          game_id: match.match_id || match.UniqueID || match.gameid,
+        },
+      };
+    },
   },
   computed: {
     filteredMatches() {
-      if (!this.selectedSeason || !this.matchesBySeason[this.selectedSeason])
+      if (!this.selectedSeason || !this.matchesBySeason[this.selectedSeason]) {
         return [];
-      // Lajittele pelit uusimmat ensin
+      }
+
+      if (!this.selectedCategory || this.selectedCategory === "") {
+        return this.matchesBySeason[this.selectedSeason]
+          .slice()
+          .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      }
+
       return this.matchesBySeason[this.selectedSeason]
+        .filter((match) => match.category_name === this.selectedCategory)
         .slice()
         .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
     },
     allTeamRows() {
-      // Palauttaa kaikki (season, team) rivit taulukkoon
       const rows = [];
       this.seasons.forEach((season) => {
         (this.teamsBySeason[season] || []).forEach((team) => {
@@ -324,15 +420,18 @@ export default {
       });
       return rows;
     },
+    totalGames() {
+      return this.allTeamRows.reduce((sum, row) => sum + (row.games || 0), 0);
+    },
     formattedGameReportTitle() {
       if (
         !this.gameReport ||
         !this.gameReport.date ||
         !this.gameReport.homeName ||
         !this.gameReport.awayName
-      )
+      ) {
         return "";
-      // Oletetaan että date on muodossa yyyy-mm-dd[ hh:mm:ss]
+      }
       let dateStr = this.gameReport.date;
       let timeStr = "";
       if (dateStr.includes(" ")) {
@@ -350,71 +449,97 @@ export default {
 
 <style scoped>
 @import "../assets/_shared-sections.scss";
+
 .player-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
   margin-bottom: 1rem;
   color: #444;
 }
+
+.player-profile-card,
+.player-section {
+  margin-bottom: 1.25rem;
+}
+
+.parallel-list {
+  padding-left: 1.1rem;
+}
+
 .season-block {
   margin-bottom: 2rem;
 }
+
 .season-title {
   font-weight: 600;
   margin-bottom: 0.5rem;
   color: #333;
 }
+
 .loading {
   color: #888;
   font-size: 1.2rem;
 }
+
 .error {
   color: #b00;
   font-weight: 600;
 }
+
 .mt-4 {
   margin-top: 2rem;
 }
+
 .ml-2 {
   margin-left: 0.5rem;
 }
+
 .timeline-container {
   overflow-x: auto;
   margin-bottom: 1.5rem;
 }
+
 .timeline {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   position: relative;
 }
+
 .timeline-row {
   display: flex;
   align-items: center;
 }
+
 .timeline-col {
   flex: 1 1 0;
   min-width: 0;
 }
+
 .timeline-col.text-end {
   text-align: right;
   justify-content: flex-end;
   display: flex;
 }
+
 .timeline-col.text-start {
   text-align: left;
   justify-content: flex-start;
   display: flex;
 }
+
 .timeline-time-col {
-  flex: 0 0 70px; /* kiinteä leveys, säädä tarvittaessa */
+  flex: 0 0 70px;
   max-width: 80px;
   min-width: 60px;
   display: flex;
   justify-content: center;
   align-items: center;
-  /* Lisää marginaali oikealle, jotta oikeanpuoleinen nimi ei ole kiinni */
   margin-right: 12px;
   margin-left: 12px;
 }
+
 .timeline-time-box {
   background: #0d6efd;
   color: #fff;
@@ -431,19 +556,112 @@ export default {
   justify-content: center;
   align-items: center;
 }
+
 .timeline-event-content {
   display: inline-flex;
   align-items: center;
   word-break: break-word;
   max-width: 220px;
 }
+
 .player-link {
-  color: #007bff; /* Linkin väri */
-  text-decoration: none; /* Poista allekirjoitus */
-  &:hover {
-    text-decoration: underline; /* Väri muuttuu kun hover */
-  }
+  color: #007bff;
+  text-decoration: none;
 }
+
+.player-link:hover {
+  text-decoration: underline;
+}
+
+.modal-lg {
+  max-width: 700px;
+}
+
+.table-sm td,
+.table-sm th {
+  padding: 0.2rem 0.5rem;
+}
+
+.games-card {
+  padding: 2rem 2rem 1.5rem 2rem;
+}
+
+.season-mobile-list,
+.match-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.season-mobile-card,
+.match-mobile-card {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.85rem 0.9rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.season-mobile-top,
+.match-mobile-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-bottom: 0.35rem;
+}
+
+.season-mobile-team,
+.match-mobile-game {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+.season-mobile-category {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  color: var(--primary-color);
+}
+
+.matches-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ppg-inline {
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.match-mobile-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.55rem;
+}
+
+.match-mobile-score {
+  color: var(--primary-color);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.match-mobile-score.muted {
+  color: var(--text-light);
+  text-decoration: none;
+}
+
+.match-mobile-points {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
 @media (max-width: 768px) {
   .timeline-dot {
     width: 2em;
@@ -451,14 +669,29 @@ export default {
     font-size: 0.95em;
   }
 }
-.modal-lg {
-  max-width: 700px;
+
+@media (max-width: 480px) {
+  .games-card {
+    padding: 0.85rem;
+  }
+
+  .player-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .matches-toolbar {
+    align-items: stretch;
+  }
+
+  .matches-toolbar .form-select {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .ppg-inline {
+    display: block;
+    width: 100%;
+  }
 }
-.table-sm td,
-.table-sm th {
-  padding: 0.2rem 0.5rem;
-}
-.games-card {
-  padding: 2rem 2rem 1.5rem 2rem;
-}
-</style> 
+</style>

@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import PelaajaView from '../views/PelaajaView.vue';
 
 const routes = [
   {
@@ -9,15 +8,15 @@ const routes = [
   },
   {
     path: "/",
-    name: "OttelutView",
+    name: "AjankohtaisetView",
     component: () =>
       import(
-        /* webpackChunkName: "Ottelut" */ "../views/OttelutView.vue"
+        /* webpackChunkName: "Ajankohtaiset" */ "../views/AjankohtaisetView.vue"
       ),
   },
   {
     path: "/ottelut",
-    name: "OttelutViewAlias",
+    name: "OttelutView",
     component: () =>
       import(/* webpackChunkName: "Ottelut" */ "../views/OttelutView.vue"),
   },
@@ -30,25 +29,17 @@ const routes = [
   {
     path: "/tilastot",
     name: "TilastotView",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
+
     component: () =>
       import(/* webpackChunkName: "About" */ "../views/TilastotView.vue"),
   },
   {
     path: '/vertaile',
     name: 'ClassMatrix',
-    component: () => import('../views/ClassMatrixView.vue')
+    component: () => import('../views/VertailuView.vue')
   },
   {
-    path: '/ottelu',
-    name: 'OtteluViewQuery',
-    component: () => import('../views/OtteluView.vue'),
-    props: false
-  },
-  {
-    path: '/ottelu/:game_id',
+    path: '/ottelu/:season/:game_id',
     name: 'OtteluView',
     component: () => import('../views/OtteluView.vue'),
     props: true
@@ -56,8 +47,18 @@ const routes = [
   {
     path: '/pelaaja/:player_id',
     name: 'PelaajaView',
-    component: PelaajaView,
+    component: () => import('../views/PelaajaView.vue'),
     props: true
+  },
+  {
+    path: '/sarjataulukot',
+    name: 'SarjataulukotView',
+    component: () => import('../views/SarjataulukotView.vue')
+  },
+  {
+    path: '/tietoja',
+    name: 'TietojaView',
+    component: () => import('../views/TietojaView.vue')
   },
   /* {
      path: '/pelaajat',
@@ -67,12 +68,25 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory((import.meta.env.VITE_BASE_PATH) || '/'),
+  history: createWebHistory(import.meta.env.VITE_APP_BASE_URL || '/'),
   routes,
-  scrollBehavior() {
-    // Always scroll to top
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    }
+
     return { top: 0 };
   },
 });
 
 export default router;
+
+// Autentikointitarkistus kaikille reiteille
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('apitoken');
+  if (to.path !== '/login' && !token) {
+    next('/login');
+  } else {
+    next();
+  }
+});

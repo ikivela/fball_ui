@@ -9,9 +9,10 @@ Create `.env` and modify following variables
 ```
 VITE_APP_SITE_TITLE=Demo site
 VITE_APP_BACKEND_URL=http://yoursite.com
+VITE_BASE_PATH=/your-club/
+VITE_APP_CLUB_NAME=YourClub
+VITE_APP_LOGO_URL=https://example.com/logo.png
 ```
-
-In `vue.config.js`, line 13, set `publicPath`. Root path '/' is used in development mode
 
 ## Project setup
 
