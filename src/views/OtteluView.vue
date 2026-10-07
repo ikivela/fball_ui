@@ -23,8 +23,13 @@
               <h1 class="team-name">{{ gameReport.homeName }}</h1>
             </div>
             <div class="score-block">
-              <div class="score-caption">Lopputulos</div>
+              <div class="score-caption">{{ gameReport.periodWins ? "Erävoitot" : "Lopputulos" }}</div>
               <div class="score-value">{{ finalScore }}</div>
+              <template v-if="gameReport.periodWins">
+                <div v-for="period in periodScores" :key="period.label" class="score-caption">
+                  ({{ period.score }})
+                </div>
+              </template>
             </div>
             <div class="team-block away">
               <div class="team-label">Vieras</div>
@@ -370,8 +375,11 @@ export default {
   computed: {
     finalScore() {
       if (!this.gameReport) return "-";
+      if (this.gameReport.periodWins) return this.gameReport.periodWins;
       const home = this.gameReport.homeGoals?.length;
       const away = this.gameReport.awayGoals?.length;
+      // Nuorten peleissä maalintekijöitä ei aina kirjata, jolloin käytetään lopputulosta
+      if (!home && !away && this.gameReport.totalScore) return this.gameReport.totalScore;
       if (home == null || away == null) return "-";
       return `${home}-${away}`;
     },
@@ -641,9 +649,14 @@ export default {
           competitionName: root.competition_name || root.category_name || "",
           attendance: root.attendance || "",
           periodScores: this.getPeriodScores(root),
+          periodWins: this.getPeriodWins(root),
+          totalScore:
+            root.fs_A != null && root.fs_B != null && root.fs_A !== "" && root.fs_B !== ""
+              ? `${root.fs_A}-${root.fs_B}`
+              : "",
           homeSaves: this.getTeamSaves(homeLineup),
           awaySaves: this.getTeamSaves(awayLineup),
-          streamUrl: root.stream || "",
+          streamUrl: this.safeHttpUrl(root.stream),
           class: className,
           allEvents,
         };
@@ -839,6 +852,16 @@ export default {
 
       return [];
     },
+    // Hyväksy vain http(s)-linkit, ettei esim. javascript:-osoite päädy href-attribuuttiin
+    safeHttpUrl(value) {
+      if (typeof value !== "string" || !value) return "";
+      try {
+        const url = new URL(value);
+        return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+      } catch (e) {
+        return "";
+      }
+    },
     getRefereesFromRoot(root) {
       const directNames = [
         root?.referee_1_name,
@@ -857,6 +880,26 @@ export default {
         root?.judges ||
         root?.referee;
       return this.toArray(source);
+    },
+    // Nuorten erävoittopeleissä (match_type "double") tulos on erävoitot, esim. "0-2"
+    getPeriodWins(root) {
+      if (root?.match_type !== "double") return "";
+      const periodCount = Number(root.period_count) || 0;
+      let winsA = 0;
+      let winsB = 0;
+      let played = 0;
+      for (let i = 1; i <= periodCount; i++) {
+        const scoreA = root[`p${i}s_A`];
+        const scoreB = root[`p${i}s_B`];
+        if (scoreA == null || scoreA === "" || scoreB == null || scoreB === "") continue;
+        played++;
+        const winner =
+          root[`p${i}_winner`] ||
+          (Number(scoreA) > Number(scoreB) ? "A" : Number(scoreB) > Number(scoreA) ? "B" : "");
+        if (winner === "A") winsA++;
+        else if (winner === "B") winsB++;
+      }
+      return played ? `${winsA}-${winsB}` : "";
     },
     getPeriodScores(root) {
       const periods = [

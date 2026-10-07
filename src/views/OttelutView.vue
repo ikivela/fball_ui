@@ -133,7 +133,7 @@
                             class="mobile-score-pill"
                             :class="getResultColor(game)"
                           >
-                            {{ game.Result == "0-0" ? "" : game.Result }}
+                            <span v-if="game.PeriodScores" class="period-score-lines"><span v-for="(period, i) in game.PeriodScores.split(', ')" :key="i" class="period-score-line">{{ period }}</span></span><template v-else>{{ game.Result == "0-0" ? "" : game.Result }}</template>
                           </router-link>
                           <a
                             v-else-if="game.GameDate >= today"
@@ -159,7 +159,7 @@
                             class="mobile-score-pill"
                             :class="getResultColor(game)"
                           >
-                            {{ game.Result == "0-0" ? "" : game.Result }}
+                            <span v-if="game.PeriodScores" class="period-score-lines"><span v-for="(period, i) in game.PeriodScores.split(', ')" :key="i" class="period-score-line">{{ period }}</span></span><template v-else>{{ game.Result == "0-0" ? "" : game.Result }}</template>
                           </router-link>
                           <span class="mobile-team-name mobile-away-team">
                             {{ game.AwayTeamName }}
@@ -302,7 +302,7 @@
                                     class="result-score"
                                     :class="getResultColor(game)"
                                   >
-                                    {{ game.Result == '0-0' ? '' : game.Result }}
+                                    <span v-if="game.PeriodScores" class="period-score-lines"><span v-for="(period, i) in game.PeriodScores.split(', ')" :key="i" class="period-score-line">{{ period }}</span></span><template v-else>{{ game.Result == '0-0' ? '' : game.Result }}</template>
                                   </span>
                                 </router-link>
                               </div>
@@ -1094,6 +1094,17 @@ export default {
             ties++;
           }
 
+          // Erävoittopeleissä Result on erävoitot, maalit tulevat GoalsResultista
+          if (game.PeriodScores && typeof game.GoalsResult === "string") {
+            const [homeGoals, awayGoals] = game.GoalsResult.split("-").map((s) =>
+              parseInt(s.trim(), 10)
+            );
+            if (!isNaN(homeGoals) && !isNaN(awayGoals)) {
+              teamScore = isHomeTeam ? homeGoals : awayGoals;
+              opponentScore = isHomeTeam ? awayGoals : homeGoals;
+            }
+          }
+
           totalGoals += teamScore;
           totalGoalsAgainst += opponentScore;
           validGames++;
@@ -1154,6 +1165,16 @@ export default {
 
 <style lang="scss" scoped>
 @use "@/assets/table-styles";
+// Erävoittopelien erätulokset allekkain tulos-badgessa
+.period-score-lines {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+.period-score-line {
+  white-space: nowrap;
+}
 .ottelut-view {
   min-height: 100vh;
 }
