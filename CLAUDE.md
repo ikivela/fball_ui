@@ -40,8 +40,10 @@ Backendin `.env`: `your_club_id` (368), `your_team_name`, `token` (Torneopal API
 - Erävoittopelit (`match_type: "double"`): tulos on erävoitot, maalit erikseen (`getPeriodWinResult`).
 - Rinnakkaisedustus (R-edustus): `teams[].parallel_representation === "1"` ja joukkueen seura ≠ pelaajan
   kotiseura (`club_id`). Oma seura voi olla myös R-edustuksen seura.
-- Nykyinen pelaaja = joukkue omassa seurassa tai kotiseura oma ja pelannut tällä/edellisellä kaudella
-  (`isCurrentClubPlayer`). Kausi vaihtuu elokuussa.
+- Nykyinen pelaaja = data päivitetty tällä kaudella (`players.last_updated` ≥ 1.8.) ja joukkue omassa seurassa
+  tai kotiseura oma ja pelannut tällä/edellisellä kaudella (`isCurrentClubPlayer`). Pelaajadata päivittyy
+  otteluajoissa vain kokoonpanoissa esiintyville; kaikki pelaajat päivitetään viikoittain
+  (`torneopal_fetch_playerdata.js`, pm2 `fball_update_players`).
 - Kentät ovat usein merkkijonoja (`"0"`, `""`); vertaa id:t `String(...)`-muodossa.
 
 ## Käytännöt
