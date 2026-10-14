@@ -68,6 +68,13 @@
                     >Junioreita (19v tai nuorempia)</b-form-checkbox
                   >
                 </div>
+                <div class="former-checkbox-group ms-3">
+                  <b-form-checkbox
+                    v-model="showFormerPlayers"
+                    class="former-checkbox"
+                    >Näytä myös entiset pelaajat</b-form-checkbox
+                  >
+                </div>
               </div>
               <b-form-group label="" label-for="search-input" class="mb-0 mr-3">
                 <b-form-input
@@ -130,6 +137,9 @@
                       <span v-if="player.gender">
                         {{ player.gender === "M" ? "Mies/poika" : "Nainen/tyttö" }}
                       </span>
+                      <span v-if="isFormerPlayer(player)" class="former-player">
+                        Nyt: {{ player.club_name || "-" }}
+                      </span>
                     </div>
                   </div>
                   <div class="player-mobile-stats">
@@ -168,6 +178,9 @@
                       :title="parallelTooltip(data.item)"
                       >R</span
                     >
+                    <span v-if="isFormerPlayer(data.item)" class="former-player">
+                      (nyt: {{ data.item.club_name || "-" }})
+                    </span>
                   </template>
                   <template #cell(games)="data">
                     {{ totalGames(data.item) }}
@@ -193,6 +206,7 @@ export default {
       genderFilterM: "M",
       genderFilterF: "F",
       juniorFilter: "",
+      showFormerPlayers: false,
       birthYearFilterMin: null,
       birthYearFilterMax: null,
       staticFields: [
@@ -253,6 +267,10 @@ export default {
           }`.toLowerCase();
           return fullName.includes(term);
         });
+      }
+      // Seurasta lähteneet pelaajat piiloon, ellei toisin valita
+      if (!this.showFormerPlayers) {
+        filtered = filtered.filter((p) => !this.isFormerPlayer(p));
       }
       // Sukupuolisuodatus
       const genders = [];
@@ -320,6 +338,10 @@ export default {
         this.sortBy = field;
         this.sortDesc = false;
       }
+    },
+    // Vanha backend ei palauta current_player-kenttää: silloin pelaajaa ei tulkita entiseksi
+    isFormerPlayer(player) {
+      return player.current_player === false;
     },
     totalGames(player) {
       if (!player.games_per_year) return 0;
@@ -473,6 +495,14 @@ export default {
   vertical-align: middle;
   cursor: help;
 }
+.former-player {
+  margin-left: 0.35rem;
+  font-size: 0.8rem;
+  color: #888;
+}
+.player-mobile-meta .former-player {
+  margin-left: 0;
+}
 .player-mobile-parallel {
   margin-top: 0.2rem;
   font-size: 0.75rem;
@@ -565,7 +595,8 @@ export default {
   .games-header .form-group,
   .games-header .form-control,
   .games-header .gender-checkbox-group,
-  .games-header .junior-checkbox-group {
+  .games-header .junior-checkbox-group,
+  .games-header .former-checkbox-group {
     width: 100%;
     min-width: 0;
   }
