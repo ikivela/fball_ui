@@ -305,7 +305,8 @@ export default {
             (t) =>
               t.parallel_representation === "1" &&
               t.club_name &&
-              t.club_name.toLowerCase() !== `${this.clubName.toLowerCase()} kokkola`
+              // R-edustus on eri seurassa kuin pelaajan kotiseura (voi olla myös oma seura)
+              t.club_id !== pdata.club_id
           )
           .map((t) => ({
             club_name: t.club_name,

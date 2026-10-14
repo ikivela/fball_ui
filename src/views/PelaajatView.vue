@@ -110,6 +110,18 @@
                   <div class="player-mobile-main">
                     <div class="player-mobile-name">
                       {{ player.firstname }} {{ player.lastname }}
+                      <span
+                        v-if="player.parallel_representations?.length"
+                        class="parallel-badge"
+                        :title="parallelTooltip(player)"
+                        >R</span
+                      >
+                    </div>
+                    <div
+                      v-if="player.parallel_representations?.length"
+                      class="player-mobile-parallel"
+                    >
+                      R-edustus: {{ parallelSummary(player) }}
                     </div>
                     <div class="player-mobile-meta">
                       <span v-if="player.birth_year || player.birth_day">
@@ -150,6 +162,12 @@
                     >
                       {{ data.item.firstname }} {{ data.item.lastname }}
                     </router-link>
+                    <span
+                      v-if="data.item.parallel_representations?.length"
+                      class="parallel-badge"
+                      :title="parallelTooltip(data.item)"
+                      >R</span
+                    >
                   </template>
                   <template #cell(games)="data">
                     {{ totalGames(data.item) }}
@@ -313,6 +331,27 @@ export default {
         .map(([season, count]) => `${season}: ${count}`)
         .join("\n");
     },
+    // Lyhyt kuvaus r-edustuksista, esim. "Nibacos (Inssi-Divari naiset)"
+    parallelSummary(player) {
+      return (player.parallel_representations || [])
+        .map(
+          (r) =>
+            `${r.club_abbrevation || r.club_name}${
+              r.category_name ? ` (${r.category_name})` : ""
+            }`
+        )
+        .join(", ");
+    },
+    parallelTooltip(player) {
+      return (player.parallel_representations || [])
+        .map(
+          (r) =>
+            `R-edustus: ${r.club_name} / ${r.team_name}${
+              r.category_name ? ` (${r.category_name})` : ""
+            }`
+        )
+        .join("\n");
+    },
     updateScreenWidth() {
       this.isSmallScreen = window.matchMedia("(max-width: 480px)").matches;
     },
@@ -419,6 +458,25 @@ export default {
 }
 .player-link:hover {
   color: #0056b3;
+}
+.parallel-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0 0.35rem;
+  border-radius: 4px;
+  background: #fff3cd;
+  border: 1px solid #f0c36d;
+  color: #7a5a00;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.4;
+  vertical-align: middle;
+  cursor: help;
+}
+.player-mobile-parallel {
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: #7a5a00;
 }
 /* Syntymävuosifiltterit omalla rivillä siististi */
 .birthyear-filter-row {
