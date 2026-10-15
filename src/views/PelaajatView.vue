@@ -68,6 +68,13 @@
                     >Junioreita (19v tai nuorempia)</b-form-checkbox
                   >
                 </div>
+                <div class="parallel-checkbox-group ms-3">
+                  <b-form-checkbox
+                    v-model="parallelFilter"
+                    class="parallel-checkbox"
+                    >Vain R-pelaajat</b-form-checkbox
+                  >
+                </div>
                 <div class="former-checkbox-group ms-3">
                   <b-form-checkbox
                     v-model="showFormerPlayers"
@@ -103,6 +110,10 @@
                 <span class="player-count">
                   Pelaajia yhteensä: <strong>{{ filteredPlayers.length }}</strong>
                 </span>
+                <span v-if="showFormerPlayers" class="former-legend">
+                  <span class="former-legend-swatch" aria-hidden="true"></span>
+                  entinen pelaaja
+                </span>
               </div>
               <div v-if="isSmallScreen" class="players-mobile-list">
                 <router-link
@@ -113,6 +124,7 @@
                     params: { player_id: player.player_id },
                   }"
                   class="player-mobile-card"
+                  :class="{ 'player-mobile-card--former': isFormerPlayer(player) }"
                 >
                   <div class="player-mobile-main">
                     <div class="player-mobile-name">
@@ -122,6 +134,12 @@
                         class="parallel-badge"
                         :title="parallelTooltip(player)"
                         >R</span
+                      >
+                      <span
+                        v-if="showParallelHomeClub(player)"
+                        class="parallel-home-club"
+                        title="Kotiseura"
+                        >{{ otherClubName(player) }}</span
                       >
                     </div>
                     <div
@@ -138,7 +156,7 @@
                         {{ player.gender === "M" ? "Mies/poika" : "Nainen/tyttö" }}
                       </span>
                       <span v-if="isFormerPlayer(player)" class="former-player">
-                        Nyt: {{ player.club_name || "-" }}
+                        {{ formerPlayerLabel(player) }}
                       </span>
                     </div>
                   </div>
@@ -161,6 +179,7 @@
                   class="table table-sm table-bordered table-responsive"
                   v-model:sortBy="sortBy"
                   v-model:sortDesc="sortDesc"
+                  :tbody-tr-class="rowClass"
                 >
                   <template #cell(player)="data">
                     <router-link
@@ -178,8 +197,23 @@
                       :title="parallelTooltip(data.item)"
                       >R</span
                     >
-                    <span v-if="isFormerPlayer(data.item)" class="former-player">
-                      (nyt: {{ data.item.club_name || "-" }})
+                    <span
+                      v-if="showParallelHomeClub(data.item)"
+                      class="parallel-home-club"
+                      title="Kotiseura"
+                      >({{ otherClubName(data.item) }})</span
+                    >
+                    <span
+                      v-if="isFormerPlayer(data.item)"
+                      class="former-badge"
+                      title="Ei enää aktiivinen pelaaja seurassa"
+                      >Entinen</span
+                    >
+                    <span
+                      v-if="isFormerPlayer(data.item) && otherClubName(data.item)"
+                      class="former-player"
+                    >
+                      (nyt: {{ otherClubName(data.item) }})
                     </span>
                   </template>
                   <template #cell(games)="data">
@@ -207,6 +241,7 @@ export default {
       genderFilterF: "F",
       juniorFilter: "",
       showFormerPlayers: false,
+      parallelFilter: false,
       birthYearFilterMin: null,
       birthYearFilterMax: null,
       staticFields: [
@@ -218,6 +253,7 @@ export default {
       sortDesc: false,
       isSmallScreen: false,
       loadingPlayers: false,
+      clubName: import.meta.env.VITE_APP_CLUB_NAME || "",
     };
   },
   computed: {
@@ -271,6 +307,12 @@ export default {
       // Seurasta lähteneet pelaajat piiloon, ellei toisin valita
       if (!this.showFormerPlayers) {
         filtered = filtered.filter((p) => !this.isFormerPlayer(p));
+      }
+      // R-pelaajat (rinnakkaisedustus)
+      if (this.parallelFilter) {
+        filtered = filtered.filter(
+          (p) => p.parallel_representations?.length > 0
+        );
       }
       // Sukupuolisuodatus
       const genders = [];
@@ -342,6 +384,40 @@ export default {
     // Vanha backend ei palauta current_player-kenttää: silloin pelaajaa ei tulkita entiseksi
     isFormerPlayer(player) {
       return player.current_player === false;
+    },
+    // Pelaajan nykyinen seura, jos se on jokin muu kuin oma seura
+    // (entisellä pelaajalla viimeisin seura voi olla yhä oma, jolloin "nyt: <oma seura>" on turha)
+    otherClubName(player) {
+      const club = player.club_name || "";
+      if (!club || player.own_club === true) return "";
+      // Vanha backend ei palauta own_club-kenttää: verrataan seuran nimeen
+      if (
+        player.own_club == null &&
+        this.clubName &&
+        club.toLowerCase().includes(this.clubName.toLowerCase())
+      ) {
+        return "";
+      }
+      return club;
+    },
+    // R-pelaajan kotiseura näytetään R-merkinnän perässä, jos se on muu kuin oma seura
+    // (entisillä pelaajilla seura näkyy jo "nyt:"-tekstissä)
+    showParallelHomeClub(player) {
+      return (
+        player.parallel_representations?.length > 0 &&
+        !this.isFormerPlayer(player) &&
+        !!this.otherClubName(player)
+      );
+    },
+    formerPlayerLabel(player) {
+      const club = this.otherClubName(player);
+      return club ? `Entinen pelaaja, nyt: ${club}` : "Entinen pelaaja";
+    },
+    rowClass(item, type) {
+      if (type === "row" && item && this.isFormerPlayer(item)) {
+        return "former-player-row";
+      }
+      return null;
     },
     totalGames(player) {
       if (!player.games_per_year) return 0;
@@ -495,6 +571,26 @@ export default {
   vertical-align: middle;
   cursor: help;
 }
+.parallel-home-club {
+  margin-left: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #7a5a00;
+}
+.former-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0 0.35rem;
+  border-radius: 4px;
+  background: #e9ecef;
+  border: 1px solid #adb5bd;
+  color: #555;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.4;
+  vertical-align: middle;
+  cursor: help;
+}
 .former-player {
   margin-left: 0.35rem;
   font-size: 0.8rem;
@@ -502,6 +598,43 @@ export default {
 }
 .player-mobile-meta .former-player {
   margin-left: 0;
+}
+/* Entiset pelaajat erottuvat taulukossa harmaalla */
+/* Bootstrap 5.3 värittää solut muuttujilla ja inset-varjolla, joten asetetaan ne suoraan */
+:deep(tr.former-player-row) > td,
+:deep(tr.former-player-row) > th {
+  --bs-table-bg: #e6e8eb;
+  --bs-table-accent-bg: #e6e8eb;
+  --bs-table-color: #777;
+  background-color: #e6e8eb !important;
+  box-shadow: inset 0 0 0 9999px #e6e8eb !important;
+  color: #777 !important;
+}
+:deep(.former-player-row) .player-link {
+  color: #6c7a89;
+}
+.former-legend {
+  margin-left: 1rem;
+  font-size: 0.85rem;
+  color: #888;
+}
+.former-legend-swatch {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-right: 0.25rem;
+  vertical-align: -0.1rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #e6e8eb;
+}
+.player-mobile-card--former {
+  background: #e6e8eb;
+  opacity: 0.85;
+}
+.player-mobile-card--former .player-mobile-name,
+.player-mobile-card--former .player-mobile-games {
+  color: #888;
 }
 .player-mobile-parallel {
   margin-top: 0.2rem;
@@ -596,6 +729,7 @@ export default {
   .games-header .form-control,
   .games-header .gender-checkbox-group,
   .games-header .junior-checkbox-group,
+  .games-header .parallel-checkbox-group,
   .games-header .former-checkbox-group {
     width: 100%;
     min-width: 0;
